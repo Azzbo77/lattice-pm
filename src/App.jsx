@@ -66,6 +66,23 @@ const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString("en-AU", { day: 
 const todayStr = () => new Date().toISOString().split("T")[0];
 const initials = (name) => name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
+// ── CSV EXPORT ────────────────────────────────────────────────────────────────
+const exportCSV = (filename, headers, rows) => {
+  const escape = v => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return s.includes(",") || s.includes('"') || s.includes("
+")
+      ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = [headers, ...rows].map(r => r.map(escape).join(",")).join("
+");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
+
 const useStorage = (key, fallback) => {
   const [val, setVal] = useState(fallback);
   useEffect(() => {
@@ -1110,6 +1127,32 @@ export default function App() {
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                   {canManage && <Btn color="#00d4ff" onClick={() => setTaskModal({})}>+ Task</Btn>}
+                  <button
+                    onClick={() => {
+                      const rows = ft.map(t => {
+                        const proj = projects.find(p => p.id === t.projectId);
+                        const assignee = users.find(u => u.id === t.assigneeId);
+                        return [
+                          t.title,
+                          proj?.name || "",
+                          assignee?.name || "",
+                          t.startDate,
+                          t.endDate,
+                          t.status,
+                          t.priority,
+                          t.description || "",
+                        ];
+                      });
+                      exportCSV(
+                        `Tasks-export-${todayStr()}.csv`,
+                        ["Title","Project","Assignee","Start Date","End Date","Status","Priority","Description"],
+                        rows
+                      );
+                    }}
+                    style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.85rem", borderRadius: "6px", border: "1px solid #48bb7870", background: "#48bb7818", color: "#48bb78", fontSize: "0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    ⬇ Export CSV
+                  </button>
                 </div>
               </div>
               <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
@@ -1303,6 +1346,30 @@ export default function App() {
                   {[["all","#888","All"],["used","#48bb78","Used"],["not-used","#fc8181","Not Used"],["under-review","#f6c90e","Under Review"],["pending","#888","Pending"]].map(([k,c,l]) => (
                     <button key={k} onClick={() => setBomFilter(k)} style={{ padding: "0.3rem 0.75rem", borderRadius: "20px", border: `1px solid ${bomFilter === k ? c : "#252540"}`, background: bomFilter === k ? `${c}22` : "transparent", color: bomFilter === k ? c : "#555", fontSize: "0.75rem", cursor: "pointer" }}>{l}</button>
                   ))}
+                  <button
+                    onClick={() => {
+                      const rows = bomRows.map(r => [
+                        r.part?.partNumber || "",
+                        r.part?.description || "",
+                        r.supplier?.name || "",
+                        r.part?.unit || "",
+                        r.part?.unitQty || "",
+                        r.qtyOrdered,
+                        (r.qtyOrdered || 0) * (r.part?.unitQty || 1),
+                        bomStatusMeta[r.status]?.label || r.status,
+                        r.project || "",
+                        r.notes || "",
+                      ]);
+                      exportCSV(
+                        `BOM-export-${todayStr()}.csv`,
+                        ["Part Number","Description","Supplier","Unit","Unit Qty","Qty Ordered","Total Units","Status","Project / Assembly","Engineering Notes"],
+                        rows
+                      );
+                    }}
+                    style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.85rem", borderRadius: "20px", border: "1px solid #48bb7870", background: "#48bb7818", color: "#48bb78", fontSize: "0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    ⬇ Export CSV
+                  </button>
                 </div>
               </div>
 

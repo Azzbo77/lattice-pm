@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const ROLES = { ADMIN: "admin", MANAGER: "manager", WORKER: "worker" };
 
@@ -688,6 +688,8 @@ export default function App() {
   const [memberModal, setMemberModal] = useState(null);
   const [confirmRemove, setConfirmRemove] = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [dismissed, setDismissed] = useState([]);
   const [pf, setPf] = useState("all");
   const [bomFilter, setBomFilter] = useState("all");
@@ -711,6 +713,18 @@ export default function App() {
     setCurrentUser(updated);
     setMustSetPassword(false);
   };
+
+  // Close search on outside click
+  const searchRef = useRef(null);
+  useEffect(() => {
+    const handler = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearch(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const saveTask = t => { setTasks(p => p.find(x => x.id === t.id) ? p.map(x => x.id === t.id ? t : x) : [...p, t]); setTaskModal(null); };
   const delTask = id => setTasks(p => p.filter(t => t.id !== id));
@@ -768,6 +782,101 @@ export default function App() {
   }).filter(r => r.supplier && r.part);
 
   const filteredBom = bomFilter === "all" ? bomRows : bomRows.filter(r => r.status === bomFilter);
+
+  // ── SEARCH ENGINE ─────────────────────────────────────────────────────────
+  const searchResults = (() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q || q.length < 2) return [];
+    const results = [];
+
+    // Tasks
+    tasks.forEach(t => {
+      if (currentUser.role === ROLES.WORKER && t.assigneeId !== currentUser.id) return;
+      const proj = projects.find(p => p.id === t.projectId);
+      const assignee = users.find(u => u.id === t.assigneeId);
+      const haystack = [t.title, t.description, proj?.name, assignee?.name, t.status, t.priority].join(" ").toLowerCase();
+      if (haystack.includes(q)) results.push({
+        type: "task", icon: "✅", id: t.id, label: t.title,
+        sub: `${proj?.name || ""}  ·  ${assignee?.name || ""}  ·  ${t.status}`,
+        color: statusColor[t.status] || "#888",
+        action: () => { setTab("tasks"); setSearchQuery(""); setShowSearch(false); }
+      });
+    });
+
+    // Projects
+    projects.forEach(p => {
+      const haystack = [p.name, p.description].join(" ").toLowerCase();
+      if (haystack.includes(q)) results.push({
+        type: "project", icon: "🗂️", id: p.id, label: p.name,
+        sub: `${tasks.filter(t => t.projectId === p.id).length} tasks`,
+        color: p.color,
+        action: () => { setTab("projects"); setSearchQuery(""); setShowSearch(false); }
+      });
+    });
+
+    // Suppliers
+    suppliers.forEach(s => {
+      const haystack = [s.name, s.contact, s.phone].join(" ").toLowerCase();
+      if (haystack.includes(q)) results.push({
+        type: "supplier", icon: "📦", id: s.id, label: s.name,
+        sub: s.contact,
+        color: "#ff6b35",
+        action: () => { setTab("suppliers"); setSearchQuery(""); setShowSearch(false); }
+      });
+
+      // Parts catalogue
+      (s.parts || []).forEach(pt => {
+        const haystack2 = [pt.partNumber, pt.description, s.name].join(" ").toLowerCase();
+        if (haystack2.includes(q)) results.push({
+          type: "part", icon: "🔩", id: pt.id, label: pt.partNumber,
+          sub: `${pt.description}  ·  ${s.name}`,
+          color: "#00d4ff",
+          action: () => { setTab("bom"); setSearchQuery(""); setShowSearch(false); }
+        });
+      });
+
+      // Orders
+      (s.orders || []).forEach(o => {
+        const haystack3 = [o.description, s.name].join(" ").toLowerCase();
+        if (haystack3.includes(q)) results.push({
+          type: "order", icon: "📋", id: o.id, label: o.description,
+          sub: `${s.name}  ·  ${o.arrived ? "Arrived" : "Pending"}`,
+          color: o.arrived ? "#48bb78" : "#f6c90e",
+          action: () => { setTab("suppliers"); setSearchQuery(""); setShowSearch(false); }
+        });
+      });
+    });
+
+    // BOM notes
+    bom.forEach(entry => {
+      if (!entry.notes) return;
+      const sup = suppliers.find(s => s.id === entry.supplierId);
+      const pt = (sup?.parts || []).find(p => p.id === entry.partId);
+      if (!pt) return;
+      const haystack = [entry.notes, pt.partNumber, pt.description].join(" ").toLowerCase();
+      if (haystack.includes(q)) results.push({
+        type: "bom-note", icon: "📝", id: entry.id, label: `Note: ${pt.partNumber}`,
+        sub: entry.notes.length > 60 ? entry.notes.slice(0, 60) + "…" : entry.notes,
+        color: "#a78bfa",
+        action: () => { setTab("bom"); setSearchQuery(""); setShowSearch(false); }
+      });
+    });
+
+    // Team members (admin/manager only)
+    if (currentUser.role !== ROLES.WORKER) {
+      users.forEach(u => {
+        const haystack = [u.name, u.email, u.role].join(" ").toLowerCase();
+        if (haystack.includes(q)) results.push({
+          type: "user", icon: "👤", id: u.id, label: u.name,
+          sub: `${u.role}  ·  ${u.email}`,
+          color: roleColor[u.role],
+          action: () => { setTab("team"); setSearchQuery(""); setShowSearch(false); }
+        });
+      });
+    }
+
+    return results.slice(0, 12); // cap at 12
+  })();
 
   const tabs = [
     { id: "dashboard", icon: "🏠", label: "Dashboard" },
@@ -850,10 +959,72 @@ export default function App() {
       {/* MAIN */}
       <div style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
         {/* Topbar */}
-        <div style={{ padding: "0.75rem 1.25rem", background: "#0d0d20", borderBottom: "1px solid #1a1a30", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.2rem", color: "#e0e0e0" }}>{tabs.find(t => t.id === tab)?.icon} {tabs.find(t => t.id === tab)?.label}</h2>
-          <div style={{ position: "relative" }}>
-            <button onClick={() => setShowNotifs(!showNotifs)} style={{ position: "relative", width: "36px", height: "36px", background: "#15152a", border: "1px solid #252540", borderRadius: "8px", color: "#888", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ padding: "0.6rem 1.25rem", background: "#0d0d20", borderBottom: "1px solid #1a1a30", display: "flex", alignItems: "center", gap: "1rem", position: "sticky", top: 0, zIndex: 50 }}>
+          {/* Page title */}
+          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", flexShrink: 0 }}>{tabs.find(t => t.id === tab)?.icon} {tabs.find(t => t.id === tab)?.label}</h2>
+
+          {/* Search bar */}
+          <div ref={searchRef} style={{ flex: 1, position: "relative", maxWidth: "480px" }}>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "0.65rem", top: "50%", transform: "translateY(-50%)", fontSize: "0.85rem", color: "#444", pointerEvents: "none" }}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search tasks, projects, parts, suppliers…   (type 2+ chars)"
+                value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setShowSearch(true); setShowNotifs(false); }}
+                onFocus={() => setShowSearch(true)}
+                onKeyDown={e => { if (e.key === "Escape") { setSearchQuery(""); setShowSearch(false); } }}
+                style={{ ...inp, paddingLeft: "2rem", paddingRight: searchQuery ? "2rem" : "0.75rem", fontSize: "0.8rem", background: "#15152a", border: "1px solid #252540", borderRadius: "20px" }}
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setShowSearch(false); }} style={{ position: "absolute", right: "0.6rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555", fontSize: "0.85rem", cursor: "pointer", padding: "0.1rem" }}>✕</button>
+              )}
+            </div>
+
+            {/* Search results dropdown */}
+            {showSearch && searchQuery.length >= 2 && (
+              <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#0f0f1e", border: "1px solid #252540", borderRadius: "10px", boxShadow: "0 8px 32px rgba(0,0,0,0.7)", zIndex: 300, overflow: "hidden" }}>
+                {searchResults.length === 0 ? (
+                  <div style={{ padding: "1.25rem", textAlign: "center", color: "#555", fontSize: "0.82rem" }}>No results for "{searchQuery}"</div>
+                ) : (
+                  <>
+                    <div style={{ padding: "0.4rem 0.75rem", background: "#0d0d20", fontSize: "0.65rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
+                    </div>
+                    {searchResults.map((r, i) => (
+                      <button
+                        key={`${r.type}-${r.id}-${i}`}
+                        onClick={r.action}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "transparent", border: "none", borderTop: i > 0 ? "1px solid #141428" : "none", cursor: "pointer", textAlign: "left" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#15152a"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <span style={{ width: "28px", height: "28px", borderRadius: "6px", background: `${r.color}18`, border: `1px solid ${r.color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", flexShrink: 0 }}>{r.icon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {(() => {
+                              const q = searchQuery.toLowerCase();
+                              const label = r.label;
+                              const idx = label.toLowerCase().indexOf(q);
+                              if (idx === -1) return label;
+                              return <>{label.slice(0, idx)}<mark style={{ background: `${r.color}40`, color: r.color, borderRadius: "2px", padding: "0 1px" }}>{label.slice(idx, idx + q.length)}</mark>{label.slice(idx + q.length)}</>;
+                            })()}
+                          </div>
+                          <div style={{ fontSize: "0.68rem", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "1px" }}>{r.sub}</div>
+                        </div>
+                        <span style={{ fontSize: "0.65rem", color: "#444", flexShrink: 0, textTransform: "capitalize" }}>{r.type.replace("-", " ")}</span>
+                      </button>
+                    ))}
+                    <div style={{ padding: "0.4rem 0.75rem", background: "#0a0a18", fontSize: "0.65rem", color: "#333", textAlign: "center" }}>Press Esc to close</div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Notification bell */}
+          <div style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
+            <button onClick={() => { setShowNotifs(!showNotifs); setShowSearch(false); }} style={{ position: "relative", width: "36px", height: "36px", background: "#15152a", border: "1px solid #252540", borderRadius: "8px", color: "#888", fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
               🔔{notifs.length > 0 && <span style={{ position: "absolute", top: "-4px", right: "-4px", background: "#fc8181", borderRadius: "50%", width: "16px", height: "16px", fontSize: "0.6rem", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>{notifs.length}</span>}
             </button>
             {showNotifs && (

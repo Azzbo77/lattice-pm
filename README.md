@@ -118,6 +118,7 @@ lattice-pm/
 
 | Version | What changed |
 |---------|-------------|
+| 1.4 | Global search bar across all entities |
 | 1.3 | CSV export for BOM and Tasks |
 | 1.2 | Dashboard home screen with daily briefing |
 | 1.1 | Project management, password UX improvements, user management |
@@ -136,7 +137,7 @@ Items are grouped by priority. The "Do Later" list is parked deliberately — go
   - *Manager:* overdue tasks across team, project progress %, upcoming deliveries, workload hotspots
   - *Admin:* parts/supplier chase list — delayed orders, lead-time risks, BOM flags
   - *Worker:* personal upcoming jobs for next 7–14 days + dependencies
-- [ ] **Global search bar** — Quick search across tasks, projects, suppliers, orders, BOM parts. Filterable by keyword, status, assignee, project. Results in dropdown or dedicated panel.
+- [x] **Global search bar** — Quick search across tasks, projects, suppliers, orders, BOM parts. Filterable by keyword, status, assignee, project. Results in dropdown or dedicated panel.
 - [ ] **Full data backup / restore** — One-click export of entire app state as JSON. Import back in to restore or migrate. Warning about localStorage limits. Acts as poor-man's multi-device sync.
 - [ ] **Mobile / responsive basics** — Stack columns, larger touch targets, collapsible sidebar. No full PWA — just no horizontal scrolling on phone/tablet during site checks.
 - [ ] **Task dependencies / linking** — "Depends on" multi-select field on task edit. Visual indicators (arrows/badges) on Gantt and dashboard for blocked tasks.

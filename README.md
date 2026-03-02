@@ -76,13 +76,11 @@ Output goes to the `/build` folder, ready to deploy to any static host (Netlify,
 
 ### BOM Export
 From the **🔩 BOM** tab, click **⬇ Export CSV** to download a spreadsheet containing:
-- Part Number, Description, Supplier
-- Unit, Unit Qty, Qty Ordered, Total Units
+- Part Number, Description, Supplier, Unit, Unit Qty, Qty Ordered, Total Units
 - Status (Used / Not Used / Under Review / Pending)
-- Project / Assembly
-- Engineering Notes / CI suggestions
+- Project / Assembly, Engineering Notes / CI suggestions
 
-The filter you have active is respected — export only "Used" parts by selecting that filter first.
+The active filter is respected — export only "Used" parts by selecting that filter first.
 
 ### Tasks Export
 From the **✅ Tasks** tab, click **⬇ Export CSV** to download:
@@ -122,21 +120,38 @@ lattice-pm/
 |---------|-------------|
 | 1.3 | CSV export for BOM and Tasks |
 | 1.2 | Dashboard home screen with daily briefing |
-| 1.1 | Project management, password UX improvements |
+| 1.1 | Project management, password UX improvements, user management |
 | 1.0 | Initial release — Tasks, Gantt, Suppliers, BOM, Team |
 
 ---
 
 ## Roadmap
 
-- [ ] Gantt chart — click bar to open task, drag to reschedule
-- [ ] Comments / activity log on tasks
-- [ ] Real backend + database (Supabase / Firebase) for live multi-user sync
-- [ ] Email / SMS notifications for deadlines
-- [ ] File attachments on tasks and orders
-- [ ] BOM revision history — track who changed what and when
-- [ ] Link BOM parts directly to tasks
-- [ ] Mobile-optimised layout
+Items are grouped by priority. The "Do Later" list is parked deliberately — good ideas, wrong time.
+
+### 🟢 Up Next (planned)
+
+- [ ] **Project-focused Gantt** — Load a single selected/active project by default via dropdown. "Show all projects" toggle overlays other projects at reduced opacity to highlight overlaps without clutter.
+- [ ] **Weekly Summary generator** — Role-filtered HTML/Markdown report rendered in-app with copy-to-clipboard or Export as HTML:
+  - *Manager:* overdue tasks across team, project progress %, upcoming deliveries, workload hotspots
+  - *Admin:* parts/supplier chase list — delayed orders, lead-time risks, BOM flags
+  - *Worker:* personal upcoming jobs for next 7–14 days + dependencies
+- [ ] **Global search bar** — Quick search across tasks, projects, suppliers, orders, BOM parts. Filterable by keyword, status, assignee, project. Results in dropdown or dedicated panel.
+- [ ] **Full data backup / restore** — One-click export of entire app state as JSON. Import back in to restore or migrate. Warning about localStorage limits. Acts as poor-man's multi-device sync.
+- [ ] **Mobile / responsive basics** — Stack columns, larger touch targets, collapsible sidebar. No full PWA — just no horizontal scrolling on phone/tablet during site checks.
+- [ ] **Task dependencies / linking** — "Depends on" multi-select field on task edit. Visual indicators (arrows/badges) on Gantt and dashboard for blocked tasks.
+- [ ] **BOM ↔ Task bridging** — Link specific BOM parts to tasks. Show "Required parts" on task detail. Alert if linked parts are "Not Used" or have delayed supplier orders.
+- [ ] **Last-updated timestamps** — Show "Last changed: [date] by [user]" on every entity. Subtle yellow dot badge for recently modified items on lists and dashboard.
+- [ ] **Dark mode toggle + UI polish** — System/dark/light switch via CSS variables. Higher contrast on Gantt today-marker, clearer project colour tags.
+
+### 🔴 Parked — Do Later
+
+These are good ideas but depend on external services, significant infrastructure, or are low ROI right now:
+
+- Anything requiring external APIs or services (calendar sync, email providers, payment/monetisation)
+- Advanced analytics and reporting (PDF export, PowerBI integration, custom dashboards)
+- Mobile app / native wrapper (PWA enhancements are fine; full native is overkill)
+- Theming beyond a simple dark/light toggle
 
 ---
 

@@ -610,6 +610,107 @@ const Gantt = ({ tasks, users, projects, currentUser }) => {
   );
 };
 
+// ── BACKUP MODAL ─────────────────────────────────────────────────────────────
+const BackupModal = ({ onExport, onImport, onClose, currentUser }) => {
+  const fileRef = useRef(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!file.name.endsWith(".json")) {
+      alert("Please select a .json backup file.");
+      return;
+    }
+    onImport(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    handleFile(e.dataTransfer.files[0]);
+  };
+
+  // Rough localStorage usage estimate
+  const storageUsed = (() => {
+    try {
+      let total = 0;
+      for (const key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) total += localStorage[key].length * 2;
+      }
+      return (total / 1024).toFixed(1);
+    } catch { return "?"; }
+  })();
+  const storageLimit = 5120; // ~5MB typical limit
+  const usagePct = Math.min(100, Math.round((parseFloat(storageUsed) / storageLimit) * 100));
+  const usageColor = usagePct > 80 ? "#fc8181" : usagePct > 50 ? "#f6c90e" : "#48bb78";
+
+  return (
+    <Overlay onClose={onClose}>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.2rem", color: "#e0e0e0", marginBottom: "0.35rem" }}>💾 Backup & Restore</h3>
+      <p style={{ color: "#555", fontSize: "0.78rem", marginBottom: "1.5rem" }}>Export your data as JSON to back up or move to another device. Import a backup to restore.</p>
+
+      {/* Storage usage */}
+      <div style={{ background: "#15152a", border: "1px solid #252540", borderRadius: "8px", padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+          <span style={{ fontSize: "0.75rem", color: "#888" }}>Browser storage used</span>
+          <span style={{ fontSize: "0.75rem", color: usageColor, fontWeight: 600 }}>{storageUsed} KB / ~5 MB</span>
+        </div>
+        <div style={{ height: "5px", background: "#1a1a2e", borderRadius: "3px", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${usagePct}%`, background: usageColor, borderRadius: "3px", transition: "width 0.3s" }} />
+        </div>
+        {usagePct > 70 && (
+          <div style={{ fontSize: "0.7rem", color: "#f6c90e", marginTop: "6px" }}>
+            ⚠ Storage is getting full — export a backup soon to avoid data loss.
+          </div>
+        )}
+        <div style={{ fontSize: "0.68rem", color: "#444", marginTop: "6px" }}>
+          localStorage is browser-specific. Clearing browser data will erase all app data. Regular backups are recommended.
+        </div>
+      </div>
+
+      {/* Export */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ fontSize: "0.75rem", color: "#888", fontWeight: 600, marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Export</div>
+        <button
+          onClick={onExport}
+          style={{ width: "100%", padding: "0.85rem", background: "linear-gradient(135deg,#48bb78,#2d8a52)", border: "none", borderRadius: "8px", color: "#fff", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+        >
+          ⬇ Download Backup JSON
+        </button>
+        <div style={{ fontSize: "0.7rem", color: "#444", marginTop: "6px", textAlign: "center" }}>
+          Saves as <code style={{ color: "#666" }}>lattice-backup-{todayStr()}.json</code> — includes all users, projects, tasks, suppliers, orders, parts and BOM.
+        </div>
+      </div>
+
+      {/* Import */}
+      <div>
+        <div style={{ fontSize: "0.75rem", color: "#888", fontWeight: 600, marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Restore from Backup</div>
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => fileRef.current?.click()}
+          style={{ border: `2px dashed ${dragging ? "#00d4ff" : "#252540"}`, borderRadius: "10px", padding: "1.5rem", textAlign: "center", cursor: "pointer", background: dragging ? "#00d4ff08" : "transparent", transition: "all 0.2s" }}
+        >
+          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📂</div>
+          <div style={{ fontSize: "0.82rem", color: dragging ? "#00d4ff" : "#666" }}>
+            {dragging ? "Drop to restore…" : "Click to select a backup file, or drag & drop"}
+          </div>
+          <div style={{ fontSize: "0.7rem", color: "#444", marginTop: "4px" }}>.json files only</div>
+          <input ref={fileRef} type="file" accept=".json" style={{ display: "none" }} onChange={e => handleFile(e.target.files[0])} />
+        </div>
+        <div style={{ fontSize: "0.7rem", color: "#fc8181", marginTop: "8px", padding: "0.5rem 0.75rem", background: "#fc818110", borderRadius: "6px", border: "1px solid #fc818130" }}>
+          ⚠ Restoring a backup will overwrite all current data. This cannot be undone — export a backup first if needed.
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.25rem" }}>
+        <Btn color="ghost" onClick={onClose}>Close</Btn>
+      </div>
+    </Overlay>
+  );
+};
+
 // ── MUST SET PASSWORD SCREEN ─────────────────────────────────────────────────
 const MustSetPasswordScreen = ({ user, onSave, onSkip }) => {
   const [pw, setPw] = useState("");
@@ -687,6 +788,7 @@ export default function App() {
   const [bomModal, setBomModal] = useState(null);   // { entry, partId, supplierId }
   const [memberModal, setMemberModal] = useState(null);
   const [confirmRemove, setConfirmRemove] = useState(null);
+  const [showBackup, setShowBackup] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -767,6 +869,57 @@ export default function App() {
 
   const saveMember = m => { setUsers(p => p.find(x => x.id === m.id) ? p.map(x => x.id === m.id ? m : x) : [...p, m]); if (currentUser?.id === m.id) setCurrentUser(m); setMemberModal(null); };
   const removeMember = id => { setUsers(p => p.filter(u => u.id !== id)); setConfirmRemove(null); };
+
+  // ── BACKUP / RESTORE ────────────────────────────────────────────────────────
+  const exportBackup = () => {
+    const payload = {
+      _meta: {
+        app: "Lattice PM",
+        version: "1.5",
+        exportedAt: new Date().toISOString(),
+        exportedBy: currentUser.name,
+      },
+      users,
+      projects,
+      tasks,
+      suppliers,
+      bom,
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `lattice-backup-${todayStr()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.users || !data.projects || !data.tasks) {
+          alert("Invalid backup file — missing required data.");
+          return;
+        }
+        if (!window.confirm(`This will replace ALL current data with the backup from ${data._meta?.exportedAt ? new Date(data._meta.exportedAt).toLocaleString() : "unknown date"}.
+
+Are you sure?`)) return;
+        if (data.users)     setUsers(data.users);
+        if (data.projects)  setProjects(data.projects);
+        if (data.tasks)     setTasks(data.tasks);
+        if (data.suppliers) setSuppliers(data.suppliers);
+        if (data.bom)       setBom(data.bom);
+        setShowBackup(false);
+        alert("Backup restored successfully.");
+      } catch {
+        alert("Could not read backup file. Make sure it is a valid Lattice PM JSON backup.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const ft = tasks.filter(t => {
     if (currentUser?.role === ROLES.WORKER && t.assigneeId !== currentUser.id) return false;
@@ -952,6 +1105,9 @@ export default function App() {
               <div style={{ fontSize: "0.65rem", color: roleColor[currentUser.role], textTransform: "capitalize" }}>{currentUser.role}</div>
             </div>
           </div>
+          {isAdmin && (
+            <button onClick={() => setShowBackup(true)} style={{ width: "100%", padding: "0.4rem", marginBottom: "5px", background: "transparent", border: "1px solid #48bb7860", borderRadius: "6px", color: "#48bb78", fontSize: "0.75rem" }}>💾 Backup</button>
+          )}
           <button onClick={() => setCurrentUser(null)} style={{ width: "100%", padding: "0.4rem", background: "transparent", border: "1px solid #252540", borderRadius: "6px", color: "#555", fontSize: "0.75rem" }}>Sign Out</button>
         </div>
       </div>
@@ -1670,6 +1826,7 @@ export default function App() {
       {bomModal && <BomModal entry={bomModal.entry} part={suppliers.find(s => s.id === bomModal.supplierId)?.parts?.find(p => p.id === bomModal.partId)} supplier={suppliers.find(s => s.id === bomModal.supplierId)} onSave={saveBomEntry} onClose={() => setBomModal(null)} />}
       {memberModal && <MemberModal member={memberModal} onSave={saveMember} onClose={() => setMemberModal(null)} currentUserId={currentUser.id} />}
       {confirmRemove && <ConfirmModal message={`Remove ${confirmRemove.name} from the team?`} onConfirm={() => removeMember(confirmRemove.userId)} onClose={() => setConfirmRemove(null)} />}
+      {showBackup && <BackupModal onExport={exportBackup} onImport={importBackup} onClose={() => setShowBackup(false)} currentUser={currentUser} />}
     </div>
   );
 }

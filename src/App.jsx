@@ -61,6 +61,12 @@ const AppShell = () => {
         ::-webkit-scrollbar-thumb { background: #252540; border-radius: 3px; }
         button { cursor: pointer; }
         select, input, textarea { font-family: inherit; }
+        /* Force dark colour scheme on all form controls — prevents white
+           option dropdowns on Windows Chrome/Edge */
+        select { color-scheme: dark; }
+        option { background: #0f0f1e !important; color: #e0e0e0; }
+        select:focus { outline: 1px solid #00d4ff80; border-color: #00d4ff80; }
+        input:focus, textarea:focus { outline: 1px solid #00d4ff80; border-color: #00d4ff80 !important; }
       `}</style>
 
       {/* Sidebar / mobile tab bar */}

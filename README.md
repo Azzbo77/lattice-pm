@@ -111,6 +111,7 @@ src/
 
 | Version | What changed |
 |---------|-------------|
+| 2.5 | Dashboard UI polish — dropdown contrast, colorScheme dark, colour-coded status/priority selects, global option styles |
 | 2.4 | Mobile / responsive — bottom tab bar, sheet modals, horizontal-scroll tables, single-column dashboard |
 | 2.3 | Last-updated timestamps — all entities stamped, UpdatedBadge on tables/cards, Recent Activity feed on dashboard |
 | 2.2 | Weekly Summary generator — role-filtered report, copy text + HTML export |
@@ -137,7 +138,7 @@ src/
 3. **~~Mobile / responsive basics~~** ✅ *(v2.4)*
    Stack columns on small screens, larger touch targets, no horizontal scrolling on supplier lists, tables, or BOM. Sidebar collapses to an icon strip or hamburger.
 
-4. **Dashboard UI polish — contrast on dropdowns**
+4. **~~Dashboard UI polish — contrast on dropdowns~~** ✅ *(v2.5)*
    Audit all dropdowns and filter selects for text/background contrast. Align to theme constants from `seeds.js`. Validate with WAVE or browser devtools accessibility checker.
 
 ---

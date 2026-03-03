@@ -99,9 +99,9 @@ export const MemberModal = () => {
         <div>
           <Lbl c="Role" />
           <select style={inp} value={f.role} onChange={u("role")} disabled={isSelf}>
-            <option value={ROLES.WORKER}>Worker — view &amp; update own tasks</option>
-            <option value={ROLES.MANAGER}>Manager — manage tasks &amp; suppliers</option>
-            <option value={ROLES.ADMIN}>Admin — full access</option>
+            <option value={ROLES.WORKER} style={{ background:"#0f0f1e",color:"#48bb78" }}>Worker — view &amp; update own tasks</option>
+            <option value={ROLES.MANAGER} style={{ background:"#0f0f1e",color:"#00d4ff" }}>Manager — manage tasks &amp; suppliers</option>
+            <option value={ROLES.ADMIN} style={{ background:"#0f0f1e",color:"#ff6b35" }}>Admin — full access</option>
           </select>
           {isSelf && <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "4px" }}>You cannot change your own role.</div>}
         </div>

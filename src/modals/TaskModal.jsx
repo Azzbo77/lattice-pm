@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
-import { Overlay, Lbl, Btn, inp } from "../components/ui";
+import { Overlay, Lbl, Btn, inp, miniSel } from "../components/ui";
+import { statusColor, prioColor } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
 
 export const TaskModal = () => {
@@ -30,8 +31,8 @@ export const TaskModal = () => {
           <div><Lbl c="Assignee" /><select style={inp} value={f.assigneeId} onChange={u("assigneeId")} disabled={!canManage}>{users.map((u2) => <option key={u2.id} value={u2.id}>{u2.name}</option>)}</select></div>
           <div><Lbl c="Start Date" /><input type="date" style={inp} value={f.startDate} onChange={u("startDate")} disabled={!canManage} /></div>
           <div><Lbl c="End Date" /><input type="date" style={inp} value={f.endDate} onChange={u("endDate")} disabled={!canManage} /></div>
-          <div><Lbl c="Status" /><select style={inp} value={f.status} onChange={u("status")}><option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="blocked">Blocked</option></select></div>
-          <div><Lbl c="Priority" /><select style={inp} value={f.priority} onChange={u("priority")} disabled={!canManage}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
+          <div><Lbl c="Status" /><select style={{ ...inp, ...miniSel(statusColor[f.status] || "#888") }} value={f.status} onChange={u("status")}><option value="todo" style={{ background:"#0f0f1e",color:"#e0e0e0" }}>To Do</option><option value="in-progress" style={{ background:"#0f0f1e",color:"#00d4ff" }}>In Progress</option><option value="done" style={{ background:"#0f0f1e",color:"#48bb78" }}>Done</option><option value="blocked" style={{ background:"#0f0f1e",color:"#fc8181" }}>Blocked</option></select></div>
+          <div><Lbl c="Priority" /><select style={{ ...inp, ...miniSel(prioColor[f.priority] || "#888") }} value={f.priority} onChange={u("priority")} disabled={!canManage}><option value="low" style={{ background:"#0f0f1e",color:"#e0e0e0" }}>Low</option><option value="medium" style={{ background:"#0f0f1e",color:"#f6c90e" }}>Medium</option><option value="high" style={{ background:"#0f0f1e",color:"#fc8181" }}>High</option></select></div>
         </div>
         <div><Lbl c="Description" /><textarea style={{ ...inp, minHeight: "70px", resize: "vertical" }} value={f.description} onChange={u("description")} /></div>
       </div>

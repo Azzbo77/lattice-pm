@@ -1,7 +1,7 @@
 import { useApp } from "../context/AppContext";
 import { statusColor, prioColor } from "../constants/seeds";
 import { todayStr, fmt } from "../utils/dateHelpers";
-import { Btn, TH, TD, UpdatedBadge } from "../components/ui";
+import { Btn, TH, TD, UpdatedBadge, selStyle, miniSel } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 
 export const TasksPage = () => {
@@ -26,7 +26,7 @@ export const TasksPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
         <p style={{ color: "#555", fontSize: "0.8rem" }}>{currentUser.role === "worker" ? "Your assigned work" : `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}</p>
         <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
-          <select value={pf} onChange={(e) => setPf(e.target.value)} style={{ padding: "0.3rem 0.6rem", background: "#15152a", border: "1px solid #252540", borderRadius: "6px", color: "#e0e0e0", fontSize: "0.8rem" }}>
+          <select value={pf} onChange={(e) => setPf(e.target.value)} style={selStyle}>
             <option value="all">All Projects</option>
             {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -55,7 +55,7 @@ export const TasksPage = () => {
               <TD>{assignee?.name}</TD>
               <TD style={{ color: overdue ? "#fc8181" : "#777", fontSize: "0.76rem" }}>{fmt(task.endDate)}</TD>
               <TD>
-                <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} style={{ padding: "2px 5px", background: `${statusColor[task.status]}18`, border: `1px solid ${statusColor[task.status]}55`, borderRadius: "4px", color: statusColor[task.status], fontSize: "0.7rem", cursor: "pointer" }}>
+                <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} style={miniSel(statusColor[task.status])}>
                   <option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="blocked">Blocked</option>
                 </select>
               </TD>

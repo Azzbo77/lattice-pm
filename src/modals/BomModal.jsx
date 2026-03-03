@@ -46,7 +46,7 @@ export const BomModal = () => {
               onChange={u("status")}
             >
               {Object.entries(bomStatusMeta).map(([k, v]) => (
-                <option key={k} value={k} style={{ background: "#15152a", color: "#e0e0e0" }}>{v.icon} {v.label}</option>
+                <option key={k} value={k} style={{ background: "#0a0a18", color: "#e0e0e0" }}>{v.icon} {v.label}</option>
               ))}
             </select>
           </div>

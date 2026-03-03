@@ -56,7 +56,7 @@ export const PartModal = () => {
           <Lbl c="Unit Type" />
           <select style={inp} value={f.unit} onChange={u("unit")}>
             {["ea","box","pack","roll","set","kit","metre","litre","kg","licence","clips","other"].map((u2) => (
-              <option key={u2} value={u2}>{u2}</option>
+              <option key={u2} value={u2} style={{ background:"#0f0f1e",color:"#e0e0e0" }}>{u2}</option>
             ))}
           </select>
         </div>

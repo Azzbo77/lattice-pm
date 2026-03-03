@@ -2,7 +2,7 @@ import { useApp } from "../context/AppContext";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { statusColor } from "../constants/seeds";
 import { todayStr, addDays, fmt, daysBetween, timeAgo, isRecent } from "../utils/dateHelpers";
-import { Avatar, UpdatedBadge } from "../components/ui";
+import { Avatar, UpdatedBadge, miniSel } from "../components/ui";
 
 const StatCard = ({ icon, value, label, color, onClick, urgent }) => (
   <div onClick={onClick} style={{ background: "#0f0f1e", border: `1px solid ${urgent && value > 0 ? color + "55" : "#1e1e35"}`, borderRadius: "10px", padding: "1rem 1.25rem", cursor: onClick ? "pointer" : "default", display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -45,7 +45,7 @@ const TaskRow = ({ task }) => {
       <select
         value={task.status}
         onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-        style={{ padding: "2px 4px", background: `${statusColor[task.status]}18`, border: `1px solid ${statusColor[task.status]}55`, borderRadius: "4px", color: statusColor[task.status], fontSize: "0.68rem", cursor: "pointer", flexShrink: 0 }}
+        style={{ ...miniSel(statusColor[task.status]), flexShrink: 0 }}
       >
         <option value="todo">To Do</option>
         <option value="in-progress">In Progress</option>

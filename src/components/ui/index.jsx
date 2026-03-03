@@ -6,7 +6,35 @@ export const inp = {
   background: "#15152a", border: "1px solid #252540",
   borderRadius: "6px", color: "#e0e0e0",
   fontSize: "0.875rem", boxSizing: "border-box", outline: "none",
+  colorScheme: "dark",
 };
+
+// Shared style for filter/page-level selects (smaller than modal inp)
+export const selStyle = {
+  padding: "0.3rem 0.6rem",
+  background: "#15152a",
+  border: "1px solid #252540",
+  borderRadius: "6px",
+  color: "#e0e0e0",
+  fontSize: "0.8rem",
+  cursor: "pointer",
+  outline: "none",
+  colorScheme: "dark",
+};
+
+// Shared style for inline status/priority mini-selects inside table rows
+export const miniSel = (accentColor) => ({
+  padding: "2px 5px",
+  background: `${accentColor}25`,
+  border: `1px solid ${accentColor}70`,
+  borderRadius: "4px",
+  color: accentColor,
+  fontSize: "0.7rem",
+  cursor: "pointer",
+  outline: "none",
+  fontWeight: 600,
+  colorScheme: "dark",
+});
 
 export const Overlay = ({ children, onClose, wide }) => {
   const isMobile = window.innerWidth < 640;

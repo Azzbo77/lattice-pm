@@ -1,5 +1,5 @@
 import { useApp } from "../context/AppContext";
-import { Btn, TH, TD } from "../components/ui";
+import { Btn, TH, TD, UpdatedBadge } from "../components/ui";
 import { addDays, fmt, todayStr } from "../utils/dateHelpers";
 
 export const SuppliersPage = () => {
@@ -21,7 +21,10 @@ export const SuppliersPage = () => {
           <div style={{ padding: "0.85rem 1.25rem", background: "#0d0d20", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
             <div>
               <div style={{ fontWeight: 600, color: "#e0e0e0", fontSize: "0.95rem" }}>{supplier.name}</div>
-              <div style={{ fontSize: "0.72rem", color: "#555", marginTop: "2px" }}>{supplier.contact} · {supplier.phone}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "3px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.72rem", color: "#555" }}>{supplier.contact} · {supplier.phone}</span>
+                <UpdatedBadge iso={supplier.updatedAt} byName={supplier.updatedBy} compact />
+              </div>
             </div>
             {canManage && (
               <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -65,14 +68,14 @@ export const SuppliersPage = () => {
             <div style={{ padding: "0.75rem 1.25rem" }}>
               <div style={{ fontSize: "0.65rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.5rem" }}>Orders</div>
               <div style={{ background: "#0a0a18", borderRadius: "8px", overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr auto", background: "#0d0d20" }}>
-                  {["Description", "Ordered", "Lead", "Est. Arrival", "Status", ""].map((h, i) => <TH key={i}>{h}</TH>)}
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: "#0d0d20" }}>
+                  {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                 </div>
                 {supplier.orders.map((order) => {
                   const arrival = addDays(order.orderedDate, order.leadTimeDays);
                   const late    = !order.arrived && arrival < now;
                   return (
-                    <div key={order.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr auto", alignItems: "center", padding: "0 0.5rem" }}>
+                    <div key={order.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem" }}>
                       <TD>
                         <div style={{ fontSize: "0.82rem", color: "#e0e0e0" }}>{order.description}</div>
                         {order.partIds?.length > 0 && (
@@ -92,6 +95,9 @@ export const SuppliersPage = () => {
                           ? <span style={{ fontSize: "0.72rem", color: "#48bb78", background: "#48bb7818", padding: "2px 8px", borderRadius: "4px" }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
                           : <span style={{ fontSize: "0.72rem", color: late ? "#fc8181" : "#f6c90e", background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: "4px" }}>{late ? "Overdue" : "Pending"}</span>
                         }
+                      </TD>
+                      <TD>
+                        <UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact />
                       </TD>
                       <TD>
                         {canManage && (

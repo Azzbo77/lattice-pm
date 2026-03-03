@@ -1,6 +1,6 @@
 import { createContext, useState, useContext } from "react";
 import { useStorage } from "../hooks/useStorage";
-import { todayStr, addDays, initials } from "../utils/dateHelpers";
+import { todayStr, addDays, initials, nowISO } from "../utils/dateHelpers";
 import {
   SEED_USERS, DEMO_PROJECTS, DEMO_TASKS,
   DEMO_SUPPLIERS, DEMO_BOM, ROLES,
@@ -110,18 +110,20 @@ export const AppProvider = ({ children }) => {
 
   // ── Task handlers ────────────────────────────────────────────────────────
   const saveTask = (t) => {
-    setTasks((p) => p.find((x) => x.id === t.id) ? p.map((x) => x.id === t.id ? t : x) : [...p, t]);
+    const stamped = { ...t, updatedAt: nowISO(), updatedBy: currentUser.name };
+    setTasks((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setTaskModal(null);
   };
 
   const deleteTask = (id) => setTasks((p) => p.filter((t) => t.id !== id));
 
   const updateTaskStatus = (id, status) =>
-    setTasks((p) => p.map((t) => (t.id === id ? { ...t, status } : t)));
+    setTasks((p) => p.map((t) => t.id === id ? { ...t, status, updatedAt: nowISO(), updatedBy: currentUser.name } : t));
 
   // ── Project handlers ─────────────────────────────────────────────────────
   const saveProject = (proj) => {
-    setProjects((p) => p.find((x) => x.id === proj.id) ? p.map((x) => x.id === proj.id ? proj : x) : [...p, proj]);
+    const stamped = { ...proj, updatedAt: nowISO(), updatedBy: currentUser.name };
+    setProjects((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setProjectModal(null);
   };
 
@@ -133,7 +135,8 @@ export const AppProvider = ({ children }) => {
 
   // ── Supplier handlers ────────────────────────────────────────────────────
   const saveSupplier = (s) => {
-    setSuppliers((p) => p.find((x) => x.id === s.id) ? p.map((x) => x.id === s.id ? s : x) : [...p, s]);
+    const stamped = { ...s, updatedAt: nowISO(), updatedBy: currentUser.name };
+    setSuppliers((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setSupplierModal(null);
   };
 
@@ -145,7 +148,7 @@ export const AppProvider = ({ children }) => {
         const newParts = exists
           ? s.parts.map((x) => (x.id === part.id ? part : x))
           : [...(s.parts || []), part];
-        return { ...s, parts: newParts };
+        return { ...s, parts: newParts, updatedAt: nowISO(), updatedBy: currentUser.name };
       })
     );
     if (!part._existing) {
@@ -168,7 +171,7 @@ export const AppProvider = ({ children }) => {
 
   const addOrder = (supplierId, order) => {
     setSuppliers((p) =>
-      p.map((s) => s.id === supplierId ? { ...s, orders: [...(s.orders || []), order] } : s)
+      p.map((s) => s.id === supplierId ? { ...s, orders: [...(s.orders || []), { ...order, updatedAt: nowISO(), updatedBy: currentUser.name }], updatedAt: nowISO(), updatedBy: currentUser.name } : s)
     );
     setOrderModal(null);
   };
@@ -181,7 +184,7 @@ export const AppProvider = ({ children }) => {
               ...s,
               orders: (s.orders || []).map((o) =>
                 o.id === orderId
-                  ? { ...o, arrived: !o.arrived, arrivedDate: !o.arrived ? todayStr() : null }
+                  ? { ...o, arrived: !o.arrived, arrivedDate: !o.arrived ? todayStr() : null, updatedAt: nowISO(), updatedBy: currentUser.name }
                   : o
               ),
             }
@@ -191,8 +194,9 @@ export const AppProvider = ({ children }) => {
 
   // ── BOM handlers ─────────────────────────────────────────────────────────
   const saveBomEntry = (entry) => {
+    const stamped = { ...entry, updatedAt: nowISO(), updatedBy: currentUser.name };
     setBom((p) =>
-      p.find((x) => x.id === entry.id) ? p.map((x) => x.id === entry.id ? entry : x) : [...p, entry]
+      p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]
     );
     setBomModal(null);
   };

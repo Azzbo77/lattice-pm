@@ -111,6 +111,7 @@ src/
 
 | Version | What changed |
 |---------|-------------|
+| 2.3 | Last-updated timestamps — all entities stamped, UpdatedBadge on tables/cards, Recent Activity feed on dashboard |
 | 2.2 | Weekly Summary generator — role-filtered report, copy text + HTML export |
 | 2.1 | Project-focused Gantt — pill selector, show-all overlay, date axis, click-to-edit |
 | 2.0 | Full modular refactor — context, hooks, utils, pages, modals |
@@ -127,7 +128,7 @@ src/
 
 ### Phase 1 — Quick Polish & Immediate Personal Wins *(1–2 weekends)*
 
-1. **Last-updated timestamps**
+1. **~~Last-updated timestamps~~** ✅ *(v2.3)*
    Add to all entities (tasks, projects, suppliers, parts, orders, BOM items). Show on cards/tables as a subtle "last changed by [user] on [date]" badge. Highlight recently changed items.
 
 2. **~~Weekly Summary generator~~** ✅ *(v2.2)*

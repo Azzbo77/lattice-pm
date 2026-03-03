@@ -1,7 +1,7 @@
 import { useApp } from "../context/AppContext";
 import { statusColor } from "../constants/seeds";
-import { todayStr, addDays, fmt, daysBetween } from "../utils/dateHelpers";
-import { Avatar } from "../components/ui";
+import { todayStr, addDays, fmt, daysBetween, timeAgo, isRecent } from "../utils/dateHelpers";
+import { Avatar, UpdatedBadge } from "../components/ui";
 
 const StatCard = ({ icon, value, label, color, onClick, urgent }) => (
   <div onClick={onClick} style={{ background: "#0f0f1e", border: `1px solid ${urgent && value > 0 ? color + "55" : "#1e1e35"}`, borderRadius: "10px", padding: "1rem 1.25rem", cursor: onClick ? "pointer" : "default", display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -26,14 +26,16 @@ const TaskRow = ({ task }) => {
   const proj     = projects.find((p) => p.id === task.projectId);
   const assignee = users.find((u) => u.id === task.assigneeId);
   const overdue  = task.endDate < now;
+  const recent   = isRecent(task.updatedAt);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "#0f0f1e", borderRadius: "8px", marginBottom: "4px", border: "1px solid #1a1a2e" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "#0f0f1e", borderRadius: "8px", marginBottom: "4px", border: `1px solid ${recent ? "#00d4ff20" : "#1a1a2e"}` }}>
       <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: overdue ? "#fc8181" : "#f6c90e", flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</div>
-        <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "1px" }}>
+        <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "1px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           {proj && <span style={{ color: proj.color }}>{proj.name}</span>}
-          {assignee && currentUser.role !== "worker" && <span style={{ marginLeft: "0.4rem" }}>· {assignee.name}</span>}
+          {assignee && currentUser.role !== "worker" && <span>· {assignee.name}</span>}
+          {task.updatedAt && <UpdatedBadge iso={task.updatedAt} compact />}
         </div>
       </div>
       <div style={{ fontSize: "0.72rem", color: overdue ? "#fc8181" : "#f6c90e", whiteSpace: "nowrap", flexShrink: 0 }}>
@@ -49,6 +51,75 @@ const TaskRow = ({ task }) => {
         <option value="done">Done</option>
         <option value="blocked">Blocked</option>
       </select>
+    </div>
+  );
+};
+
+// Recent activity feed — collects all recently-updated entities
+const RecentActivity = () => {
+  const { tasks, projects, suppliers, bom, users, setTab, setPf } = useApp();
+
+  const items = [];
+
+  tasks.forEach((t) => {
+    if (!t.updatedAt || !isRecent(t.updatedAt, 48)) return;
+    const proj = projects.find((p) => p.id === t.projectId);
+    items.push({ iso: t.updatedAt, by: t.updatedBy, icon: "✅", label: t.title, sub: proj?.name || "", color: proj?.color || "#00d4ff", action: () => setTab("tasks") });
+  });
+
+  projects.forEach((p) => {
+    if (!p.updatedAt || !isRecent(p.updatedAt, 48)) return;
+    items.push({ iso: p.updatedAt, by: p.updatedBy, icon: "🗂️", label: p.name, sub: "Project", color: p.color, action: () => setTab("projects") });
+  });
+
+  suppliers.forEach((s) => {
+    if (s.updatedAt && isRecent(s.updatedAt, 48))
+      items.push({ iso: s.updatedAt, by: s.updatedBy, icon: "📦", label: s.name, sub: "Supplier", color: "#ff6b35", action: () => setTab("suppliers") });
+    (s.orders || []).forEach((o) => {
+      if (!o.updatedAt || !isRecent(o.updatedAt, 48)) return;
+      items.push({ iso: o.updatedAt, by: o.updatedBy, icon: "📋", label: o.description, sub: s.name, color: "#f6c90e", action: () => setTab("suppliers") });
+    });
+  });
+
+  bom.forEach((entry) => {
+    if (!entry.updatedAt || !isRecent(entry.updatedAt, 48)) return;
+    const sup = suppliers.find((s) => s.id === entry.supplierId);
+    const pt  = (sup?.parts || []).find((p) => p.id === entry.partId);
+    if (!pt) return;
+    items.push({ iso: entry.updatedAt, by: entry.updatedBy, icon: "🔩", label: pt.partNumber, sub: pt.description, color: "#a78bfa", action: () => setTab("bom") });
+  });
+
+  if (items.length === 0) return null;
+
+  // Sort newest first
+  items.sort((a, b) => new Date(b.iso) - new Date(a.iso));
+
+  return (
+    <div>
+      <SectionHeader title="🕐 Recent Activity (48h)" />
+      <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
+        {items.slice(0, 8).map((item, i) => (
+          <div
+            key={`${item.iso}-${i}`}
+            onClick={item.action}
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 1rem", borderTop: i > 0 ? "1px solid #141428" : "none", cursor: "pointer" }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "#15152a"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+          >
+            <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: `${item.color}18`, border: `1px solid ${item.color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.82rem", flexShrink: 0 }}>
+              {item.icon}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: "0.8rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
+              <div style={{ fontSize: "0.65rem", color: "#555" }}>{item.sub}</div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontSize: "0.68rem", color: "#00d4ff" }}>{timeAgo(item.iso)}</div>
+              {item.by && <div style={{ fontSize: "0.62rem", color: "#444" }}>{item.by}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -102,7 +173,7 @@ export const DashboardPage = () => {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
-        {/* Left */}
+        {/* Left column */}
         <div style={{ display: "grid", gap: "1.25rem", alignContent: "start" }}>
           {overdueTasks.length > 0 && (
             <div>
@@ -150,8 +221,11 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        {/* Right */}
+        {/* Right column */}
         <div style={{ display: "grid", gap: "1.25rem", alignContent: "start" }}>
+          {/* Recent Activity — appears at top of right column */}
+          <RecentActivity />
+
           {canManage && projects.length > 0 && (
             <div>
               <SectionHeader title="🗂️ Project Progress" action="View all →" onAction={() => setTab("projects")} />
@@ -169,7 +243,10 @@ export const DashboardPage = () => {
                           <span style={{ fontSize: "0.82rem", color: "#e0e0e0" }}>{proj.name}</span>
                           {late > 0 && <span style={{ fontSize: "0.62rem", color: "#fc8181", background: "#fc818118", padding: "1px 5px", borderRadius: "3px" }}>{late} late</span>}
                         </div>
-                        <span style={{ fontSize: "0.72rem", color: "#555" }}>{pct}%</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          {proj.updatedAt && <UpdatedBadge iso={proj.updatedAt} compact />}
+                          <span style={{ fontSize: "0.72rem", color: "#555" }}>{pct}%</span>
+                        </div>
                       </div>
                       <div style={{ height: "5px", background: "#1a1a2e", borderRadius: "3px", overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${pct}%`, background: proj.color, borderRadius: "3px" }} />

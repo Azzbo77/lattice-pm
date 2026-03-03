@@ -76,3 +76,37 @@ export const ConfirmModal = ({ message, onConfirm, onClose }) => (
     </div>
   </Overlay>
 );
+
+// ── Timestamp badge ───────────────────────────────────────────────────────────
+import { timeAgo, isRecent } from "../../utils/dateHelpers";
+
+export const UpdatedBadge = ({ iso, byName, compact = false }) => {
+  if (!iso) return null;
+  const recent = isRecent(iso);
+  const ago    = timeAgo(iso);
+
+  if (compact) {
+    return (
+      <span
+        title={byName ? `Updated ${ago} by ${byName}` : `Updated ${ago}`}
+        style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "0.62rem", color: recent ? "#00d4ff" : "#444", whiteSpace: "nowrap" }}
+      >
+        {recent && (
+          <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#00d4ff", display: "inline-block", flexShrink: 0 }} />
+        )}
+        {ago}
+      </span>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.68rem", color: recent ? "#00d4ff88" : "#333" }}>
+      {recent && (
+        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00d4ff", flexShrink: 0 }} />
+      )}
+      <span>
+        {byName ? `Updated ${ago} by ${byName}` : `Updated ${ago}`}
+      </span>
+    </div>
+  );
+};

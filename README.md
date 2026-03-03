@@ -7,15 +7,16 @@ A modular React project management tool for engineering and operations teams.
 ## Features
 
 - **🏠 Dashboard** — Daily briefing: overdue tasks, delivery alerts, project progress, team workload. Clickable stat cards navigate to the relevant section.
-- **📅 Timeline (Gantt)** — Project-focused Gantt chart. Select any project to focus, toggle "show overlapping projects" to see other timelines dimmed behind it. Date axis auto-scales, click any bar to edit the task. Groups tasks by project in "All" view.
+- **📅 Timeline (Gantt)** — Project-focused Gantt. Select any project to focus, toggle "show overlapping projects" to see other timelines dimmed behind it. Date axis auto-scales, click any bar to edit the task.
 - **✅ Tasks** — Create, assign, and track tasks with status, priority, dates, and project tagging. CSV export respects active filter.
-- **🗂️ Projects** — Custom colour-coded projects with progress bars and per-project stats.
+- **🗂️ Projects** — Colour-coded projects with progress bars and per-project stats.
 - **📦 Suppliers & Orders** — Parts catalogue per supplier, orders with lead-time tracking and arrival confirmation.
-- **🔩 BOM** — Auto-populated from supplier parts. Usage status (Used / Not Used / Under Review / Pending), quantity, engineering / CI notes. Filter and CSV export.
-- **👥 Team** — Role-based access. Add, edit, remove members. Password show/hide, strength meter, auto-generate, force-reset on next login.
+- **🔩 BOM** — Auto-populated from supplier parts. Usage status, quantities, engineering/CI notes. Filter pills and CSV export.
+- **👥 Team** — Role-based access. Add, edit, remove members. Password show/hide, strength meter, auto-generate, force-reset.
 - **🔔 Notifications** — In-app alerts for overdue tasks and delivery deadlines.
 - **💾 Backup & Restore** — Full JSON export/import with browser storage meter and drag-and-drop restore.
-- **🔍 Global Search** — Instant search across tasks, projects, suppliers, parts, orders, BOM notes, and team members. Highlighted matches, keyboard (Esc) dismiss.
+- **🔍 Global Search** — Search across tasks, projects, suppliers, parts, orders, BOM notes, and team members.
+- **📊 Weekly Summary** — Role-filtered report. Copy as plain text or export as a standalone HTML file. Three views: Worker (personal jobs), Manager (project snapshot + deliveries), Admin (adds team workload + supplier chase list + BOM attention items).
 
 ---
 
@@ -55,24 +56,6 @@ Opens at [http://localhost:3000](http://localhost:3000).
 npm run build   # Production build → /build
 ```
 
-Deploy the `/build` folder to any static host — Netlify, Vercel, GitHub Pages, etc.
-
----
-
-## CSV Exports
-
-**BOM** — click ⬇ Export CSV in the BOM tab. Exports part number, description, supplier, quantities, status, project/assembly, and engineering notes. Active filter applies.
-
-**Tasks** — click ⬇ Export CSV in the Tasks tab. Exports title, project, assignee, dates, status, priority, and description. Active project filter applies.
-
----
-
-## Data Storage
-
-Browser `localStorage` — persists between sessions on the same browser, not shared across devices.
-
-> For real multi-user collaboration, swap the `useStorage` hook for a backend like Supabase or Firebase. The architecture is designed to make that a clean one-file change.
-
 ---
 
 ## Project Structure
@@ -90,14 +73,14 @@ src/
 │   └── useSearch.js           # Global search engine
 │
 ├── utils/
-│   ├── csvExport.js           # exportCSV helper
-│   └── dateHelpers.js         # todayStr, addDays, fmt, daysBetween, initials
+│   ├── csvExport.js
+│   └── dateHelpers.js
 │
 ├── constants/
 │   └── seeds.js               # ROLES, colors, status meta, demo seed data
 │
 ├── components/
-│   ├── ui/index.jsx           # Overlay, Btn, Avatar, Lbl, TH, TD, ConfirmModal
+│   ├── ui/index.jsx           # Shared primitives
 │   ├── Sidebar.jsx
 │   ├── SearchBar.jsx
 │   └── NotificationBell.jsx
@@ -105,13 +88,14 @@ src/
 ├── modals/
 │   ├── TaskModal.jsx
 │   ├── ProjectModal.jsx
-│   ├── SupplierModals.jsx     # SupplierModal + PartModal + OrderModal
+│   ├── SupplierModals.jsx
 │   ├── BomModal.jsx
 │   ├── MemberModal.jsx
-│   └── BackupModal.jsx
+│   ├── BackupModal.jsx
+│   └── WeeklySummaryModal.jsx
 │
 └── pages/
-    ├── AuthScreens.jsx        # LoginScreen + MustSetPasswordScreen
+    ├── AuthScreens.jsx
     ├── DashboardPage.jsx
     ├── GanttPage.jsx
     ├── TasksPage.jsx
@@ -127,7 +111,8 @@ src/
 
 | Version | What changed |
 |---------|-------------|
-| 2.1 | Project-focused Gantt — pill selector, show-all overlay, date axis, click-to-edit, stats bar |
+| 2.2 | Weekly Summary generator — role-filtered report, copy text + HTML export |
+| 2.1 | Project-focused Gantt — pill selector, show-all overlay, date axis, click-to-edit |
 | 2.0 | Full modular refactor — context, hooks, utils, pages, modals |
 | 1.5 | Backup / restore with storage meter |
 | 1.4 | Global search bar across all entities |
@@ -140,20 +125,49 @@ src/
 
 ## Roadmap
 
-### 🟢 Up Next
+### Phase 1 — Quick Polish & Immediate Personal Wins *(1–2 weekends)*
 
-- [ ] **Weekly Summary generator** — role-filtered HTML/Markdown report with copy-to-clipboard or export. Manager: overdue tasks, project progress, delivery alerts. Admin: supplier chase list. Worker: personal jobs for next 7–14 days.
-- [ ] **Mobile / responsive basics** — stack columns, larger touch targets, no horizontal scrolling on phone.
-- [ ] **Task dependencies** — "depends on" multi-select field, visual blocked indicators on Gantt and dashboard.
-- [ ] **BOM ↔ Task bridging** — link parts to tasks, alert when linked parts are delayed or unused.
-- [ ] **Last-updated timestamps** — "last changed by [user] on [date]" on every entity, subtle badge for recent changes.
+1. **Last-updated timestamps**
+   Add to all entities (tasks, projects, suppliers, parts, orders, BOM items). Show on cards/tables as a subtle "last changed by [user] on [date]" badge. Highlight recently changed items.
 
-### 🔴 Parked — Do Later
+2. **~~Weekly Summary generator~~** ✅ *(v2.2)*
 
-- External API integrations (calendar sync, email, payments)
-- Advanced analytics / PDF / PowerBI export
-- Native mobile app / full PWA
-- Theming beyond dark/light toggle
+3. **Mobile / responsive basics**
+   Stack columns on small screens, larger touch targets, no horizontal scrolling on supplier lists, tables, or BOM. Sidebar collapses to an icon strip or hamburger.
+
+4. **Dashboard UI polish — contrast on dropdowns**
+   Audit all dropdowns and filter selects for text/background contrast. Align to theme constants from `seeds.js`. Validate with WAVE or browser devtools accessibility checker.
+
+---
+
+### Phase 2 — Core Workflow + Supplier/BOM Enhancements *(2–4 weekends)*
+
+5. **SuppliersPage improvements** *(group as one mini-epic)*
+   - **Collapsible supplier boxes** — accordion per supplier card (expand to show parts catalogue + orders). Collapsed state shows name, contact, part count, order summary.
+   - **Delete / archive suppliers** — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).
+   - **Filter & search** — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.
+
+6. **Task dependencies** *(simple)*
+   "Depends on" multi-select field per task. Gantt shows dependency lines or blocked indicators. Dashboard flags tasks whose dependency is overdue.
+
+7. **BOM ↔ Task bridging**
+   Link parts to tasks. Alert when a linked part is delayed or unused. Add "Filter by task / project" dropdown on the BOM page to show only parts relevant to a given task.
+
+---
+
+### Phase 3 — Polish & Prep *(ongoing)*
+
+8. **Theme / styles centralisation**
+   Extract all colour, spacing, and typography values into a single `theme.js` constant. Eliminates magic hex values across components and makes light-mode trivial to add.
+
+9. **Incremental TypeScript**
+   Migrate file-by-file starting with `seeds.js` → `dateHelpers.ts` → context. No big-bang rewrite.
+
+10. **Auth / security basics**
+    Move passwords out of localStorage (hash with bcrypt-js or replace with a proper auth provider). Session expiry. Optional: Supabase Auth drop-in.
+
+11. **Perf & reliability tweaks**
+    `React.memo` on heavy list components, `useMemo` audit, accessibility pass on new collapsible/delete UI (keyboard nav, ARIA roles, focus trapping in modals).
 
 ---
 
@@ -161,8 +175,6 @@ src/
 
 - [React 18](https://react.dev/) + Create React App
 - Google Fonts — Playfair Display + IBM Plex Sans
-
----
 
 ## License
 

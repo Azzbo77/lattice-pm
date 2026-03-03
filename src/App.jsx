@@ -18,6 +18,7 @@ import { SupplierModal, PartModal, OrderModal } from "./modals/SupplierModals";
 import { BomModal }       from "./modals/BomModal";
 import { MemberModal }    from "./modals/MemberModal";
 import { BackupModal }    from "./modals/BackupModal";
+import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
 
 // ── Inner app (has access to context) ────────────────────────────────────────
@@ -25,7 +26,7 @@ const AppShell = () => {
   const {
     currentUser, mustSetPassword, tab,
     taskModal, projectModal, supplierModal, orderModal, partModal,
-    bomModal, memberModal, showBackup,
+    bomModal, memberModal, showBackup, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
     confirmDeleteProject, setConfirmDeleteProject, deleteProject,
   } = useApp();
@@ -82,6 +83,7 @@ const AppShell = () => {
       {bomModal       && <BomModal />}
       {memberModal    && <MemberModal />}
       {showBackup     && <BackupModal />}
+      {showSummary    && <WeeklySummaryModal />}
       {confirmRemove  && (
         <ConfirmModal
           message={`Remove ${confirmRemove.name} from the team?`}

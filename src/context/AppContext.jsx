@@ -37,6 +37,7 @@ export const AppProvider = ({ children }) => {
   const [bomModal,             setBomModal]             = useState(null);
   const [memberModal,          setMemberModal]          = useState(null);
   const [showBackup,           setShowBackup]           = useState(false);
+  const [showSummary,          setShowSummary]          = useState(false);
   const [confirmRemove,        setConfirmRemove]        = useState(null);
   const [confirmDeleteProject, setConfirmDeleteProject] = useState(null);
 
@@ -290,6 +291,7 @@ export const AppProvider = ({ children }) => {
       bomModal,             setBomModal,
       memberModal,          setMemberModal,
       showBackup,           setShowBackup,
+      showSummary,          setShowSummary,
       confirmRemove,        setConfirmRemove,
       confirmDeleteProject, setConfirmDeleteProject,
     }}>

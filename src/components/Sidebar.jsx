@@ -13,7 +13,7 @@ const TABS = [
 ];
 
 export const Sidebar = () => {
-  const { currentUser, tab, setTab, isAdmin, logout, setShowBackup } = useApp();
+  const { currentUser, tab, setTab, isAdmin, logout, setShowBackup, setShowSummary } = useApp();
 
   return (
     <div style={{ width: "180px", flexShrink: 0, background: "#0d0d20", borderRight: "1px solid #1a1a30", display: "flex", flexDirection: "column", padding: "1rem 0.75rem", minHeight: "100vh", position: "sticky", top: 0 }}>
@@ -45,6 +45,9 @@ export const Sidebar = () => {
             <div style={{ fontSize: "0.65rem", color: roleColor[currentUser.role], textTransform: "capitalize" }}>{currentUser.role}</div>
           </div>
         </div>
+        <button onClick={() => setShowSummary(true)} style={{ width: "100%", padding: "0.4rem", marginBottom: "5px", background: "transparent", border: "1px solid #00d4ff60", borderRadius: "6px", color: "#00d4ff", fontSize: "0.75rem", cursor: "pointer" }}>
+          📊 Weekly Summary
+        </button>
         {isAdmin && (
           <button onClick={() => setShowBackup(true)} style={{ width: "100%", padding: "0.4rem", marginBottom: "5px", background: "transparent", border: "1px solid #48bb7860", borderRadius: "6px", color: "#48bb78", fontSize: "0.75rem", cursor: "pointer" }}>
             💾 Backup

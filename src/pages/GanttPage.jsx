@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { useApp } from "../context/AppContext";
 import { statusColor } from "../constants/seeds";
 import { todayStr, daysBetween, addDays, fmt } from "../utils/dateHelpers";
@@ -31,7 +32,7 @@ const TaskBar = ({ task, proj, assignee, minD, span, todayPct, dimmed, onEdit })
 
   return (
     <div style={{ display: "flex", alignItems: "center", marginBottom: "6px", gap: "8px", opacity: dimmed ? 0.2 : 1, transition: "opacity 0.2s" }}>
-      <div style={{ width: "152px", flexShrink: 0, paddingRight: "8px" }}>
+      <div style={{ width: isMobile ? "100px" : "152px", flexShrink: 0, paddingRight: "8px" }}>
         <div
           title={task.title}
           onClick={() => onEdit && onEdit(task)}
@@ -68,6 +69,7 @@ const Toggle = ({ on, onChange, label }) => (
 // ── Main page ─────────────────────────────────────────────────────────────────
 export const GanttPage = () => {
   const { tasks, projects, users, currentUser, setTaskModal, setTab, setPf } = useApp();
+  const { isMobile } = useBreakpoint();
 
   const [activeId, setActiveId] = useState(projects.length > 0 ? projects[0].id : "all");
   const [showAll,  setShowAll]  = useState(false);

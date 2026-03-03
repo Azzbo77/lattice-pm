@@ -1,7 +1,8 @@
 import { AppProvider, useApp } from "./context/AppContext";
-import { Sidebar }          from "./components/Sidebar";
-import { SearchBar }        from "./components/SearchBar";
-import { NotificationBell } from "./components/NotificationBell";
+import { Sidebar }             from "./components/Sidebar";
+import { SearchBar }           from "./components/SearchBar";
+import { NotificationBell }    from "./components/NotificationBell";
+import { useBreakpoint }       from "./hooks/useBreakpoint";
 
 import { LoginScreen, MustSetPasswordScreen } from "./pages/AuthScreens";
 import { DashboardPage }  from "./pages/DashboardPage";
@@ -21,7 +22,10 @@ import { BackupModal }    from "./modals/BackupModal";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
 
-// ── Inner app (has access to context) ────────────────────────────────────────
+const TAB_ICONS   = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" };
+const TAB_LABELS  = { dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team" };
+
+// ── Inner app ─────────────────────────────────────────────────────────────────
 const AppShell = () => {
   const {
     currentUser, mustSetPassword, tab,
@@ -29,11 +33,13 @@ const AppShell = () => {
     bomModal, memberModal, showBackup, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
     confirmDeleteProject, setConfirmDeleteProject, deleteProject,
+    setShowSummary, setShowBackup, isAdmin, logout,
   } = useApp();
 
-  // ── Auth gates ─────────────────────────────────────────────────────────────
-  if (!currentUser)             return <LoginScreen />;
-  if (mustSetPassword)          return <MustSetPasswordScreen />;
+  const { isMobile, isSmall } = useBreakpoint();
+
+  if (!currentUser)    return <LoginScreen />;
+  if (mustSetPassword) return <MustSetPasswordScreen />;
 
   const PAGE_MAP = {
     dashboard: <DashboardPage />,
@@ -54,27 +60,47 @@ const AppShell = () => {
         ::-webkit-scrollbar-track { background: #0a0a18; }
         ::-webkit-scrollbar-thumb { background: #252540; border-radius: 3px; }
         button { cursor: pointer; }
+        select, input, textarea { font-family: inherit; }
       `}</style>
 
+      {/* Sidebar / mobile tab bar */}
       <Sidebar />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Topbar */}
-        <div style={{ padding: "0.6rem 1.25rem", background: "#0d0d20", borderBottom: "1px solid #1a1a30", display: "flex", alignItems: "center", gap: "1rem", position: "sticky", top: 0, zIndex: 50 }}>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", flexShrink: 0 }}>
-            {{ dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" }[tab]} {{ dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team" }[tab]}
-          </h2>
+        <div style={{ padding: isMobile ? "0.5rem 0.75rem" : "0.6rem 1.25rem", background: "#0d0d20", borderBottom: "1px solid #1a1a30", display: "flex", alignItems: "center", gap: "0.75rem", position: "sticky", top: 0, zIndex: 50 }}>
+          {/* Page title — hidden on mobile to save space */}
+          {!isMobile && (
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", flexShrink: 0 }}>
+              {TAB_ICONS[tab]} {TAB_LABELS[tab]}
+            </h2>
+          )}
+          {/* Logo on mobile */}
+          {isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
+              <div style={{ width: "22px", height: "22px", background: "linear-gradient(135deg,#00d4ff,#ff6b35)", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem" }}>◈</div>
+              <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "0.95rem", color: "#e0e0e0" }}>Lattice</span>
+            </div>
+          )}
           <SearchBar />
           <NotificationBell />
+          {/* Mobile action buttons */}
+          {isMobile && (
+            <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
+              <button onClick={() => setShowSummary(true)} style={{ padding: "0.35rem 0.5rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: "6px", color: "#00d4ff", fontSize: "0.72rem", cursor: "pointer" }}>📊</button>
+              {isAdmin && <button onClick={() => setShowBackup(true)} style={{ padding: "0.35rem 0.5rem", background: "#48bb7818", border: "1px solid #48bb7850", borderRadius: "6px", color: "#48bb78", fontSize: "0.72rem", cursor: "pointer" }}>💾</button>}
+              <button onClick={logout} style={{ padding: "0.35rem 0.5rem", background: "transparent", border: "1px solid #252540", borderRadius: "6px", color: "#555", fontSize: "0.72rem", cursor: "pointer" }}>⎋</button>
+            </div>
+          )}
         </div>
 
-        {/* Page content */}
-        <div style={{ padding: "1.25rem", flex: 1 }}>
+        {/* Page content — extra bottom padding on mobile for tab bar */}
+        <div style={{ padding: isMobile ? "0.875rem 0.75rem" : "1.25rem", flex: 1, paddingBottom: isMobile ? "72px" : undefined }}>
           {PAGE_MAP[tab] || <DashboardPage />}
         </div>
       </div>
 
-      {/* ── Modals ─────────────────────────────────────────────────────────── */}
+      {/* ── Modals ── */}
       {taskModal      && <TaskModal />}
       {projectModal   && <ProjectModal />}
       {supplierModal  && <SupplierModal />}
@@ -102,7 +128,6 @@ const AppShell = () => {
   );
 };
 
-// ── Root export ───────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <AppProvider>

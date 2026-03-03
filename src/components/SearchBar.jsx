@@ -35,12 +35,12 @@ export const SearchBar = () => {
   };
 
   return (
-    <div ref={containerRef} style={{ flex: 1, position: "relative", maxWidth: "480px" }}>
+    <div ref={containerRef} style={{ flex: 1, position: "relative", maxWidth: "480px", minWidth: 0 }}>
       <div style={{ position: "relative" }}>
         <span style={{ position: "absolute", left: "0.65rem", top: "50%", transform: "translateY(-50%)", fontSize: "0.85rem", color: "#444", pointerEvents: "none" }}>🔍</span>
         <input
           type="text"
-          placeholder="Search tasks, projects, parts, suppliers…"
+          placeholder="Search…"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDrop(true); }}
           onFocus={() => setShowDrop(true)}

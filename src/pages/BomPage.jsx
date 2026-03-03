@@ -49,6 +49,8 @@ export const BomPage = () => {
       </div>
 
       <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
+        <div style={{ minWidth: "860px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.8fr 0.8fr 0.7fr 0.7fr 1fr 2fr 0.8fr auto", background: "#0d0d20" }}>
           {["Part No.","Description","Supplier","Qty Ord.","Total","Status","Notes / CI","Updated",""].map((h, i) => <TH key={i}>{h}</TH>)}
         </div>
@@ -82,7 +84,7 @@ export const BomPage = () => {
             </div>
           );
         })}
-      </div>
+      </div></div></div>
     </div>
   );
 };

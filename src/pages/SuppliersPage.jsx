@@ -40,6 +40,7 @@ export const SuppliersPage = () => {
             <div style={{ padding: "0.75rem 1.25rem", borderBottom: "1px solid #141428" }}>
               <div style={{ fontSize: "0.65rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.5rem" }}>Parts Catalogue</div>
               <div style={{ background: "#0a0a18", borderRadius: "8px", overflow: "hidden" }}>
+                <div style={{ overflowX: "auto" }}><div style={{ minWidth: "480px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: "#0d0d20" }}>
                   {["Part No.", "Description", "Unit Qty", "Unit", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                 </div>
@@ -59,7 +60,7 @@ export const SuppliersPage = () => {
                     </TD>
                   </div>
                 ))}
-              </div>
+              </div></div></div>
             </div>
           )}
 
@@ -68,6 +69,7 @@ export const SuppliersPage = () => {
             <div style={{ padding: "0.75rem 1.25rem" }}>
               <div style={{ fontSize: "0.65rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.5rem" }}>Orders</div>
               <div style={{ background: "#0a0a18", borderRadius: "8px", overflow: "hidden" }}>
+                <div style={{ overflowX: "auto" }}><div style={{ minWidth: "640px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: "#0d0d20" }}>
                   {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                 </div>
@@ -109,7 +111,7 @@ export const SuppliersPage = () => {
                     </div>
                   );
                 })}
-              </div>
+              </div></div></div>
             </div>
           )}
         </div>

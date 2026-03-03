@@ -1,10 +1,12 @@
 import { useApp } from "../context/AppContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { roleColor } from "../constants/seeds";
 import { todayStr } from "../utils/dateHelpers";
 import { Avatar, Btn } from "../components/ui";
 
 export const TeamPage = () => {
   const { users, tasks, isAdmin, canManage, currentUser, setMemberModal, setConfirmRemove, setUsers } = useApp();
+  const { isMobile } = useBreakpoint();
   const now = todayStr();
 
   return (
@@ -24,7 +26,7 @@ export const TeamPage = () => {
 
           return (
             <div key={u.id} style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", padding: "1rem 1.25rem" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
                 <Avatar name={u.name} role={u.role} size={44} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "4px" }}>
@@ -34,7 +36,7 @@ export const TeamPage = () => {
                     {u.mustChangePassword && <span style={{ fontSize: "0.62rem", color: "#f6c90e", background: "#f6c90e18", border: "1px solid #f6c90e40", padding: "1px 6px", borderRadius: "4px" }}>⚠ pw reset</span>}
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "0.75rem" }}>{u.email}</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, auto)", gap: "0.5rem", justifyContent: "start" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(55px, auto))", gap: "0.5rem", justifyContent: "start" }}>
                     {[["Total", userTasks.length, "#888"],["In Progress", inProg, "#00d4ff"],["Done", done, "#48bb78"],["Overdue", overdue, "#fc8181"]].map(([l, v, c]) => (
                       <div key={l} style={{ background: "#15152a", borderRadius: "6px", padding: "0.35rem 0.65rem", textAlign: "center", minWidth: "55px" }}>
                         <div style={{ fontSize: "1rem", color: c, fontWeight: 700 }}>{v}</div>

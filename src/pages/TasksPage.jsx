@@ -36,6 +36,8 @@ export const TasksPage = () => {
       </div>
 
       <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
+        <div style={{ minWidth: "680px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", background: "#0d0d20" }}>
           {["Task","Assignee","Due","Status","Priority","Updated",""].map((h, i) => <TH key={i}>{h}</TH>)}
         </div>
@@ -70,7 +72,7 @@ export const TasksPage = () => {
             </div>
           );
         })}
-      </div>
+      </div></div></div>
     </div>
   );
 };

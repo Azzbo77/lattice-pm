@@ -8,19 +8,22 @@ export const inp = {
   fontSize: "0.875rem", boxSizing: "border-box", outline: "none",
 };
 
-export const Overlay = ({ children, onClose, wide }) => (
-  <div
-    onClick={onClose}
-    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
-  >
+export const Overlay = ({ children, onClose, wide }) => {
+  const isMobile = window.innerWidth < 640;
+  return (
     <div
-      onClick={(e) => e.stopPropagation()}
-      style={{ background: "#0f0f1e", border: "1px solid #252540", borderRadius: "12px", padding: "1.5rem", width: "100%", maxWidth: wide ? "720px" : "500px", maxHeight: "92vh", overflowY: "auto" }}
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : "1rem" }}
     >
-      {children}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#0f0f1e", border: "1px solid #252540", borderRadius: isMobile ? "16px 16px 0 0" : "12px", padding: "1.5rem", width: "100%", maxWidth: isMobile ? "100%" : (wide ? "720px" : "500px"), maxHeight: isMobile ? "90vh" : "92vh", overflowY: "auto" }}
+      >
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const Lbl = ({ c }) => (
   <div style={{ fontSize: "0.7rem", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{c}</div>

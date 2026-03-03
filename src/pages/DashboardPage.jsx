@@ -1,4 +1,5 @@
 import { useApp } from "../context/AppContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { statusColor } from "../constants/seeds";
 import { todayStr, addDays, fmt, daysBetween, timeAgo, isRecent } from "../utils/dateHelpers";
 import { Avatar, UpdatedBadge } from "../components/ui";
@@ -126,6 +127,7 @@ const RecentActivity = () => {
 
 export const DashboardPage = () => {
   const { tasks, projects, suppliers, users, currentUser, canManage, setTab } = useApp();
+  const { isMobile } = useBreakpoint();
   const now  = todayStr();
   const in7  = addDays(now, 7);
 
@@ -172,7 +174,7 @@ export const DashboardPage = () => {
         {canManage && <StatCard icon="👥" value={users.length}    label="Team members"    color="#a78bfa" onClick={() => setTab("team")} />}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1.25rem" }}>
         {/* Left column */}
         <div style={{ display: "grid", gap: "1.25rem", alignContent: "start" }}>
           {overdueTasks.length > 0 && (

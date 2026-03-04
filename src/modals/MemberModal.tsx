@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { ROLES } from "../constants/seeds";
@@ -66,17 +66,21 @@ export const MemberModal = () => {
   const isNew  = !member.id;
   const isSelf = member.id === currentUser?.id;
 
-  // Initialize state from member if it exists
-  if (member && f.name === "") {
+  // Initialize form when modal payload changes.
+  useEffect(() => {
+    if (!memberModal) return;
+    const modalMember = memberModal as Record<string, any>;
+    const modalIsNew = !modalMember.id;
     setF({
-      name:                member.name    || "",
-      email:               member.email   || "",
-      role:                member.role    || ROLES.WORKER,
+      name:                modalMember.name    || "",
+      email:               modalMember.email   || "",
+      role:                modalMember.role    || ROLES.WORKER,
       password:            "",
       confirmPassword:     "",
-      mustChangePassword:  isNew ? true : (member.mustChangePassword || false),
+      mustChangePassword:  modalIsNew ? true : (modalMember.mustChangePassword || false),
     });
-  }
+    setErr("");
+  }, [memberModal]);
   
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const strength = pwStrength(f.password);

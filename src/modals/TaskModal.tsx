@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp, miniSel } from "../components/ui";
 import { statusColor, prioColor } from "../constants/seeds";
@@ -6,7 +6,7 @@ import { todayStr, addDays } from "../utils/dateHelpers";
 
 export const TaskModal = () => {
   const { taskModal, setTaskModal, saveTask, projects, users, canManage } = useApp();
-  
+
   const [f, setF] = useState({
     title:      "",
     projectId:  projects[0]?.id || "",
@@ -17,23 +17,24 @@ export const TaskModal = () => {
     priority:   "medium",
     description:"",
   });
-  
+
+  useEffect(() => {
+    if (!taskModal) return;
+    const modalTask = taskModal as Record<string, any>;
+    setF({
+      title:      modalTask.title      || "",
+      projectId:  modalTask.projectId  || projects[0]?.id || "",
+      assigneeId: modalTask.assigneeId || users[0]?.id    || "",
+      startDate:  modalTask.startDate  || todayStr(),
+      endDate:    modalTask.endDate    || addDays(todayStr(), 7),
+      status:     modalTask.status     || "todo",
+      priority:   modalTask.priority   || "medium",
+      description:modalTask.description|| "",
+    });
+  }, [taskModal, projects, users]);
+
   if (!taskModal) return null;
   const task = taskModal as Record<string, any>;
-  
-  // Initialize state from task if it exists
-  if (task && f.title === "") {
-    setF({
-      title:      task.title      || "",
-      projectId:  task.projectId  || projects[0]?.id || "",
-      assigneeId: task.assigneeId || users[0]?.id    || "",
-      startDate:  task.startDate  || todayStr(),
-      endDate:    task.endDate    || addDays(todayStr(), 7),
-      status:     task.status     || "todo",
-      priority:   task.priority   || "medium",
-      description:task.description|| "",
-    });
-  }
 
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 

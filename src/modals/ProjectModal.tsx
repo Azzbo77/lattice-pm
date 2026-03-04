@@ -1,23 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { PRESET_COLORS } from "../constants/seeds";
 
 export const ProjectModal = () => {
   const { projectModal, setProjectModal, saveProject } = useApp();
-  
+
   const [f, setF] = useState({ name: "", description: "", color: "#00d4ff" });
   const [err, setErr] = useState("");
-  
+
+  useEffect(() => {
+    if (!projectModal) return;
+    const modalProject = projectModal as Record<string, any>;
+    setF({
+      name: modalProject.name || "",
+      description: modalProject.description || "",
+      color: modalProject.color || "#00d4ff",
+    });
+    setErr("");
+  }, [projectModal]);
+
   if (!projectModal) return null;
   const project = projectModal as Record<string, any>;
   const isNew = !project.id;
-  
-  // Initialize state from project if it exists
-  if (project && f.name === "") {
-    setF({ name: project.name || "", description: project.description || "", color: project.color || "#00d4ff" });
-  }
-  
+
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 
   const save = () => {

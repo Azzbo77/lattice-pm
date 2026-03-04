@@ -1,32 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { bomStatusMeta } from "../constants/seeds";
 
 export const BomModal = () => {
   const { bomModal, setBomModal, saveBomEntry, suppliers } = useApp();
-  
+
   const [f, setF] = useState({
     qtyOrdered: 1,
     status:     "pending",
     notes:      "",
     project:    "",
   });
-  
+
+  useEffect(() => {
+    if (!bomModal) return;
+    const { entry } = bomModal;
+    setF({
+      qtyOrdered: entry.qtyOrdered ?? 1,
+      status:     entry.status || "pending",
+      notes:      entry.notes || "",
+      project:    entry.project || "",
+    });
+  }, [bomModal]);
+
   if (!bomModal) return null;
   const { entry, partId, supplierId } = bomModal;
   const supplier = suppliers.find((s) => s.id === supplierId);
   const part     = (supplier?.parts || []).find((p) => p.id === partId);
-
-  // Initialize state from entry if it exists
-  if (entry && (f.qtyOrdered === 1 && f.status === "pending" && !f.notes && !f.project)) {
-    setF({
-      qtyOrdered: entry.qtyOrdered ?? 1,
-      status:     entry.status    || "pending",
-      notes:      entry.notes     || "",
-      project:    entry.project   || "",
-    });
-  }
 
   const u = (k: string) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const meta = bomStatusMeta[f.status as keyof typeof bomStatusMeta];

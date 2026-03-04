@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Supplier } from "../types";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
@@ -7,17 +7,22 @@ import { todayStr, addDays, fmt } from "../utils/dateHelpers";
 // ── Supplier ──────────────────────────────────────────────────────────────────
 export const SupplierModal = () => {
   const { supplierModal, setSupplierModal, saveSupplier } = useApp();
-  
+
   const [f, setF] = useState({ name: "", contact: "", phone: "" });
-  
+
+  useEffect(() => {
+    if (!supplierModal) return;
+    const modalSupplier = supplierModal as Record<string, any>;
+    setF({
+      name: modalSupplier.name || "",
+      contact: modalSupplier.contact || "",
+      phone: modalSupplier.phone || "",
+    });
+  }, [supplierModal]);
+
   if (!supplierModal) return null;
   const supplier = supplierModal as Record<string, any>;
-  
-  // Initialize state from supplier if it exists
-  if (supplier && f.name === "") {
-    setF({ name: supplier.name || "", contact: supplier.contact || "", phone: supplier.phone || "" });
-  }
-  
+
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   return (
     <Overlay onClose={() => setSupplierModal(null)}>
@@ -40,18 +45,25 @@ export const SupplierModal = () => {
 // ── Part ──────────────────────────────────────────────────────────────────────
 export const PartModal = () => {
   const { partModal, setPartModal, savePart } = useApp();
-  
+
   const [f, setF] = useState({ partNumber: "", description: "", unitQty: "1", unit: "ea" });
   const [err, setErr] = useState("");
-  
+
+  useEffect(() => {
+    if (!partModal) return;
+    const { part } = partModal;
+    setF({
+      partNumber: part.partNumber || "",
+      description: part.description || "",
+      unitQty: String(part.unitQty || 1),
+      unit: part.unit || "ea",
+    });
+    setErr("");
+  }, [partModal]);
+
   if (!partModal) return null;
   const { supplierId, part } = partModal;
-  
-  // Initialize state from part if it exists
-  if (part && f.partNumber === "") {
-    setF({ partNumber: part.partNumber || "", description: part.description || "", unitQty: String(part.unitQty || 1), unit: part.unit || "ea" });
-  }
-  
+
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 
   const save = () => {

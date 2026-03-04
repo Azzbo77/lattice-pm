@@ -109,17 +109,9 @@ src/
 
 ## Changelog
 
-### v2.7 — Suppliers Mini-Epic
-- **Collapsible supplier cards** — click header to expand/collapse; collapsed view shows part count, order count, pending and overdue badges
-- **Delete suppliers** — permanent delete with confirmation modal; also removes all associated BOM entries
-- **Archive/restore suppliers** — soft-delete toggle; archived cards shown at reduced opacity with "archived" badge; restoring returns to active
-- **Page-level filters** — Active / Archived / Overdue orders dropdown with live counts
-- **Empty states** — contextual messages per filter ("No overdue orders ✓" in green)
-- **`Supplier.archived`** field added to type and seeds
-- **`deleteSupplier` + `toggleArchiveSupplier`** handlers added to AppContext
-
 | Version | What changed |
 |---------|-------------|
+| ~~2.7~~ | ~~Suppliers mini-epic — collapsible cards, delete/archive, page-level filters, empty states~~ |
 | 2.6 | TypeScript migration — all files .ts/.tsx, central types.ts, two ESLint bugs fixed |
 | 2.5 | Dashboard UI polish — dropdown contrast, colorScheme dark, colour-coded status/priority selects, global option styles |
 | 2.4 | Mobile / responsive — bottom tab bar, sheet modals, horizontal-scroll tables, single-column dashboard |
@@ -181,6 +173,45 @@ src/
 
 11. **Perf & reliability tweaks**
     `React.memo` on heavy list components, `useMemo` audit, accessibility pass on new collapsible/delete UI (keyboard nav, ARIA roles, focus trapping in modals).
+
+---
+
+## Screenshots
+
+### Dashboard
+Daily briefing with stat cards, due-this-week tasks, delivery alerts, project progress, and team workload at a glance.
+
+![Dashboard](public/screenshots/dashboard.png)
+
+### Timeline
+Project-focused Gantt with pill selector, status breakdown (To Do, In Progress, Done, Overdue), and click-to-edit task bars.
+
+![Timeline](public/screenshots/timeline.png)
+
+### Tasks
+Create, assign, and track tasks with status, priority, dates, project tagging, and CSV export respecting active filters.
+
+![Tasks](public/screenshots/tasks.png)
+
+### Projects
+Colour-coded project cards with progress bars, task breakdown (To Do, Active, Done, Overdue), and per-project stats.
+
+![Projects](public/screenshots/projects.png)
+
+### Suppliers
+Collapsible supplier cards with parts catalogue, order tracking (pending, overdue badges), and archive/delete capabilities. Page-level filter dropdown for Active / Archived / Overdue orders.
+
+![Suppliers](public/screenshots/suppliers.png)
+
+### BOM
+Bill of Materials auto-populated from supplier parts. Usage status pills (Pending, Used, Not Used, Under Review), quantities, engineering/CI notes, and CSV export. Filter by status.
+
+![BOM](public/screenshots/bom.png)
+
+### Team
+Role-based access control. Add, edit, or remove team members with email, role (Admin/Manager/Worker), task breakdown per member, password reset, and member removal options.
+
+![Team](public/screenshots/team.png)
 
 ---
 

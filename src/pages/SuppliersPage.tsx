@@ -44,7 +44,7 @@ export const SuppliersPage = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: "#0d0d20" }}>
                   {["Part No.", "Description", "Unit Qty", "Unit", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                 </div>
-                {supplier.parts.map((pt) => (
+                {supplier.parts?.map((pt) => (
                   <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", alignItems: "center", padding: "0 0.5rem" }}>
                     <TD><span style={{ fontFamily: "monospace", fontSize: "0.78rem", color: "#00d4ff" }}>{pt.partNumber}</span></TD>
                     <TD>{pt.description}</TD>
@@ -73,16 +73,16 @@ export const SuppliersPage = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: "#0d0d20" }}>
                   {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                 </div>
-                {supplier.orders.map((order) => {
+                {supplier.orders?.map((order) => {
                   const arrival = addDays(order.orderedDate, order.leadTimeDays);
                   const late    = !order.arrived && arrival < now;
                   return (
                     <div key={order.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem" }}>
                       <TD>
                         <div style={{ fontSize: "0.82rem", color: "#e0e0e0" }}>{order.description}</div>
-                        {order.partIds?.length > 0 && (
+                        {(order.partIds || []).length > 0 && (
                           <div style={{ fontSize: "0.62rem", color: "#555", marginTop: "2px" }}>
-                            {order.partIds.map((pid) => {
+                            {(order.partIds || []).map((pid) => {
                               const pt = supplier.parts?.find((p) => p.id === pid);
                               return pt ? <span key={pid} style={{ marginRight: "4px", color: "#00d4ff" }}>{pt.partNumber}</span> : null;
                             })}

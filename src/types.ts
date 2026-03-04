@@ -85,7 +85,7 @@ export interface BomRow extends BomEntry {
 
 export interface Notification {
   id: string;
-  message: string;
+  text: string;
   type: "overdue" | "soon";
   taskId?: string;
 }

@@ -4,7 +4,7 @@ import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { ROLES } from "../constants/seeds";
 import { initials } from "../utils/dateHelpers";
 
-const pwStrength = (pw) => {
+const pwStrength = (pw: string) => {
   if (!pw) return { score: 0, label: "", color: "#333" };
   let score = 0;
   if (pw.length >= 8)           score++;
@@ -23,7 +23,7 @@ const pwStrength = (pw) => {
   return levels[Math.min(score, 5)];
 };
 
-const PasswordField = ({ label, value, onChange, placeholder }) => {
+const PasswordField = ({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder?: string }) => {
   const [show, setShow] = useState(false);
   return (
     <div>
@@ -50,20 +50,35 @@ const PasswordField = ({ label, value, onChange, placeholder }) => {
 
 export const MemberModal = () => {
   const { memberModal, setMemberModal, saveMember, currentUser } = useApp();
-  const member = memberModal;
-  const isNew  = !member.id;
-  const isSelf = member.id === currentUser.id;
-
+  
   const [f, setF] = useState({
-    name:                member.name    || "",
-    email:               member.email   || "",
-    role:                member.role    || ROLES.WORKER,
+    name:                "",
+    email:               "",
+    role:                ROLES.WORKER,
     password:            "",
     confirmPassword:     "",
-    mustChangePassword:  isNew ? true : (member.mustChangePassword || false),
+    mustChangePassword:  false,
   });
   const [err, setErr] = useState("");
-  const u = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+  
+  if (!memberModal) return null;
+  const member = memberModal as Record<string, any>;
+  const isNew  = !member.id;
+  const isSelf = member.id === currentUser?.id;
+
+  // Initialize state from member if it exists
+  if (member && f.name === "") {
+    setF({
+      name:                member.name    || "",
+      email:               member.email   || "",
+      role:                member.role    || ROLES.WORKER,
+      password:            "",
+      confirmPassword:     "",
+      mustChangePassword:  isNew ? true : (member.mustChangePassword || false),
+    });
+  }
+  
+  const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const strength = pwStrength(f.password);
 
   const generatePassword = () => {
@@ -94,11 +109,11 @@ export const MemberModal = () => {
         {isNew ? "Add Team Member" : "Edit Member"}
       </h3>
       <div style={{ display: "grid", gap: "0.75rem" }}>
-        <div><Lbl c="Full Name" /><input style={inp} value={f.name} onChange={u("name")} placeholder="e.g. Jordan Smith" /></div>
-        <div><Lbl c="Email Address" /><input type="email" style={inp} value={f.email} onChange={u("email")} placeholder="jordan@company.com" /></div>
+        <div><Lbl c="Full Name" /><input style={inp} value={f.name as string} onChange={u("name")} placeholder="e.g. Jordan Smith" /></div>
+        <div><Lbl c="Email Address" /><input type="email" style={inp} value={f.email as string} onChange={u("email")} placeholder="jordan@company.com" /></div>
         <div>
           <Lbl c="Role" />
-          <select style={inp} value={f.role} onChange={u("role")} disabled={isSelf}>
+          <select style={inp} value={f.role as string} onChange={u("role")} disabled={isSelf}>
             <option value={ROLES.WORKER} style={{ background:"#0f0f1e",color:"#48bb78" }}>Worker — view &amp; update own tasks</option>
             <option value={ROLES.MANAGER} style={{ background:"#0f0f1e",color:"#00d4ff" }}>Manager — manage tasks &amp; suppliers</option>
             <option value={ROLES.ADMIN} style={{ background:"#0f0f1e",color:"#ff6b35" }}>Admin — full access</option>
@@ -133,7 +148,7 @@ export const MemberModal = () => {
         )}
 
         <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", padding: "0.75rem", background: f.mustChangePassword ? "#00d4ff0e" : "#15152a", border: `1px solid ${f.mustChangePassword ? "#00d4ff40" : "#252540"}`, borderRadius: "8px", cursor: "pointer" }}>
-          <input type="checkbox" checked={f.mustChangePassword} onChange={(e) => setF((p) => ({ ...p, mustChangePassword: e.target.checked }))} style={{ accentColor: "#00d4ff", width: "14px", height: "14px", marginTop: "2px", flexShrink: 0 }} />
+          <input type="checkbox" checked={f.mustChangePassword as boolean} onChange={(e) => setF((p) => ({ ...p, mustChangePassword: e.target.checked }))} style={{ accentColor: "#00d4ff", width: "14px", height: "14px", marginTop: "2px", flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: "0.82rem", color: "#ccc", fontWeight: 600 }}>Prompt to set own password on first login</div>
             <div style={{ fontSize: "0.7rem", color: "#555", marginTop: "2px" }}>User will be prompted to choose their own password when they next sign in.</div>

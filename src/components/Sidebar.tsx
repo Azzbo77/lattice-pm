@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Role } from "../types";
+import type { Role, User, Notification } from "../types";
 import { useApp } from "../context/AppContext";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Avatar } from "./ui";
@@ -16,7 +16,7 @@ const TABS = [
 ];
 
 // ── Mobile bottom tab bar ─────────────────────────────────────────────────────
-const MobileTabBar = ({ tab, setTab, notifications }) => {
+const MobileTabBar = ({ tab, setTab, notifications }: { tab: string; setTab: (t: string) => void; notifications: Notification[] }) => {
   // Show 5 most important tabs; rest go in "More" sheet
   const primary   = TABS.slice(0, 5);
   const secondary = TABS.slice(5);
@@ -74,7 +74,7 @@ const MobileTabBar = ({ tab, setTab, notifications }) => {
 };
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
-const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBackup, setShowSummary }) => (
+const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBackup, setShowSummary }: { tab: string; setTab: (t: string) => void; currentUser: User; isAdmin: boolean; logout: () => void; setShowBackup: (v: boolean) => void; setShowSummary: (v: boolean) => void }) => (
   <div style={{ width: "180px", flexShrink: 0, background: "#0d0d20", borderRight: "1px solid #1a1a30", display: "flex", flexDirection: "column", padding: "1rem 0.75rem", minHeight: "100vh", position: "sticky", top: 0 }}>
     {/* Logo */}
     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "2rem", paddingLeft: "0.25rem" }}>
@@ -127,6 +127,8 @@ export const Sidebar = () => {
   if (isMobile) {
     return <MobileTabBar tab={tab} setTab={setTab} notifications={notifications} />;
   }
+
+  if (!currentUser) return null;
 
   return (
     <DesktopSidebar

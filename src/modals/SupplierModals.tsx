@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Supplier } from "../types";
 import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { todayStr, addDays, fmt } from "../utils/dateHelpers";
@@ -6,22 +7,31 @@ import { todayStr, addDays, fmt } from "../utils/dateHelpers";
 // ── Supplier ──────────────────────────────────────────────────────────────────
 export const SupplierModal = () => {
   const { supplierModal, setSupplierModal, saveSupplier } = useApp();
-  const supplier = supplierModal;
-  const [f, setF] = useState({ name: supplier.name || "", contact: supplier.contact || "", phone: supplier.phone || "" });
-  const u = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+  
+  const [f, setF] = useState({ name: "", contact: "", phone: "" });
+  
+  if (!supplierModal) return null;
+  const supplier = supplierModal as Record<string, any>;
+  
+  // Initialize state from supplier if it exists
+  if (supplier && f.name === "") {
+    setF({ name: supplier.name || "", contact: supplier.contact || "", phone: supplier.phone || "" });
+  }
+  
+  const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   return (
     <Overlay onClose={() => setSupplierModal(null)}>
       <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", marginBottom: "1.25rem" }}>
         {supplier.id ? "Edit Supplier" : "Add Supplier"}
       </h3>
       <div style={{ display: "grid", gap: "0.75rem" }}>
-        <div><Lbl c="Company Name" /><input style={inp} value={f.name} onChange={u("name")} /></div>
-        <div><Lbl c="Email" /><input style={inp} value={f.contact} onChange={u("contact")} /></div>
-        <div><Lbl c="Phone" /><input style={inp} value={f.phone} onChange={u("phone")} /></div>
+        <div><Lbl c="Company Name" /><input style={inp} value={f.name as string} onChange={u("name")} /></div>
+        <div><Lbl c="Email" /><input style={inp} value={f.contact as string} onChange={u("contact")} /></div>
+        <div><Lbl c="Phone" /><input style={inp} value={f.phone as string} onChange={u("phone")} /></div>
       </div>
       <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
         <Btn color="ghost" onClick={() => setSupplierModal(null)}>Cancel</Btn>
-        <Btn color="#ff6b35" onClick={() => saveSupplier({ ...f, id: supplier.id || `s${Date.now()}`, parts: supplier.parts || [], orders: supplier.orders || [] })}>Save</Btn>
+        <Btn color="#ff6b35" onClick={() => saveSupplier({ ...f, id: supplier.id || `s${Date.now()}`, parts: (supplier.parts as any) || [], orders: (supplier.orders as any) || [] })}>Save</Btn>
       </div>
     </Overlay>
   );
@@ -30,10 +40,19 @@ export const SupplierModal = () => {
 // ── Part ──────────────────────────────────────────────────────────────────────
 export const PartModal = () => {
   const { partModal, setPartModal, savePart } = useApp();
-  const { supplierId, part } = partModal;
-  const [f, setF] = useState({ partNumber: part.partNumber || "", description: part.description || "", unitQty: part.unitQty || 1, unit: part.unit || "ea" });
+  
+  const [f, setF] = useState({ partNumber: "", description: "", unitQty: "1", unit: "ea" });
   const [err, setErr] = useState("");
-  const u = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+  
+  if (!partModal) return null;
+  const { supplierId, part } = partModal;
+  
+  // Initialize state from part if it exists
+  if (part && f.partNumber === "") {
+    setF({ partNumber: part.partNumber || "", description: part.description || "", unitQty: String(part.unitQty || 1), unit: part.unit || "ea" });
+  }
+  
+  const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 
   const save = () => {
     if (!f.partNumber.trim()) return setErr("Part number is required.");
@@ -76,12 +95,16 @@ export const PartModal = () => {
 // ── Order ─────────────────────────────────────────────────────────────────────
 export const OrderModal = () => {
   const { orderModal, setOrderModal, addOrder, suppliers } = useApp();
+  
+  const [f, setF] = useState<{ description: string; orderedDate: string; leadTimeDays: string | number; partIds: string[] }>({ description: "", orderedDate: todayStr(), leadTimeDays: "14", partIds: [] });
+  
+  if (!orderModal) return null;
   const supplierId = orderModal;
-  const supplier = suppliers.find((s) => s.id === supplierId) || {};
-  const [f, setF] = useState({ description: "", orderedDate: todayStr(), leadTimeDays: 14, partIds: [] });
-  const u = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
-  const togglePart = (id) => setF((p) => ({ ...p, partIds: p.partIds.includes(id) ? p.partIds.filter((x) => x !== id) : [...p.partIds, id] }));
-  const arrival = addDays(f.orderedDate, parseInt(f.leadTimeDays) || 0);
+  const supplier = (suppliers.find((s) => s.id === supplierId) || {}) as Partial<Supplier>;
+  
+  const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const togglePart = (id: string) => setF((p) => ({ ...p, partIds: p.partIds.includes(id) ? p.partIds.filter((x: string) => x !== id) : [...p.partIds, id] }));
+  const arrival = addDays(f.orderedDate, parseInt(String(f.leadTimeDays)) || 0);
 
   return (
     <Overlay onClose={() => setOrderModal(null)}>
@@ -98,7 +121,7 @@ export const OrderModal = () => {
         {(supplier.parts || []).length > 0 && (
           <div>
             <Lbl c="Parts Included" />
-            {supplier.parts.map((pt) => (
+            {(supplier.parts || []).map((pt) => (
               <label key={pt.id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.5rem 0.75rem", background: f.partIds.includes(pt.id) ? "#15152a" : "#0d0d1e", border: `1px solid ${f.partIds.includes(pt.id) ? "#252550" : "#1a1a2e"}`, borderRadius: "6px", cursor: "pointer", marginBottom: "4px" }}>
                 <input type="checkbox" checked={f.partIds.includes(pt.id)} onChange={() => togglePart(pt.id)} style={{ accentColor: "#00d4ff", width: "14px", height: "14px" }} />
                 <span style={{ fontSize: "0.78rem", color: "#00d4ff", fontFamily: "monospace" }}>{pt.partNumber}</span>
@@ -111,7 +134,7 @@ export const OrderModal = () => {
       </div>
       <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
         <Btn color="ghost" onClick={() => setOrderModal(null)}>Cancel</Btn>
-        <Btn color="#48bb78" onClick={() => addOrder(supplierId, { ...f, id: `o${Date.now()}`, leadTimeDays: parseInt(f.leadTimeDays) || 14, arrived: false, arrivedDate: null })}>Add Order</Btn>
+        <Btn color="#48bb78" onClick={() => addOrder(supplierId || "", { ...f, id: `o${Date.now()}`, leadTimeDays: parseInt(f.leadTimeDays as string) || 14, arrived: false, arrivedDate: null })}>Add Order</Btn>
       </div>
     </Overlay>
   );

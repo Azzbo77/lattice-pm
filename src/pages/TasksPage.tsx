@@ -24,7 +24,7 @@ export const TasksPage = () => {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-        <p style={{ color: "#555", fontSize: "0.8rem" }}>{currentUser.role === "worker" ? "Your assigned work" : `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}</p>
+        <p style={{ color: "#555", fontSize: "0.8rem" }}>{currentUser?.role === "worker" ? "Your assigned work" : `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}</p>
         <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
           <select value={pf} onChange={(e) => setPf(e.target.value)} style={selStyle}>
             <option value="all">All Projects</option>

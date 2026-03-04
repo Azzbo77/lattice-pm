@@ -5,18 +5,31 @@ import { bomStatusMeta } from "../constants/seeds";
 
 export const BomModal = () => {
   const { bomModal, setBomModal, saveBomEntry, suppliers } = useApp();
+  
+  const [f, setF] = useState({
+    qtyOrdered: 1,
+    status:     "pending",
+    notes:      "",
+    project:    "",
+  });
+  
+  if (!bomModal) return null;
   const { entry, partId, supplierId } = bomModal;
   const supplier = suppliers.find((s) => s.id === supplierId);
   const part     = (supplier?.parts || []).find((p) => p.id === partId);
 
-  const [f, setF] = useState({
-    qtyOrdered: entry.qtyOrdered ?? 1,
-    status:     entry.status    || "pending",
-    notes:      entry.notes     || "",
-    project:    entry.project   || "",
-  });
-  const u = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
-  const meta = bomStatusMeta[f.status];
+  // Initialize state from entry if it exists
+  if (entry && (f.qtyOrdered === 1 && f.status === "pending" && !f.notes && !f.project)) {
+    setF({
+      qtyOrdered: entry.qtyOrdered ?? 1,
+      status:     entry.status    || "pending",
+      notes:      entry.notes     || "",
+      project:    entry.project   || "",
+    });
+  }
+
+  const u = (k: string) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const meta = bomStatusMeta[f.status as keyof typeof bomStatusMeta];
 
   return (
     <Overlay onClose={() => setBomModal(null)}>
@@ -36,7 +49,7 @@ export const BomModal = () => {
           <div>
             <Lbl c="Qty Ordered" />
             <input type="number" style={inp} value={f.qtyOrdered} onChange={u("qtyOrdered")} min="0" />
-            {part && <div style={{ fontSize: "0.7rem", color: "#555", marginTop: "4px" }}>= {(parseInt(f.qtyOrdered) || 0) * (part.unitQty || 1)} {part.unit}(s) total</div>}
+            {part && <div style={{ fontSize: "0.7rem", color: "#555", marginTop: "4px" }}>= {(parseInt(f.qtyOrdered as unknown as string) || 0) * (part.unitQty || 1)} {part.unit}(s) total</div>}
           </div>
           <div>
             <Lbl c="Usage Status" />
@@ -60,7 +73,7 @@ export const BomModal = () => {
 
       <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
         <Btn color="ghost" onClick={() => setBomModal(null)}>Cancel</Btn>
-        <Btn color="#00d4ff" onClick={() => saveBomEntry({ ...entry, ...f, qtyOrdered: parseInt(f.qtyOrdered) || 0 })}>Save</Btn>
+        <Btn color="#00d4ff" onClick={() => saveBomEntry({ ...entry, ...f, qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0, status: f.status as any })}>Save</Btn>
       </div>
     </Overlay>
   );

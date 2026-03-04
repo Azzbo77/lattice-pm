@@ -6,7 +6,7 @@ import { statusColor } from "../constants/seeds";
 import { todayStr, daysBetween, addDays, fmt } from "../utils/dateHelpers";
 
 // ── Date axis ─────────────────────────────────────────────────────────────────
-const DateAxis = ({ minD, span }) => {
+const DateAxis = ({ minD, span }: { minD: string; span: number }) => {
   const labels = [];
   const step = span <= 30 ? 7 : span <= 90 ? 14 : 30;
   for (let i = 0; i <= span; i += step) {
@@ -33,9 +33,9 @@ interface TaskBarProps {
   todayPct: number;
   dimmed: boolean;
   onEdit?: (t: Task) => void;
-  isMobile: boolean;
 }
-const TaskBar = ({ task, proj, assignee, minD, span, todayPct, dimmed, onEdit, isMobile }: TaskBarProps) => {
+const TaskBar = ({ task, proj, assignee, minD, span, todayPct, dimmed, onEdit }: TaskBarProps) => {
+  const { isMobile } = useBreakpoint();
   const now    = todayStr();
   const overdue = task.endDate < now && task.status !== "done";
   const bc     = overdue ? "#fc8181" : (proj?.color || statusColor[task.status] || "#00d4ff");
@@ -69,7 +69,7 @@ const TaskBar = ({ task, proj, assignee, minD, span, todayPct, dimmed, onEdit, i
 };
 
 // ── Toggle switch ─────────────────────────────────────────────────────────────
-const Toggle = ({ on, onChange, label }) => (
+const Toggle = ({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) => (
   <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" }}>
     <div onClick={onChange} style={{ width: "32px", height: "18px", borderRadius: "9px", background: on ? "#00d4ff" : "#252540", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
       <div style={{ position: "absolute", top: "3px", left: on ? "17px" : "3px", width: "12px", height: "12px", borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
@@ -81,14 +81,13 @@ const Toggle = ({ on, onChange, label }) => (
 // ── Main page ─────────────────────────────────────────────────────────────────
 export const GanttPage = () => {
   const { tasks, projects, users, currentUser, setTaskModal, setTab, setPf } = useApp();
-  const { isMobile } = useBreakpoint();
 
   const [activeId, setActiveId] = useState(projects.length > 0 ? projects[0].id : "all");
   const [showAll,  setShowAll]  = useState(false);
 
   const now = todayStr();
 
-  const myTasks = currentUser.role === "worker"
+  const myTasks = currentUser?.role === "worker"
     ? tasks.filter((t) => t.assigneeId === currentUser.id)
     : tasks;
 
@@ -117,7 +116,9 @@ export const GanttPage = () => {
       .filter((g) => g.tasks.length > 0);
   }, [activeTasks, activeId, activeProject, projects]);
 
-  const onEdit = currentUser.role !== "worker" ? (task) => setTaskModal(task) : null;
+  if (!currentUser) return null;
+
+  const onEdit = currentUser.role !== "worker" ? (task: any) => setTaskModal(task) : undefined;
 
   // ── Empty state ──
   if (myTasks.length === 0)
@@ -183,7 +184,7 @@ export const GanttPage = () => {
             ["Overdue",     activeTasks.filter((t) => t.endDate < now && t.status !== "done").length,       "#fc8181"],
           ].map(([label, val, color]) => (
             <div key={label} style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "8px", padding: "0.45rem 0.85rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <span style={{ fontSize: "1rem", fontWeight: 700, color }}>{val}</span>
+              <span style={{ fontSize: "1rem", fontWeight: 700, color: color as any }}>{val}</span>
               <span style={{ fontSize: "0.7rem", color: "#555" }}>{label}</span>
             </div>
           ))}
@@ -208,7 +209,6 @@ export const GanttPage = () => {
               assignee={users.find((u) => u.id === task.assigneeId)}
               minD={minD} span={span} todayPct={todayPct}
               dimmed={true}
-              isMobile={isMobile}
             />
           ))}
 
@@ -231,7 +231,6 @@ export const GanttPage = () => {
                   minD={minD} span={span} todayPct={todayPct}
                   dimmed={false}
                   onEdit={onEdit}
-                  isMobile={isMobile}
                 />
               ))}
             </div>

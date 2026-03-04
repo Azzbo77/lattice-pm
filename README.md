@@ -111,6 +111,7 @@ src/
 
 | Version | What changed |
 |---------|-------------|
+| 2.6 | TypeScript migration — all files .ts/.tsx, central types.ts, two ESLint bugs fixed |
 | 2.5 | Dashboard UI polish — dropdown contrast, colorScheme dark, colour-coded status/priority selects, global option styles |
 | 2.4 | Mobile / responsive — bottom tab bar, sheet modals, horizontal-scroll tables, single-column dashboard |
 | 2.3 | Last-updated timestamps — all entities stamped, UpdatedBadge on tables/cards, Recent Activity feed on dashboard |
@@ -163,8 +164,8 @@ src/
 8. **Theme / styles centralisation**
    Extract all colour, spacing, and typography values into a single `theme.js` constant. Eliminates magic hex values across components and makes light-mode trivial to add.
 
-9. **Incremental TypeScript**
-   Migrate file-by-file starting with `seeds.js` → `dateHelpers.ts` → context. No big-bang rewrite.
+9. **~~Incremental TypeScript~~** ✅ *(v2.6)*
+   Migrated all at once — `types.ts` defines all interfaces, all files converted to `.ts`/`.tsx` → `dateHelpers.ts` → context. No big-bang rewrite.
 
 10. **Auth / security basics**
     Move passwords out of localStorage (hash with bcrypt-js or replace with a proper auth provider). Session expiry. Optional: Supabase Auth drop-in.

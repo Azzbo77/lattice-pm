@@ -3,7 +3,7 @@ import { useApp } from "../context/AppContext";
 import { inp } from "../components/ui";
 import { SEED_USERS } from "../constants/seeds";
 
-const pwStrength = (pw) => {
+const pwStrength = (pw: string) => {
   if (!pw) return { score: 0, label: "", color: "#333" };
   let score = 0;
   if (pw.length >= 8)           score++;
@@ -22,7 +22,7 @@ const pwStrength = (pw) => {
   return levels[Math.min(score, 5)];
 };
 
-const PasswordField = ({ label, value, onChange, placeholder }) => {
+const PasswordField = ({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder?: string }) => {
   const [show, setShow] = useState(false);
   return (
     <div>
@@ -59,7 +59,7 @@ export const LoginScreen = () => {
         </div>
         <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
           <input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && attempt()} />
-          <PasswordField value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+          <PasswordField label="Password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
         </div>
         {err && <div style={{ color: "#fc8181", fontSize: "0.8rem", marginBottom: "0.75rem", textAlign: "center" }}>{err}</div>}
         <button onClick={attempt} style={{ width: "100%", padding: "0.75rem", background: "linear-gradient(135deg,#00d4ff,#0088aa)", border: "none", borderRadius: "8px", color: "#0a0a18", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>

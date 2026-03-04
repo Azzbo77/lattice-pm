@@ -1,8 +1,9 @@
+import React from "react";
 import { roleColor } from "../../constants/seeds";
 import type { Role } from "../../types";
 import { initials, timeAgo, isRecent } from "../../utils/dateHelpers";
 
-export const inp = {
+export const inp: React.CSSProperties = {
   width: "100%", padding: "0.5rem 0.75rem",
   background: "#15152a", border: "1px solid #252540",
   borderRadius: "6px", color: "#e0e0e0",
@@ -11,7 +12,7 @@ export const inp = {
 };
 
 // Shared style for filter/page-level selects (smaller than modal inp)
-export const selStyle = {
+export const selStyle: React.CSSProperties = {
   padding: "0.3rem 0.6rem",
   background: "#15152a",
   border: "1px solid #252540",
@@ -24,7 +25,7 @@ export const selStyle = {
 };
 
 // Shared style for inline status/priority mini-selects inside table rows
-export const miniSel = (accentColor) => ({
+export const miniSel = (accentColor: string): React.CSSProperties => ({
   padding: "2px 5px",
   background: `${accentColor}25`,
   border: `1px solid ${accentColor}70`,
@@ -37,7 +38,7 @@ export const miniSel = (accentColor) => ({
   colorScheme: "dark",
 });
 
-export const Overlay = ({ children, onClose, wide }) => {
+export const Overlay = ({ children, onClose, wide }: { children: React.ReactNode; onClose?: () => void; wide?: boolean }) => {
   const isMobile = window.innerWidth < 640;
   return (
     <div
@@ -54,11 +55,11 @@ export const Overlay = ({ children, onClose, wide }) => {
   );
 };
 
-export const Lbl = ({ c }) => (
+export const Lbl = ({ c }: { c: string }) => (
   <div style={{ fontSize: "0.7rem", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{c}</div>
 );
 
-export const Btn = ({ children, color, small, ...p }) => (
+export const Btn = ({ children, color, small, ...p }: { children: React.ReactNode; color?: string; small?: boolean; [key: string]: unknown }) => (
   <button
     style={{
       padding: small ? "0.3rem 0.65rem" : "0.45rem 1rem",
@@ -86,19 +87,19 @@ export const Avatar = ({ name, role, size = 32 }: { name: string; role: Role; si
   </div>
 );
 
-export const TH = ({ children }) => (
+export const TH = ({ children }: { children: React.ReactNode }) => (
   <div style={{ fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0.4rem 0.5rem" }}>
     {children}
   </div>
 );
 
-export const TD = ({ children, style }) => (
+export const TD = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
   <div style={{ padding: "0.65rem 0.5rem", fontSize: "0.82rem", color: "#ccc", borderTop: "1px solid #141428", ...style }}>
     {children}
   </div>
 );
 
-export const ConfirmModal = ({ message, onConfirm, onClose }) => (
+export const ConfirmModal = ({ message, onConfirm, onClose }: { message: string; onConfirm: () => void; onClose: () => void }) => (
   <Overlay onClose={onClose}>
     <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", marginBottom: "0.75rem" }}>Are you sure?</h3>
     <p style={{ color: "#888", fontSize: "0.875rem", marginBottom: "1.25rem" }}>{message}</p>
@@ -111,7 +112,7 @@ export const ConfirmModal = ({ message, onConfirm, onClose }) => (
 
 // ── Timestamp badge ───────────────────────────────────────────────────────────
 
-export const UpdatedBadge = ({ iso, byName, compact = false }) => {
+export const UpdatedBadge = ({ iso, byName, compact = false }: { iso?: string; byName?: string; compact?: boolean }) => {
   if (!iso) return null;
   const recent = isRecent(iso);
   const ago    = timeAgo(iso);

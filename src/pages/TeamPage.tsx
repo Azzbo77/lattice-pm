@@ -1,4 +1,4 @@
-import type { Role, User } from "../types";
+import type { Role } from "../types";
 import { useApp } from "../context/AppContext";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { roleColor } from "../constants/seeds";
@@ -6,8 +6,10 @@ import { todayStr } from "../utils/dateHelpers";
 import { Avatar, Btn } from "../components/ui";
 
 export const TeamPage = () => {
-  const { users, tasks, isAdmin, canManage, currentUser, setMemberModal, setConfirmRemove, setUsers } = useApp();
+  const { users, tasks, isAdmin, currentUser, setMemberModal, setUsers, setConfirmRemove } = useApp();
   const { isMobile } = useBreakpoint();
+  
+  if (!currentUser) return null;
   const now = todayStr();
 
   return (
@@ -40,7 +42,7 @@ export const TeamPage = () => {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(55px, auto))", gap: "0.5rem", justifyContent: "start" }}>
                     {[["Total", userTasks.length, "#888"],["In Progress", inProg, "#00d4ff"],["Done", done, "#48bb78"],["Overdue", overdue, "#fc8181"]].map(([l, v, c]) => (
                       <div key={l} style={{ background: "#15152a", borderRadius: "6px", padding: "0.35rem 0.65rem", textAlign: "center", minWidth: "55px" }}>
-                        <div style={{ fontSize: "1rem", color: c, fontWeight: 700 }}>{v}</div>
+                        <div style={{ fontSize: "1rem", color: c as any, fontWeight: 700 }}>{v}</div>
                         <div style={{ fontSize: "0.6rem", color: "#444" }}>{l}</div>
                       </div>
                     ))}
@@ -51,7 +53,7 @@ export const TeamPage = () => {
                     <button onClick={() => setMemberModal(u)} style={{ padding: "0.35rem 0.75rem", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "6px", color: "#888", fontSize: "0.78rem", cursor: "pointer" }}>Edit</button>
                     {!isSelf && (
                       <button
-                        onClick={() => setUsers((p) => p.map((x) => x.id === u.id ? { ...x, mustChangePassword: true } : x))}
+                        onClick={() => setUsers((p: import("../types").User[]) => p.map((x) => x.id === u.id ? { ...x, mustChangePassword: true } : x))}
                         title="Force password reset on next login"
                         style={{ padding: "0.35rem 0.75rem", background: "#f6c90e18", border: "1px solid #f6c90e50", borderRadius: "6px", color: "#f6c90e", fontSize: "0.78rem", cursor: "pointer" }}
                       >

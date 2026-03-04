@@ -5,12 +5,12 @@ import { todayStr } from "../utils/dateHelpers";
 
 export const BackupModal = () => {
   const { setShowBackup, exportBackup, importBackup } = useApp();
-  const fileRef = useRef(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  const handleFile = (file) => {
+  const handleFile = (file: File | Blob | null) => {
     if (!file) return;
-    if (!file.name.endsWith(".json")) { alert("Please select a .json backup file."); return; }
+    if (!(file instanceof File) || !file.name.endsWith(".json")) { alert("Please select a .json backup file."); return; }
     importBackup(file);
   };
 
@@ -70,7 +70,7 @@ export const BackupModal = () => {
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📂</div>
           <div style={{ fontSize: "0.82rem", color: dragging ? "#00d4ff" : "#666" }}>{dragging ? "Drop to restore…" : "Click to select or drag & drop"}</div>
           <div style={{ fontSize: "0.7rem", color: "#444", marginTop: "4px" }}>.json files only</div>
-          <input ref={fileRef} type="file" accept=".json" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept=".json" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files?.[0] || null)} />
         </div>
         <div style={{ fontSize: "0.7rem", color: "#fc8181", marginTop: "8px", padding: "0.5rem 0.75rem", background: "#fc818110", borderRadius: "6px", border: "1px solid #fc818130" }}>
           ⚠ Restoring overwrites all current data and cannot be undone.

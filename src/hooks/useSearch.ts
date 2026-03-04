@@ -19,8 +19,8 @@ const hl = (text: string, q: string): string => {
   return text.replace(re, "**$1**");
 };
 
-export const useSearch = (query: string, deps: SearchDeps): SearchResult[] => {
-  if (!query || query.trim().length < 2) return [];
+export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[] => {
+  if (!query || query.trim().length < 2 || !deps) return [];
   const q = query.trim().toLowerCase();
 
   const { tasks, projects, users, suppliers, bom, currentUser, setTab, setTaskModal, setPf } = deps;

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { ROLES, bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays, fmt, daysBetween } from "../utils/dateHelpers";
@@ -10,11 +10,9 @@ const weekRange = () => {
   return { start, end };
 };
 
-const statusEmoji = { todo: "⬜", "in-progress": "🔵", done: "✅", blocked: "🔴" };
-const prioEmoji   = { high: "🔴", medium: "🟡", low: "⚪" };
 
 // ── HTML report builder ───────────────────────────────────────────────────────
-const buildHTML = (sections, title, user, dateLabel) => `<!DOCTYPE html>
+const buildHTML = (sections: string, title: string, user: string, dateLabel: string) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -48,29 +46,29 @@ ${sections}
 
 // ── Section components (in-app preview) ──────────────────────────────────────
 const S = {
-  head: (title) => (
+  head: (title: string) => (
     <div style={{ fontSize: "0.7rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, margin: "1.25rem 0 0.6rem", paddingBottom: "5px", borderBottom: "1px solid #1e1e35" }}>
       {title}
     </div>
   ),
-  empty: (msg) => (
+  empty: (msg: string) => (
     <div style={{ fontSize: "0.78rem", color: "#444", fontStyle: "italic", padding: "0.4rem 0 0.6rem" }}>{msg}</div>
   ),
-  table: (cols, rows, emptyMsg) => (
+  table: (cols: string[], rows: any[][], emptyMsg?: string) => (
     rows.length === 0 ? S.empty(emptyMsg || "None.") : (
       <div style={{ overflowX: "auto", marginBottom: "0.5rem" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
           <thead>
             <tr>
-              {cols.map((c) => (
+              {cols.map((c: string) => (
                 <th key={c} style={{ textAlign: "left", padding: "0.3rem 0.6rem", fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", background: "#0d0d20", borderBottom: "1px solid #1e1e35" }}>{c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
+            {rows.map((row: any[], i: number) => (
               <tr key={i}>
-                {row.map((cell, j) => (
+                {row.map((cell: any, j: number) => (
                   <td key={j} style={{ padding: "0.4rem 0.6rem", borderBottom: "1px solid #141428", color: "#ccc", verticalAlign: "top" }}>
                     {cell}
                   </td>
@@ -84,9 +82,10 @@ const S = {
   ),
 };
 
-const Badge = ({ text, color }) => {
-  const map = { red: ["#fc818130","#fc8181"], amber: ["#f6c90e30","#f6c90e"], green: ["#48bb7830","#48bb78"], blue: ["#00d4ff30","#00d4ff"], grey: ["#55555530","#888"] };
-  const [bg, fg] = map[color] || map.grey;
+const mapColors = { red: ["#fc818130","#fc8181"], amber: ["#f6c90e30","#f6c90e"], green: ["#48bb7830","#48bb78"], blue: ["#00d4ff30","#00d4ff"], grey: ["#55555530","#888"] } as const;
+
+const Badge = ({ text, color }: { text: string; color: keyof typeof mapColors }) => {
+  const [bg, fg] = mapColors[color] || mapColors.grey;
   return <span style={{ background: bg, color: fg, borderRadius: "4px", padding: "1px 7px", fontSize: "0.68rem", fontWeight: 600, whiteSpace: "nowrap" }}>{text}</span>;
 };
 
@@ -98,6 +97,7 @@ export const WeeklySummaryModal = () => {
   const previewRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
+  if (!currentUser) return null;
   const role = currentUser.role;
   const dateLabel = `${fmt(start)} – ${fmt(end)}`;
 
@@ -123,7 +123,7 @@ export const WeeklySummaryModal = () => {
   );
 
   // ── Preview sections ──────────────────────────────────────────────────────
-  const getTaskRow = (t) => {
+  const getTaskRow = (t: any) => {
     const proj     = projects.find((p) => p.id === t.projectId);
     const assignee = users.find((u) => u.id === t.assigneeId);
     return [
@@ -215,7 +215,6 @@ export const WeeklySummaryModal = () => {
       const ut   = tasks.filter((t) => t.assigneeId === u.id);
       const late = ut.filter((t) => t.endDate < now && t.status !== "done").length;
       const ip   = ut.filter((t) => t.status === "in-progress").length;
-      const done = ut.filter((t) => t.status === "done").length;
       return [
         <span style={{ color: "#e0e0e0" }}>{u.name}</span>,
         <span style={{ color: "#888", fontSize: "0.72rem", textTransform: "capitalize" }}>{u.role}</span>,
@@ -272,14 +271,17 @@ export const WeeklySummaryModal = () => {
 
   // ── HTML export builder ───────────────────────────────────────────────────
   const buildHTMLSections = () => {
-    const row = (cells) => `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
-    const thead = (cols) => `<thead><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
-    const table = (cols, rows) => rows.length === 0
-      ? `<p class="note">None.</p>`
-      : `<table>${thead(cols)}<tbody>${rows.map(row).join("")}</tbody></table>`;
-    const h2 = (t) => `<h2>${t}</h2>`;
+    const row = (cells: string[]) => `<tr>${cells.map((c: string) => `<td>${c}</td>`).join("")}</tr>`;
+    const thead = (cols: string[]) => `<thead><tr>${cols.map((c: string) => `<th>${c}</th>`).join("")}</tr></thead>`;
+    const table = (cols: string[], rows: Array<string | string[]>): string => {
+      const rowObjs = rows.map((r) => Array.isArray(r) ? r : [r]);
+      return rowObjs.length === 0
+        ? `<p class="note">None.</p>`
+        : `<table>${thead(cols)}<tbody>${rowObjs.map(row).join("")}</tbody></table>`;
+    };
+    const h2 = (t: string) => `<h2>${t}</h2>`;
 
-    const taskHTMLRow = (t) => {
+    const taskHTMLRow = (t: any) => {
       const proj     = projects.find((p) => p.id === t.projectId);
       const assignee = users.find((u) => u.id === t.assigneeId);
       const late = t.endDate < now;
@@ -308,9 +310,9 @@ export const WeeklySummaryModal = () => {
       // Projects snapshot
       const projHTML = projects.map((proj) => {
         const pt   = tasks.filter((t) => t.projectId === proj.id);
-        const done = pt.filter((t) => t.status === "done").length;
         const late = pt.filter((t) => t.endDate < now && t.status !== "done").length;
         const ip   = pt.filter((t) => t.status === "in-progress").length;
+        const done = pt.filter((t) => t.status === "done").length;
         const pct  = pt.length ? Math.round((done / pt.length) * 100) : 0;
         return [proj.name, `${pt.length}`, `${ip} active`, `${pct}%`, late > 0 ? `<span class="badge red">${late} late</span>` : `<span class="badge green">On track</span>`];
       });
@@ -375,11 +377,11 @@ export const WeeklySummaryModal = () => {
 
   const copyText = () => {
     const lines = [];
-    const addSection = (title, items) => {
+    const addSection = (title: string, items: string[]) => {
       lines.push(`\n${title}`);
       lines.push("─".repeat(40));
       if (items.length === 0) { lines.push("  None."); return; }
-      items.forEach((i) => lines.push(`  ${i}`));
+      items.forEach((i: string) => lines.push(`  ${i}`));
     };
 
     lines.push(`◈ LATTICE PM — WEEKLY SUMMARY`);
@@ -459,16 +461,15 @@ export const WeeklySummaryModal = () => {
             </button>
           </div>
         </div>
-
         {/* Summary stats pills */}
         <div style={{ display: "flex", gap: "0.6rem", padding: "0.9rem 1.5rem", borderBottom: "1px solid #141428", flexWrap: "wrap" }}>
-          {[
-            [overdue.length,       "Overdue",    overdue.length > 0       ? "#fc8181" : "#48bb78"],
-            [thisWeek.length,      "Due This Week", "#f6c90e"],
-            [blocked.length,       "Blocked",    blocked.length > 0       ? "#fc8181" : "#888"],
-            [doneRecent.length,    "Done Recently", "#48bb78"],
-            ...(role !== ROLES.WORKER ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? "#fc8181" : "#48bb78"]] : []),
-          ].map(([val, label, color]) => (
+          {([
+            [overdue.length,       "Overdue",    overdue.length > 0       ? "#fc8181" : "#48bb78"] as const,
+            [thisWeek.length,      "Due This Week", "#f6c90e"] as const,
+            [blocked.length,       "Blocked",    blocked.length > 0       ? "#fc8181" : "#888"] as const,
+            [doneRecent.length,    "Done Recently", "#48bb78"] as const,
+            ...(role !== ROLES.WORKER ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? "#fc8181" : "#48bb78"] as const] : []),
+          ] as const).map(([val, label, color]) => (
             <div key={label} style={{ background: "#15152a", border: "1px solid #1e1e35", borderRadius: "8px", padding: "0.4rem 0.85rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
               <span style={{ fontSize: "1rem", fontWeight: 700, color }}>{val}</span>
               <span style={{ fontSize: "0.68rem", color: "#555" }}>{label}</span>

@@ -1,26 +1,31 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { useSearch } from "../hooks/useSearch";
 import { inp } from "./ui";
 
 export const SearchBar = () => {
-  const { setTab } = useApp();
+  const { tasks, projects, users, suppliers, bom, currentUser, setTab, setTaskModal, setPf } = useApp();
   const [query, setQuery]       = useState("");
   const [showDrop, setShowDrop] = useState(false);
-  const containerRef            = useRef(null);
+  const containerRef            = useRef<HTMLDivElement>(null);
 
-  const results = useSearch(query, setTab, setQuery, setShowDrop);
+  const results = useSearch(
+    query,
+    currentUser
+      ? { tasks, projects, users, suppliers, bom, currentUser, setTab, setTaskModal, setPf }
+      : null
+  );
 
   useEffect(() => {
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target))
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
         setShowDrop(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const highlightMatch = (label, q, color) => {
+  const highlightMatch = (label: string, q: string, color: string): React.ReactNode => {
     const idx = label.toLowerCase().indexOf(q.toLowerCase());
     if (idx === -1) return label;
     return (
@@ -63,7 +68,7 @@ export const SearchBar = () => {
               </div>
               {results.map((r, i) => (
                 <button
-                  key={`${r.type}-${r.id}-${i}`}
+                  key={`${r.type}-${i}`}
                   onClick={r.action}
                   style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "transparent", border: "none", borderTop: i > 0 ? "1px solid #141428" : "none", cursor: "pointer", textAlign: "left" }}
                   onMouseEnter={(e) => e.currentTarget.style.background = "#15152a"}

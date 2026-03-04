@@ -56,7 +56,7 @@ export const ProjectsPage = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(55px, 1fr))", gap: "0.4rem" }}>
                   {[["Total", projTasks.length,"#888"],["Active",inProgress,"#00d4ff"],["Done",done,"#48bb78"],["Late",overdue,"#fc8181"]].map(([l,v,c]) => (
                     <div key={l} style={{ background: "#15152a", borderRadius: "5px", padding: "0.35rem 0.25rem", textAlign: "center" }}>
-                      <div style={{ fontSize: "0.95rem", color: c, fontWeight: 700 }}>{v}</div>
+                      <div style={{ fontSize: "0.95rem", color: c as any, fontWeight: 700 }}>{v}</div>
                       <div style={{ fontSize: "0.58rem", color: "#444" }}>{l}</div>
                     </div>
                   ))}

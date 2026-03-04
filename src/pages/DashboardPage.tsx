@@ -4,7 +4,7 @@ import { statusColor } from "../constants/seeds";
 import { todayStr, addDays, fmt, daysBetween, timeAgo, isRecent } from "../utils/dateHelpers";
 import { Avatar, UpdatedBadge, miniSel } from "../components/ui";
 
-const StatCard = ({ icon, value, label, color, onClick, urgent }) => (
+const StatCard = ({ icon, value, label, color, onClick, urgent = false }: { icon: string; value: number; label: string; color: string; onClick?: () => void; urgent?: boolean }) => (
   <div onClick={onClick} style={{ background: "#0f0f1e", border: `1px solid ${urgent && value > 0 ? color + "55" : "#1e1e35"}`, borderRadius: "10px", padding: "1rem 1.25rem", cursor: onClick ? "pointer" : "default", display: "flex", alignItems: "center", gap: "1rem" }}>
     <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", flexShrink: 0 }}>{icon}</div>
     <div>
@@ -14,14 +14,14 @@ const StatCard = ({ icon, value, label, color, onClick, urgent }) => (
   </div>
 );
 
-const SectionHeader = ({ title, action, onAction }) => (
+const SectionHeader = ({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) => (
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
     <h3 style={{ fontSize: "0.85rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{title}</h3>
     {action && <button onClick={onAction} style={{ fontSize: "0.72rem", color: "#00d4ff", background: "none", border: "none", cursor: "pointer" }}>{action}</button>}
   </div>
 );
 
-const TaskRow = ({ task }) => {
+const TaskRow = ({ task }: { task: any }) => {
   const { projects, users, currentUser, updateTaskStatus } = useApp();
   const now      = todayStr();
   const proj     = projects.find((p) => p.id === task.projectId);
@@ -35,7 +35,7 @@ const TaskRow = ({ task }) => {
         <div style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</div>
         <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "1px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           {proj && <span style={{ color: proj.color }}>{proj.name}</span>}
-          {assignee && currentUser.role !== "worker" && <span>· {assignee.name}</span>}
+          {assignee && currentUser?.role !== "worker" && <span>· {assignee.name}</span>}
           {task.updatedAt && <UpdatedBadge iso={task.updatedAt} compact />}
         </div>
       </div>
@@ -58,9 +58,9 @@ const TaskRow = ({ task }) => {
 
 // Recent activity feed — collects all recently-updated entities
 const RecentActivity = () => {
-  const { tasks, projects, suppliers, bom, users, setTab, setPf } = useApp();
+  const { tasks, projects, suppliers, bom, setTab } = useApp();
 
-  const items = [];
+  const items: any[] = [];
 
   tasks.forEach((t) => {
     if (!t.updatedAt || !isRecent(t.updatedAt, 48)) return;
@@ -93,7 +93,7 @@ const RecentActivity = () => {
   if (items.length === 0) return null;
 
   // Sort newest first
-  items.sort((a, b) => new Date(b.iso) - new Date(a.iso));
+  items.sort((a: any, b: any) => new Date(b.iso).getTime() - new Date(a.iso).getTime());
 
   return (
     <div>
@@ -128,6 +128,8 @@ const RecentActivity = () => {
 export const DashboardPage = () => {
   const { tasks, projects, suppliers, users, currentUser, canManage, setTab } = useApp();
   const { isMobile } = useBreakpoint();
+  
+  if (!currentUser) return null;
   const now  = todayStr();
   const in7  = addDays(now, 7);
 
@@ -203,13 +205,13 @@ export const DashboardPage = () => {
               <SectionHeader title="📦 Delivery Alerts" action="View suppliers →" onAction={() => setTab("suppliers")} />
               {[...overdueOrders, ...dueSoonOrders].slice(0, 5).map((o) => (
                 <div key={o.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "#0f0f1e", borderRadius: "8px", marginBottom: "4px", border: "1px solid #1a1a2e" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: o.isLate ? "#fc8181" : "#f6c90e", flexShrink: 0 }} />
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: (o as any).isLate ? "#fc8181" : "#f6c90e", flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.description}</div>
                     <div style={{ fontSize: "0.68rem", color: "#555" }}>{o.supplierName}</div>
                   </div>
-                  <div style={{ fontSize: "0.72rem", color: o.isLate ? "#fc8181" : "#f6c90e", whiteSpace: "nowrap" }}>
-                    {o.isLate ? "Overdue" : `Due ${fmt(o.dueDate)}`}
+                  <div style={{ fontSize: "0.72rem", color: (o as any).isLate ? "#fc8181" : "#f6c90e", whiteSpace: "nowrap" }}>
+                    {(o as any).isLate ? "Overdue" : `Due ${fmt((o as any).dueDate)}`}
                   </div>
                 </div>
               ))}

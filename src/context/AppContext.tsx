@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, ReactNode } from "react";
 import { useStorage } from "../hooks/useStorage";
-import { todayStr, addDays, initials, nowISO } from "../utils/dateHelpers";
+import { todayStr, addDays, nowISO } from "../utils/dateHelpers";
 import {
   SEED_USERS, DEMO_PROJECTS, DEMO_TASKS,
   DEMO_SUPPLIERS, DEMO_BOM, ROLES,
@@ -40,8 +40,10 @@ export interface AppContextType {
   bomRows:       BomRow[];
   filteredBom:   BomRow[];
   notifications: Notification[];
+  dismissNotification:     (id: string) => void;
+  dismissAllNotifications: () => void;
   // Handlers
-  login:                (email: string, password: string) => boolean;
+  login:                (email: string, password: string) => string | null;
   logout:               () => void;
   completePasswordReset:(newPassword: string) => void;
   saveTask:             (t: Task) => void;
@@ -57,6 +59,7 @@ export interface AppContextType {
   saveBomEntry:         (entry: BomEntry) => void;
   saveMember:           (m: User) => void;
   removeMember:         (id: string) => void;
+  setUsers:             (updater: (users: User[]) => User[]) => void;
   exportBackup:         () => void;
   importBackup:         (data: unknown) => void;
   // Setters
@@ -125,11 +128,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return true;
   });
 
-  const bomRows = bom.map((entry) => {
+  const bomRows = (bom.map((entry) => {
     const supplier = suppliers.find((s) => s.id === entry.supplierId);
     const part     = (supplier?.parts || []).find((p) => p.id === entry.partId);
     return { ...entry, supplier, part };
-  }).filter((r) => r.supplier && r.part);
+  }).filter((r) => r.supplier && r.part) as unknown) as BomRow[];
 
   const filteredBom = bomFilter === "all"
     ? bomRows
@@ -137,7 +140,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const notifications = (() => {
     if (!currentUser) return [];
-    const notes = [];
+    const notes: Notification[] = [];
     const now  = todayStr();
     const soon = addDays(now, 3);
     tasks.forEach((t) => {
@@ -162,7 +165,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   })();
 
   // ── Auth handlers ────────────────────────────────────────────────────────
-  const login = (email, password) => {
+  const login = (email: string, password: string): string | null => {
     const u = users.find((u) => u.email === email && u.password === password);
     if (!u) return "Invalid email or password.";
     setCurrentUser(u);
@@ -175,54 +178,56 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setMustSetPassword(false);
   };
 
-  const completePasswordReset = (newPassword) => {
-    const updated = { ...currentUser, password: newPassword, mustChangePassword: false };
-    setUsers((p) => p.map((u) => (u.id === currentUser.id ? updated : u)));
+  const completePasswordReset = (newPassword: string) => {
+    if (!currentUser) return;
+    const updated: User = { ...currentUser, password: newPassword, mustChangePassword: false };
+    setUsers((prev) => prev.map((u) => (u.id === currentUser!.id ? updated : u)));
     setCurrentUser(updated);
     setMustSetPassword(false);
   };
 
   // ── Task handlers ────────────────────────────────────────────────────────
-  const saveTask = (t) => {
-    const stamped = { ...t, updatedAt: nowISO(), updatedBy: currentUser.name };
+  const saveTask = (t: Task) => {
+    if (!currentUser) return;
+    const stamped: Task = { ...t, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" };
     setTasks((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setTaskModal(null);
   };
 
-  const deleteTask = (id) => setTasks((p) => p.filter((t) => t.id !== id));
+  const deleteTask = (id: string) => setTasks((p) => p.filter((t) => t.id !== id));
 
-  const updateTaskStatus = (id, status) =>
-    setTasks((p) => p.map((t) => t.id === id ? { ...t, status, updatedAt: nowISO(), updatedBy: currentUser.name } : t));
+  const updateTaskStatus = (id: string, status: string) =>
+    setTasks((p) => p.map((t) => t.id === id ? { ...t, status: status as Task["status"], updatedAt: nowISO(), updatedBy: currentUser?.name } : t));
 
   // ── Project handlers ─────────────────────────────────────────────────────
-  const saveProject = (proj) => {
-    const stamped = { ...proj, updatedAt: nowISO(), updatedBy: currentUser.name };
+  const saveProject = (proj: Project) => {
+    const stamped: Project = { ...proj, updatedAt: nowISO(), updatedBy: currentUser?.name };
     setProjects((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setProjectModal(null);
   };
 
-  const deleteProject = (id) => {
+  const deleteProject = (id: string) => {
     setProjects((p) => p.filter((x) => x.id !== id));
     setTasks((p) => p.filter((t) => t.projectId !== id));
     setConfirmDeleteProject(null);
   };
 
   // ── Supplier handlers ────────────────────────────────────────────────────
-  const saveSupplier = (s) => {
-    const stamped = { ...s, updatedAt: nowISO(), updatedBy: currentUser.name };
+  const saveSupplier = (s: Supplier) => {
+    const stamped = { ...s, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" };
     setSuppliers((p) => p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]);
     setSupplierModal(null);
   };
 
-  const savePart = (supplierId, part) => {
+  const savePart = (supplierId: string, part: Part) => {
     setSuppliers((p) =>
       p.map((s) => {
         if (s.id !== supplierId) return s;
         const exists = (s.parts || []).find((x) => x.id === part.id);
         const newParts = exists
-          ? s.parts.map((x) => (x.id === part.id ? part : x))
+          ? (s.parts || []).map((x) => (x.id === part.id ? part : x))
           : [...(s.parts || []), part];
-        return { ...s, parts: newParts, updatedAt: nowISO(), updatedBy: currentUser.name };
+        return { ...s, parts: newParts, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" };
       })
     );
     if (!part._existing) {
@@ -234,7 +239,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setPartModal(null);
   };
 
-  const deletePart = (supplierId, partId) => {
+  const deletePart = (supplierId: string, partId: string) => {
     setSuppliers((p) =>
       p.map((s) =>
         s.id === supplierId ? { ...s, parts: (s.parts || []).filter((pt) => pt.id !== partId) } : s
@@ -243,14 +248,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setBom((p) => p.filter((b) => !(b.supplierId === supplierId && b.partId === partId)));
   };
 
-  const addOrder = (supplierId, order) => {
+  const addOrder = (supplierId: string, order: Order) => {
     setSuppliers((p) =>
-      p.map((s) => s.id === supplierId ? { ...s, orders: [...(s.orders || []), { ...order, updatedAt: nowISO(), updatedBy: currentUser.name }], updatedAt: nowISO(), updatedBy: currentUser.name } : s)
+      p.map((s) => s.id === supplierId ? { ...s, orders: [...(s.orders || []), { ...order, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" }], updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" } : s)
     );
     setOrderModal(null);
   };
 
-  const toggleArrived = (supplierId, orderId) =>
+  const toggleArrived = (supplierId: string, orderId: string) =>
     setSuppliers((p) =>
       p.map((s) =>
         s.id === supplierId
@@ -258,7 +263,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               ...s,
               orders: (s.orders || []).map((o) =>
                 o.id === orderId
-                  ? { ...o, arrived: !o.arrived, arrivedDate: !o.arrived ? todayStr() : null, updatedAt: nowISO(), updatedBy: currentUser.name }
+                  ? { ...o, arrived: !o.arrived, arrivedDate: !o.arrived ? todayStr() : null, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" }
                   : o
               ),
             }
@@ -267,8 +272,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
 
   // ── BOM handlers ─────────────────────────────────────────────────────────
-  const saveBomEntry = (entry) => {
-    const stamped = { ...entry, updatedAt: nowISO(), updatedBy: currentUser.name };
+  const saveBomEntry = (entry: BomEntry) => {
+    const stamped = { ...entry, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" };
     setBom((p) =>
       p.find((x) => x.id === stamped.id) ? p.map((x) => x.id === stamped.id ? stamped : x) : [...p, stamped]
     );
@@ -276,19 +281,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ── Member handlers ──────────────────────────────────────────────────────
-  const saveMember = (m) => {
+  const saveMember = (m: User) => {
     setUsers((p) => p.find((x) => x.id === m.id) ? p.map((x) => x.id === m.id ? m : x) : [...p, m]);
     if (currentUser?.id === m.id) setCurrentUser(m);
     setMemberModal(null);
   };
 
-  const removeMember = (id) => {
+  const removeMember = (id: string) => {
     setUsers((p) => p.filter((u) => u.id !== id));
     setConfirmRemove(null);
   };
 
   // ── Backup/restore ───────────────────────────────────────────────────────
   const exportBackup = () => {
+    if (!currentUser) return;
     const payload = {
       _meta: { app: "Lattice PM", version: "2.0", exportedAt: new Date().toISOString(), exportedBy: currentUser.name },
       users, projects, tasks, suppliers, bom,
@@ -302,11 +308,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     URL.revokeObjectURL(url);
   };
 
-  const importBackup = (file) => {
+  const importBackup = (file: unknown) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target.result);
+        const data = JSON.parse(e.target?.result as string);
         if (!data.users || !data.projects || !data.tasks) {
           alert("Invalid backup file — missing required data.");
           return;
@@ -324,12 +330,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         alert("Could not read backup file. Make sure it is a valid Lattice PM JSON backup.");
       }
     };
-    reader.readAsText(file);
+    reader.readAsText(file as Blob);
   };
 
   // ── Dismiss notification ─────────────────────────────────────────────────
-  const dismissNotification = (id) => setDismissed((p) => [...p, id]);
-  const dismissAllNotifications = () =>
+  const dismissNotification = (id: string) => setDismissed((p: string[]) => [...p, id]);
+  const dismissAllNotifications = (): void =>
     setDismissed((p) => [...p, ...notifications.map((n) => n.id)]);
 
   return (
@@ -351,7 +357,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // BOM
       saveBomEntry,
       // Member
-      saveMember, removeMember,
+      saveMember, removeMember, setUsers,
       // Backup
       exportBackup, importBackup,
       // Notifications

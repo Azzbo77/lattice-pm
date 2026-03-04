@@ -22,8 +22,9 @@ import { BackupModal }    from "./modals/BackupModal";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
 
-const TAB_ICONS   = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" };
-const TAB_LABELS  = { dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team" };
+type TabId = "dashboard" | "gantt" | "tasks" | "projects" | "suppliers" | "bom" | "team";
+const TAB_ICONS:  Record<TabId, string> = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" };
+const TAB_LABELS: Record<TabId, string> = { dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team" };
 
 // ── Inner app ─────────────────────────────────────────────────────────────────
 const AppShell = () => {
@@ -36,12 +37,12 @@ const AppShell = () => {
     setShowSummary, setShowBackup, isAdmin, logout,
   } = useApp();
 
-  const { isMobile, isSmall } = useBreakpoint();
+  const { isMobile } = useBreakpoint();
 
   if (!currentUser)    return <LoginScreen />;
   if (mustSetPassword) return <MustSetPasswordScreen />;
 
-  const PAGE_MAP = {
+  const PAGE_MAP: Record<TabId, JSX.Element> = {
     dashboard: <DashboardPage />,
     gantt:     <GanttPage />,
     tasks:     <TasksPage />,
@@ -78,7 +79,7 @@ const AppShell = () => {
           {/* Page title — hidden on mobile to save space */}
           {!isMobile && (
             <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", flexShrink: 0 }}>
-              {TAB_ICONS[tab]} {TAB_LABELS[tab]}
+              {TAB_ICONS[tab as TabId]} {TAB_LABELS[tab as TabId]}
             </h2>
           )}
           {/* Logo on mobile */}
@@ -102,7 +103,7 @@ const AppShell = () => {
 
         {/* Page content — extra bottom padding on mobile for tab bar */}
         <div style={{ padding: isMobile ? "0.875rem 0.75rem" : "1.25rem", flex: 1, paddingBottom: isMobile ? "72px" : undefined }}>
-          {PAGE_MAP[tab] || <DashboardPage />}
+          {PAGE_MAP[tab as TabId] || <DashboardPage />}
         </div>
       </div>
 

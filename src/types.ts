@@ -63,6 +63,7 @@ export interface Supplier extends Stamp {
   name: string;
   contact: string;
   phone: string;
+  archived?: boolean;
   parts?: Part[];
   orders?: Order[];
 }

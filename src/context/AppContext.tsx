@@ -52,6 +52,8 @@ export interface AppContextType {
   saveProject:          (proj: Project) => void;
   deleteProject:        (id: string) => void;
   saveSupplier:         (s: Supplier) => void;
+  deleteSupplier:       (id: string) => void;
+  toggleArchiveSupplier:(id: string) => void;
   savePart:             (supplierId: string, part: Part) => void;
   deletePart:           (supplierId: string, partId: string) => void;
   addOrder:             (supplierId: string, order: Order) => void;
@@ -219,6 +221,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSupplierModal(null);
   };
 
+  const deleteSupplier = (id: string) => {
+    setSuppliers((p) => p.filter((s) => s.id !== id));
+    setBom((p) => p.filter((b) => b.supplierId !== id));
+  };
+
+  const toggleArchiveSupplier = (id: string) => {
+    setSuppliers((p) => p.map((s) => s.id === id ? { ...s, archived: !s.archived, updatedAt: nowISO(), updatedBy: currentUser?.name ?? "" } : s));
+  };
+
   const savePart = (supplierId: string, part: Part) => {
     setSuppliers((p) =>
       p.map((s) => {
@@ -353,7 +364,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // Project
       saveProject, deleteProject,
       // Supplier
-      saveSupplier, savePart, deletePart, addOrder, toggleArrived,
+      saveSupplier, deleteSupplier, toggleArchiveSupplier, savePart, deletePart, addOrder, toggleArrived,
       // BOM
       saveBomEntry,
       // Member

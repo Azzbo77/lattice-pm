@@ -109,6 +109,15 @@ src/
 
 ## Changelog
 
+### v2.7 — Suppliers Mini-Epic
+- **Collapsible supplier cards** — click header to expand/collapse; collapsed view shows part count, order count, pending and overdue badges
+- **Delete suppliers** — permanent delete with confirmation modal; also removes all associated BOM entries
+- **Archive/restore suppliers** — soft-delete toggle; archived cards shown at reduced opacity with "archived" badge; restoring returns to active
+- **Page-level filters** — Active / Archived / Overdue orders dropdown with live counts
+- **Empty states** — contextual messages per filter ("No overdue orders ✓" in green)
+- **`Supplier.archived`** field added to type and seeds
+- **`deleteSupplier` + `toggleArchiveSupplier`** handlers added to AppContext
+
 | Version | What changed |
 |---------|-------------|
 | 2.6 | TypeScript migration — all files .ts/.tsx, central types.ts, two ESLint bugs fixed |

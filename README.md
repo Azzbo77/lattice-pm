@@ -111,7 +111,7 @@ src/
 
 | Version | What changed |
 |---------|-------------|
-| ~~2.7~~ | ~~Suppliers mini-epic — collapsible cards, delete/archive, page-level filters, empty states~~ |
+| 2.7 | Suppliers mini-epic — collapsible cards, delete/archive, page-level filters, empty states |
 | 2.6 | TypeScript migration — all files .ts/.tsx, central types.ts, two ESLint bugs fixed |
 | 2.5 | Dashboard UI polish — dropdown contrast, colorScheme dark, colour-coded status/priority selects, global option styles |
 | 2.4 | Mobile / responsive — bottom tab bar, sheet modals, horizontal-scroll tables, single-column dashboard |
@@ -147,10 +147,10 @@ src/
 
 ### Phase 2 — Core Workflow + Supplier/BOM Enhancements *(2–4 weekends)*
 
-5. **SuppliersPage improvements** *(group as one mini-epic)*
-   - **Collapsible supplier boxes** — accordion per supplier card (expand to show parts catalogue + orders). Collapsed state shows name, contact, part count, order summary.
-   - **Delete / archive suppliers** — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).
-   - **Filter & search** — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.
+5. **~~SuppliersPage improvements~~** ✅ *(v2.7)*
+   - ~~Collapsible supplier boxes — accordion per supplier card (expand to show parts catalogue + orders). Collapsed state shows name, contact, part count, order summary.~~
+   - ~~Delete / archive suppliers — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).~~
+   - ~~Filter & search — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.~~
 
 6. **Task dependencies** *(simple)*
    "Depends on" multi-select field per task. Gantt shows dependency lines or blocked indicators. Dashboard flags tasks whose dependency is overdue.

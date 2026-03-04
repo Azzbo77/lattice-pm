@@ -13,12 +13,6 @@ interface SearchDeps {
   setPf:     (pf: string) => void;
 }
 
-const hl = (text: string, q: string): string => {
-  if (!q) return text;
-  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
-  return text.replace(re, "**$1**");
-};
-
 export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[] => {
   if (!query || query.trim().length < 2 || !deps) return [];
   const q = query.trim().toLowerCase();

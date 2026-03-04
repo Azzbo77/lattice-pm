@@ -148,9 +148,9 @@ src/
 ### Phase 2 — Core Workflow + Supplier/BOM Enhancements *(2–4 weekends)*
 
 5. **~~SuppliersPage improvements~~** ✅ *(v2.7)*
-   - ~~Collapsible supplier boxes — accordion per supplier card (expand to show parts catalogue + orders). Collapsed state shows name, contact, part count, order summary.~~
-   - ~~Delete / archive suppliers — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).~~
-   - ~~Filter & search — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.~~
+   - Collapsible supplier boxes — accordion per supplier card (expand to show parts catalogue + orders). Collapsed state shows name, contact, part count, order summary.
+   - Delete / archive suppliers — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).
+   - Filter & search — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.
 
 6. **Task dependencies** *(simple)*
    "Depends on" multi-select field per task. Gantt shows dependency lines or blocked indicators. Dashboard flags tasks whose dependency is overdue.

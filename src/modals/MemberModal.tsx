@@ -60,11 +60,6 @@ export const MemberModal = () => {
     mustChangePassword:  false,
   });
   const [err, setErr] = useState("");
-  
-  if (!memberModal) return null;
-  const member = memberModal as Record<string, any>;
-  const isNew  = !member.id;
-  const isSelf = member.id === currentUser?.id;
 
   // Initialize form when modal payload changes.
   useEffect(() => {
@@ -81,6 +76,11 @@ export const MemberModal = () => {
     });
     setErr("");
   }, [memberModal]);
+
+  if (!memberModal) return null;
+  const member = memberModal as Record<string, any>;
+  const isNew  = !member.id;
+  const isSelf = member.id === currentUser?.id;
   
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const strength = pwStrength(f.password);

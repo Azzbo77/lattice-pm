@@ -87,14 +87,14 @@ export const Avatar = ({ name, role, size = 32 }: { name: string; role: Role; si
   </div>
 );
 
-export const TH = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0.4rem 0.5rem" }}>
+export const TH = ({ children, center }: { children: React.ReactNode; center?: boolean }) => (
+  <div style={{ fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0.4rem 0.5rem", display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start" }}>
     {children}
   </div>
 );
 
-export const TD = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
-  <div style={{ padding: "0.65rem 0.5rem", fontSize: "0.82rem", color: "#ccc", borderTop: "1px solid #141428", ...style }}>
+export const TD = ({ children, style, center }: { children: React.ReactNode; style?: React.CSSProperties; center?: boolean }) => (
+  <div style={{ padding: "0.65rem 0.5rem", fontSize: "0.82rem", color: "#ccc", borderTop: "1px solid #141428", display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start", ...style }}>
     {children}
   </div>
 );

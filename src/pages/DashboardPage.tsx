@@ -22,17 +22,25 @@ const SectionHeader = ({ title, action, onAction }: { title: string; action?: st
 );
 
 const TaskRow = ({ task }: { task: any }) => {
-  const { projects, users, currentUser, updateTaskStatus } = useApp();
+  const { tasks, projects, users, currentUser, updateTaskStatus } = useApp();
   const now      = todayStr();
   const proj     = projects.find((p) => p.id === task.projectId);
   const assignee = users.find((u) => u.id === task.assigneeId);
   const overdue  = task.endDate < now;
   const recent   = isRecent(task.updatedAt);
+  const blockedDeps = (task.dependsOn || [])
+    .map((id: string) => tasks.find((t: any) => t.id === id))
+    .filter((d: any): d is any => !!d && d.status !== "done");
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "#0f0f1e", borderRadius: "8px", marginBottom: "4px", border: `1px solid ${recent ? "#00d4ff20" : "#1a1a2e"}` }}>
       <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: overdue ? "#fc8181" : "#f6c90e", flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span style={{ fontSize: "0.82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
+          {blockedDeps.length > 0 && (
+            <span title={`Blocked by: ${blockedDeps.map((d: any) => d.title).join(", ")}`} style={{ fontSize: "0.58rem", color: "#fc8181", background: "#fc818118", border: "1px solid #fc818140", borderRadius: "3px", padding: "1px 4px", cursor: "help", flexShrink: 0 }}>⛔</span>
+          )}
+        </div>
         <div style={{ fontSize: "0.68rem", color: "#555", marginTop: "1px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           {proj && <span style={{ color: proj.color }}>{proj.name}</span>}
           {assignee && currentUser?.role !== "worker" && <span>· {assignee.name}</span>}

@@ -196,7 +196,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setTaskModal(null);
   };
 
-  const deleteTask = (id: string) => setTasks((p) => p.filter((t) => t.id !== id));
+  const deleteTask = (id: string) => setTasks((p) =>
+    p.filter((t) => t.id !== id)
+     .map((t) => t.dependsOn?.includes(id)
+       ? { ...t, dependsOn: t.dependsOn.filter((d) => d !== id) }
+       : t)
+  );
 
   const updateTaskStatus = (id: string, status: string) =>
     setTasks((p) => p.map((t) => t.id === id ? { ...t, status: status as Task["status"], updatedAt: nowISO(), updatedBy: currentUser?.name } : t));

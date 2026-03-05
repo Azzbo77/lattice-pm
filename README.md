@@ -109,6 +109,14 @@ src/
 
 ## Changelog
 
+### v2.8 — Task Dependencies
+- **`Task.dependsOn`** — new optional `string[]` field storing prerequisite task IDs
+- **TaskModal** — "Depends on" pill selector showing tasks in the same project; pills colour-coded by dependency status (done = green, blocked = red); deselectable toggles
+- **TasksPage** — ⛔ "blocked" badge on tasks with incomplete dependencies (tooltip lists blocking tasks); ✓ "deps done" badge when all dependencies complete  
+- **DashboardPage** — ⛔ indicator on blocked tasks in the active task list
+- **GanttPage** — SVG dependency arrows between task bars; green solid line = dep complete, red dashed = dep still incomplete
+- **Notifications** — new alert type for tasks blocked by an overdue dependency
+
 | Version | What changed |
 |---------|-------------|
 | 2.7 | Suppliers mini-epic — collapsible cards, delete/archive, page-level filters, empty states |
@@ -152,8 +160,8 @@ src/
    - Delete / archive suppliers — delete with confirmation modal; archive toggle (soft-delete: mark inactive, hidden by default, with "show archived" filter).
    - Filter & search — page-level dropdown (active / inactive / lead-time overdue) + integration with global search.
 
-6. **Task dependencies** *(simple)*
-   "Depends on" multi-select field per task. Gantt shows dependency lines or blocked indicators. Dashboard flags tasks whose dependency is overdue.
+6. **~~Task dependencies~~** ✅ *(v2.8)*
+   "Depends on" searchable multi-select per task. Gantt shows dependency arrows. Dashboard and Tasks page flag blocked tasks. Deleting a task cleans up its references.
 
 7. **BOM ↔ Task bridging**
    Link parts to tasks. Alert when a linked part is delayed or unused. Add "Filter by task / project" dropdown on the BOM page to show only parts relevant to a given task.
@@ -223,3 +231,19 @@ Role-based access control. Add, edit, or remove team members with email, role (A
 ## License
 
 MIT
+
+---
+
+### Phase 4 — Backend Migration *(future)*
+
+- **Backend** — REST or tRPC API; PostgreSQL via Supabase or PlanetScale
+- **Migration script** — export localStorage data and seed the remote database
+- **Realtime** — live updates across sessions via Supabase Realtime or WebSockets
+
+### Phase 5 — Production Polish *(future)*
+
+- **PWA** — service worker, offline mode, installable on mobile and desktop
+- **Reporting** — exportable PDF/Excel reports, project burn-down charts, supplier performance dashboard
+- **Security audit** — input sanitisation, role enforcement review, session expiry
+- **Dependency & Gantt enhancements** — critical path highlighting, milestone markers, drag-to-reschedule bars
+

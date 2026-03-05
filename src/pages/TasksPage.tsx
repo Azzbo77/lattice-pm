@@ -5,8 +5,24 @@ import { Btn, TH, TD, UpdatedBadge, selStyle, miniSel } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 
 export const TasksPage = () => {
-  const { filteredTasks, projects, users, currentUser, canManage, pf, setPf, setTaskModal, deleteTask, updateTaskStatus } = useApp();
+  const { filteredTasks, tasks, projects, users, currentUser, canManage, pf, setPf, setTaskModal, deleteTask, updateTaskStatus } = useApp();
   const now = todayStr();
+
+  // Returns true if any dependency is not done (blocking this task)
+  const isBlocked = (task: import("../types").Task): boolean =>
+    (task.dependsOn || []).some((depId) => {
+      const dep = tasks.find((t) => t.id === depId);
+      return dep && dep.status !== "done";
+    });
+
+  // Returns list of incomplete dep titles for tooltip
+  const blockedBy = (task: import("../types").Task): string =>
+    (task.dependsOn || [])
+      .map((depId) => tasks.find((t) => t.id === depId))
+      .filter((dep): dep is import("../types").Task => !!dep && dep.status !== "done")
+      .map((dep) => dep.title)
+      .join(", ");
+
 
   const handleExport = () => {
     const rows = filteredTasks.map((t) => {
@@ -39,7 +55,9 @@ export const TasksPage = () => {
         <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: "680px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", background: "#0d0d20" }}>
-          {["Task","Assignee","Due","Status","Priority","Updated",""].map((h, i) => <TH key={i}>{h}</TH>)}
+          {["Task","Assignee","Due","Status","Priority","Updated",""].map((h, i) => (
+            <TH key={i} center={i >= 3}>{h}</TH>
+          ))}
         </div>
         {filteredTasks.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No tasks found.</div>}
         {filteredTasks.map((task) => {
@@ -49,20 +67,32 @@ export const TasksPage = () => {
           return (
             <div key={task.id} style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", alignItems: "center", padding: "0 0.5rem" }}>
               <TD>
-                <div style={{ color: "#e0e0e0", marginBottom: "2px", fontSize: "0.83rem" }}>{task.title}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "2px" }}>
+                  <span style={{ color: "#e0e0e0", fontSize: "0.83rem" }}>{task.title}</span>
+                  {isBlocked(task) && (
+                    <span title={`Blocked by: ${blockedBy(task)}`} style={{ fontSize: "0.6rem", color: "#fc8181", background: "#fc818118", border: "1px solid #fc818150", borderRadius: "3px", padding: "1px 5px", cursor: "help", flexShrink: 0 }}>
+                      ⛔ blocked
+                    </span>
+                  )}
+                  {(task.dependsOn || []).length > 0 && !isBlocked(task) && (
+                    <span title="All dependencies complete" style={{ fontSize: "0.6rem", color: "#48bb78", background: "#48bb7818", border: "1px solid #48bb7850", borderRadius: "3px", padding: "1px 5px", flexShrink: 0 }}>
+                      ✓ deps done
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: "0.62rem", color: proj?.color, background: `${proj?.color}15`, padding: "1px 5px", borderRadius: "3px" }}>{proj?.name}</span>
               </TD>
               <TD>{assignee?.name}</TD>
               <TD style={{ color: overdue ? "#fc8181" : "#777", fontSize: "0.76rem" }}>{fmt(task.endDate)}</TD>
-              <TD>
+              <TD center>
                 <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} style={miniSel(statusColor[task.status])}>
                   <option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="blocked">Blocked</option>
                 </select>
               </TD>
-              <TD>
+              <TD center>
                 <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: "4px", background: `${prioColor[task.priority]}18`, color: prioColor[task.priority], border: `1px solid ${prioColor[task.priority]}40` }}>{task.priority}</span>
               </TD>
-              <TD>
+              <TD center>
                 <UpdatedBadge iso={task.updatedAt} byName={task.updatedBy} compact />
               </TD>
               <TD style={{ display: "flex", gap: "4px" }}>

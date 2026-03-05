@@ -79,6 +79,63 @@ const Toggle = ({ on, onChange, label }: { on: boolean; onChange: () => void; la
 );
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+
+// ── Dependency arrows ─────────────────────────────────────────────────────────
+// Renders SVG arrows between task bars. Uses data-taskid attributes to locate bars.
+const DependencyArrows = ({ tasks, minD, span }: { tasks: import("../types").Task[]; minD: string; span: number }) => {
+  const arrows: { x1: number; y1: number; x2: number; y2: number; blocked: boolean }[] = [];
+
+  tasks.forEach((task, toIdx) => {
+    (task.dependsOn || []).forEach((depId) => {
+      const fromIdx = tasks.findIndex((t) => t.id === depId);
+      if (fromIdx === -1) return;
+      const fromTask = tasks[fromIdx];
+
+      // X positions: end of from-task bar, start of to-task bar
+      const fromPct = Math.max(0, Math.min(100, ((daysBetween(minD, fromTask.endDate) + 1) / span) * 100));
+      const toPct   = Math.max(0, Math.min(100, (daysBetween(minD, task.startDate) / span) * 100));
+
+      // Y positions: row height ~40px, centered
+      const rowH = 40;
+      const y1 = fromIdx * rowH + rowH / 2;
+      const y2 = toIdx   * rowH + rowH / 2;
+
+      const blocked = fromTask.status !== "done";
+      arrows.push({ x1: fromPct, y1, x2: toPct, y2, blocked });
+    });
+  });
+
+  if (arrows.length === 0) return null;
+
+  return (
+    <svg
+      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <marker id="arrowDone"    markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#48bb78" /></marker>
+        <marker id="arrowBlocked" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fc8181" /></marker>
+      </defs>
+      {arrows.map((a, i) => {
+        const color = a.blocked ? "#fc8181" : "#48bb78";
+        const mid   = (a.x1 + a.x2) / 2;
+        return (
+          <path
+            key={i}
+            d={`M ${a.x1}% ${a.y1} C ${mid}% ${a.y1}, ${mid}% ${a.y2}, ${a.x2}% ${a.y2}`}
+            stroke={color}
+            strokeWidth="1.5"
+            strokeDasharray={a.blocked ? "4 3" : "none"}
+            fill="none"
+            opacity="0.6"
+            markerEnd={a.blocked ? "url(#arrowBlocked)" : "url(#arrowDone)"}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
 export const GanttPage = () => {
   const { tasks, projects, users, currentUser, setTaskModal, setTab, setPf } = useApp();
 
@@ -199,6 +256,7 @@ export const GanttPage = () => {
       <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", padding: "1rem 1.25rem", overflowX: "auto" }}>
         <div style={{ minWidth: "560px" }}>
           <DateAxis minD={minD} span={span} />
+          <div style={{ position: "relative" }}>
 
           {/* Dimmed overlay — other projects */}
           {showAll && activeId !== "all" && otherTasks.map((task) => (
@@ -235,6 +293,9 @@ export const GanttPage = () => {
               ))}
             </div>
           ))}
+
+          <DependencyArrows tasks={activeTasks} minD={minD} span={span} />
+          </div>
 
           {activeTasks.length === 0 && (
             <div style={{ padding: "2rem", textAlign: "center", color: "#555", fontSize: "0.82rem" }}>

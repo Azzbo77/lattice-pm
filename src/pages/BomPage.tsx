@@ -52,7 +52,7 @@ export const BomPage = () => {
         <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: "860px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.8fr 0.8fr 0.7fr 0.7fr 1fr 2fr 0.8fr auto", background: "#0d0d20" }}>
-          {["Part No.","Description","Supplier","Qty Ord.","Total","Status","Notes / CI","Updated",""].map((h, i) => <TH key={i}>{h}</TH>)}
+          {["Part No.","Description","Supplier","Qty Ord.","Total","Status","Notes / CI","Updated",""].map((h, i) => <TH key={i} center={i >= 5}>{h}</TH>)}
         </div>
 
         {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No BOM entries match this filter.</div>}
@@ -75,7 +75,7 @@ export const BomPage = () => {
               <TD style={{ fontSize: "0.72rem", color: "#666", fontStyle: row.notes ? "normal" : "italic" }}>
                 {row.notes || <span style={{ color: "#333" }}>No notes</span>}
               </TD>
-              <TD>
+              <TD center>
                 <UpdatedBadge iso={row.updatedAt} byName={row.updatedBy} compact />
               </TD>
               <TD>

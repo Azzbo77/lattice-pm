@@ -37,6 +37,7 @@ export interface Task extends Stamp {
   status: TaskStatus;
   priority: TaskPriority;
   description?: string;
+  dependsOn?: string[];  // task IDs this task depends on
 }
 
 export interface Part extends Stamp {

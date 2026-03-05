@@ -6,7 +6,14 @@ import { Avatar, UpdatedBadge, miniSel } from "../components/ui";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
 const StatCard = ({ icon, value, label, color, onClick, urgent = false }: { icon: string; value: number; label: string; color: string; onClick?: () => void; urgent?: boolean }) => (
-  <div onClick={onClick} style={{ background: bg.card, border: `1px solid ${urgent && value > 0 ? color + "55" : bg.border}`, borderRadius: radius.xl, padding: "1rem 1.25rem", cursor: onClick ? "pointer" : "default", display: "flex", alignItems: "center", gap: space["6"] }}>
+  <div 
+    onClick={onClick} 
+    role={onClick ? "button" : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    aria-label={onClick ? `View ${label}: ${value}` : undefined}
+    onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+    style={{ background: bg.card, border: `1px solid ${urgent && value > 0 ? color + "55" : bg.border}`, borderRadius: radius.xl, padding: "1rem 1.25rem", cursor: onClick ? "pointer" : "default", display: "flex", alignItems: "center", gap: space["6"] }}
+  >
     <div style={{ width: "40px", height: "40px", borderRadius: radius.xl, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", flexShrink: 0 }}>{icon}</div>
     <div>
       <div style={{ fontSize: "1.6rem", fontWeight: 700, color: urgent && value > 0 ? color : clr.textPrimary, lineHeight: 1 }}>{value}</div>
@@ -18,7 +25,7 @@ const StatCard = ({ icon, value, label, color, onClick, urgent = false }: { icon
 const SectionHeader = ({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) => (
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space["5"] }}>
     <h3 style={{ fontSize: "0.85rem", color: clr.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{title}</h3>
-    {action && <button onClick={onAction} style={{ fontSize: font.base, color: clr.cyan, background: "none", border: "none", cursor: "pointer" }}>{action}</button>}
+    {action && <button onClick={onAction} style={{ fontSize: font.base, color: clr.cyan, background: "none", border: "none", cursor: "pointer" }} aria-label={`${action.replace('→', '').trim()} for ${title}`}>{action}</button>}
   </div>
 );
 

@@ -72,7 +72,15 @@ const TaskBar = ({ task, proj, assignee, minD, span, todayPct, dimmed, onEdit }:
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 const Toggle = ({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) => (
   <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" }}>
-    <div onClick={onChange} style={{ width: "32px", height: "18px", borderRadius: "9px", background: on ? clr.cyan : bg.muted, position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+    <div 
+      onClick={onChange} 
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(); } }}
+      role="switch"
+      aria-checked={on}
+      aria-label={label || "Toggle"}
+      tabIndex={0}
+      style={{ width: "32px", height: "18px", borderRadius: "9px", background: on ? clr.cyan : bg.muted, position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+    >
       <div style={{ position: "absolute", top: radius.xs, left: on ? "17px" : radius.xs, width: radius.xxl, height: radius.xxl, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
     </div>
     <span style={{ fontSize: space["5"], color: on ? clr.cyan : clr.textFaint }}>{label}</span>
@@ -185,7 +193,7 @@ export const GanttPage = () => {
         <div style={{ fontSize: "2.5rem", marginBottom: space["5"] }}>📅</div>
         <div style={{ marginBottom: space["6"] }}>No tasks yet.</div>
         {currentUser.role !== "worker" && (
-          <button onClick={() => setTab("tasks")} style={{ padding: "0.5rem 1.25rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.lg, cursor: "pointer" }}>
+          <button onClick={() => setTab("tasks")} style={{ padding: "0.5rem 1.25rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.lg, cursor: "pointer" }} aria-label="Go to tasks page to create tasks">
             Go to Tasks →
           </button>
         )}
@@ -203,6 +211,8 @@ export const GanttPage = () => {
             <button
               key={p.id}
               onClick={() => setActiveId(p.id)}
+              aria-label={`Filter by project ${p.name}`}
+              aria-pressed={activeId === p.id}
               style={{ padding: "0.28rem 0.8rem", borderRadius: radius.pill, border: `1.5px solid ${activeId === p.id ? p.color : bg.muted}`, background: activeId === p.id ? `${p.color}22` : "transparent", color: activeId === p.id ? p.color : clr.textFaint, fontSize: font.md, cursor: "pointer", fontWeight: activeId === p.id ? 600 : 400, transition: "all 0.15s" }}
             >
               {p.name}
@@ -210,6 +220,8 @@ export const GanttPage = () => {
           ))}
           <button
             onClick={() => setActiveId("all")}
+            aria-label="Show all projects"
+            aria-pressed={activeId === "all"}
             style={{ padding: "0.28rem 0.8rem", borderRadius: radius.pill, border: `1.5px solid ${activeId === "all" ? clr.textMuted : bg.muted}`, background: activeId === "all" ? "#88888822" : "transparent", color: activeId === "all" ? clr.textSecondary : clr.textFaint, fontSize: font.md, cursor: "pointer", transition: "all 0.15s" }}
           >
             All
@@ -225,6 +237,7 @@ export const GanttPage = () => {
         {activeId !== "all" && (
           <button
             onClick={() => { setPf(activeId); setTab("tasks"); }}
+            aria-label="Go to task list filtered by this project"
             style={{ padding: "0.28rem 0.7rem", background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: font.base, cursor: "pointer", marginLeft: "auto" }}
           >
             Task list →
@@ -302,7 +315,7 @@ export const GanttPage = () => {
             <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint, fontSize: font.lg }}>
               No tasks for this project yet.
               {currentUser.role !== "worker" && (
-                <button onClick={() => { setPf(activeId); setTab("tasks"); }} style={{ display: "block", margin: "0.75rem auto 0", padding: "0.4rem 1rem", background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textMuted, fontSize: font.md, cursor: "pointer" }}>Add tasks →</button>
+                <button onClick={() => { setPf(activeId); setTab("tasks"); }} style={{ display: "block", margin: "0.75rem auto 0", padding: "0.4rem 1rem", background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textMuted, fontSize: font.md, cursor: "pointer" }} aria-label="Go to tasks page to add tasks for this project">Add tasks →</button>
               )}
             </div>
           )}

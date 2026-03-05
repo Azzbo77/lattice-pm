@@ -1,8 +1,9 @@
 import { useState } from "react";
+import React from "react";
 import { useApp } from "../context/AppContext";
 import { Btn, TH, TD, UpdatedBadge, ConfirmModal, selStyle } from "../components/ui";
 import { addDays, fmt, todayStr } from "../utils/dateHelpers";
-import type { Supplier } from "../types";
+import type { Supplier, Part, Order } from "../types";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
 // ── Filter helpers ────────────────────────────────────────────────────────────
@@ -20,7 +21,7 @@ const applyFilter = (suppliers: Supplier[], filter: Filter, now: string): Suppli
 };
 
 // ── Collapsed summary bar ─────────────────────────────────────────────────────
-const SupplierSummary = ({ supplier, now }: { supplier: Supplier; now: string }) => {
+const SupplierSummary = React.memo(({ supplier, now }: { supplier: Supplier; now: string }) => {
   const parts   = (supplier.parts  || []).length;
   const orders  = (supplier.orders || []).length;
   const pending = (supplier.orders || []).filter((o) => !o.arrived).length;
@@ -40,10 +41,86 @@ const SupplierSummary = ({ supplier, now }: { supplier: Supplier; now: string })
       ))}
     </div>
   );
-};
+});
+SupplierSummary.displayName = "SupplierSummary";
+
+// ── Part row component ────────────────────────────────────────────────────────
+interface PartRowProps {
+  part: Part;
+  supplierId: string;
+  canManage: boolean;
+  onEdit: (supplierId: string, part: Part) => void;
+  onDelete: (supplierId: string, partId: string) => void;
+}
+
+const PartRow = React.memo(({ part, supplierId, canManage, onEdit, onDelete }: PartRowProps) => (
+  <div style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
+    <TD style={{ justifyContent: "flex-start" }}><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{part.partNumber}</span></TD>
+    <TD style={{ justifyContent: "flex-start" }}>{part.description}</TD>
+    <TD center>{part.unitQty}</TD>
+    <TD center>{part.unit}</TD>
+    <TD center style={{ gap: radius.sm }}>
+      {canManage && (
+        <>
+          <button onClick={() => onEdit(supplierId, { ...part, _existing: true })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit part ${part.partNumber}`}>Edit</button>
+          <button onClick={() => onDelete(supplierId, part.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Delete part ${part.partNumber}`}>✕</button>
+        </>
+      )}
+    </TD>
+  </div>
+));
+PartRow.displayName = "PartRow";
+
+// ── Order row component ───────────────────────────────────────────────────────
+interface OrderRowProps {
+  order: Order;
+  supplierParts: Part[];
+  now: string;
+  canManage: boolean;
+  onToggleArrived: (orderId: string) => void;
+}
+
+const OrderRow = React.memo(({ order, supplierParts, now, canManage, onToggleArrived }: OrderRowProps) => {
+  const arrival = addDays(order.orderedDate, order.leadTimeDays);
+  const late = !order.arrived && arrival < now;
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
+      <TD style={{ justifyContent: "flex-start" }}>
+        <div style={{ fontSize: font.lg, color: clr.textPrimary }}>{order.description}</div>
+        {(order.partIds || []).length > 0 && (
+          <div style={{ fontSize: font.xs, color: clr.textFaint, marginTop: "2px" }}>
+            {(order.partIds || []).map((pid) => {
+              const pt = supplierParts.find((p) => p.id === pid);
+              return pt ? <span key={pid} style={{ marginRight: radius.sm, color: clr.cyan }}>{pt.partNumber}</span> : null;
+            })}
+          </div>
+        )}
+      </TD>
+      <TD center style={{ fontSize: font.base, color: clr.textDim }}>{fmt(order.orderedDate)}</TD>
+      <TD center style={{ fontSize: font.base, color: clr.textDim }}>{order.leadTimeDays}d</TD>
+      <TD center style={{ fontSize: font.base, color: late ? clr.red : clr.textDim }}>{fmt(arrival)}</TD>
+      <TD center>
+        {order.arrived
+          ? <span style={{ fontSize: font.base, color: clr.green, background: "#48bb7818", padding: "2px 8px", borderRadius: radius.sm }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
+          : <span style={{ fontSize: font.base, color: late ? clr.red : clr.yellow, background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: radius.sm }}>{late ? "Overdue" : "Pending"}</span>
+        }
+      </TD>
+      <TD center><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
+      <TD center>
+        {canManage && (
+          <button onClick={() => onToggleArrived(order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: radius.sm, color: order.arrived ? clr.red : clr.green, fontSize: "0.7rem", cursor: "pointer" }} aria-label={order.arrived ? `Mark order ${order.description} as not arrived` : `Mark order ${order.description} as arrived`}>
+            {order.arrived ? "Unmark" : "Mark Arrived"}
+          </button>
+        )}
+      </TD>
+    </div>
+  );
+});
+OrderRow.displayName = "OrderRow";
 
 // ── Individual supplier card ───────────────────────────────────────────────────
-const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
+const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
   const {
     canManage, setSupplierModal, setPartModal, setOrderModal,
     deletePart, toggleArrived, deleteSupplier, toggleArchiveSupplier,
@@ -98,19 +175,20 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
             <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: space["2"], flexWrap: "wrap" }}>
               {!supplier.archived && (
                 <>
-                  <Btn color={clr.orange} small onClick={() => setSupplierModal(supplier)}>Edit</Btn>
-                  <Btn color={clr.green} small onClick={() => setPartModal({ supplierId: supplier.id, part: {} })}>+ Part</Btn>
-                  <Btn color={clr.cyan} small onClick={() => setOrderModal(supplier.id)}>+ Order</Btn>
+                  <Btn color={clr.orange} small onClick={() => setSupplierModal(supplier)} aria-label={`Edit supplier ${supplier.name}`}>Edit</Btn>
+                  <Btn color={clr.green} small onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} aria-label={`Add part to ${supplier.name}`}>+ Part</Btn>
+                  <Btn color={clr.cyan} small onClick={() => setOrderModal(supplier.id)} aria-label={`Add order to ${supplier.name}`}>+ Order</Btn>
                 </>
               )}
               <Btn
                 color={supplier.archived ? clr.green : clr.textMuted}
                 small
                 onClick={() => toggleArchiveSupplier(supplier.id)}
+                aria-label={supplier.archived ? `Restore supplier ${supplier.name}` : `Archive supplier ${supplier.name}`}
               >
                 {supplier.archived ? "Restore" : "Archive"}
               </Btn>
-              <Btn color={clr.red} small onClick={() => setConfirmDelete(true)}>Delete</Btn>
+              <Btn color={clr.red} small onClick={() => setConfirmDelete(true)} aria-label={`Delete supplier ${supplier.name}`}>Delete</Btn>
             </div>
           )}
         </div>
@@ -141,20 +219,14 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                           {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i} center={i >= 2}>{h}</TH>)}
                         </div>
                         {supplier.parts?.map((pt) => (
-                          <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
-                            <TD style={{ justifyContent: "flex-start" }}><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{pt.partNumber}</span></TD>
-                            <TD style={{ justifyContent: "flex-start" }}>{pt.description}</TD>
-                            <TD center>{pt.unitQty}</TD>
-                            <TD center>{pt.unit}</TD>
-                            <TD center style={{ gap: radius.sm }}>
-                              {canManage && (
-                                <>
-                                  <button onClick={() => setPartModal({ supplierId: supplier.id, part: { ...pt, _existing: true } })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
-                                  <button onClick={() => deletePart(supplier.id, pt.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }}>✕</button>
-                                </>
-                              )}
-                            </TD>
-                          </div>
+                          <PartRow
+                            key={pt.id}
+                            part={pt}
+                            supplierId={supplier.id}
+                            canManage={canManage}
+                            onEdit={(id, part) => setPartModal({ supplierId: id, part: { ...part, _existing: true } })}
+                            onDelete={deletePart}
+                          />
                         ))}
                       </div></div>
                     </div>
@@ -165,7 +237,7 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
             {(supplier.parts || []).length === 0 && (
               <div style={{ padding: "0.6rem 1.25rem", borderBottom: "1px solid #141428", fontSize: font.md, color: clr.textGhost }}>
                 No parts catalogued yet.
-                {canManage && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.green, fontSize: font.md, cursor: "pointer" }}>+ Add one</button>}
+                {canManage && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.green, fontSize: font.md, cursor: "pointer" }} aria-label={`Add part to ${supplier.name}`}>+ Add one</button>}
               </div>
             )}
 
@@ -191,42 +263,16 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                         <div style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", background: bg.subtle, padding: "0 0.5rem", justifyItems: "center", alignItems: "center" }}>
                           {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i} center={i >= 1}>{h}</TH>)}
                         </div>
-                        {supplier.orders?.map((order) => {
-                          const arrival = addDays(order.orderedDate, order.leadTimeDays);
-                          const late    = !order.arrived && arrival < now;
-                          return (
-                            <div key={order.id} style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
-                              <TD style={{ justifyContent: "flex-start" }}>
-                                <div style={{ fontSize: font.lg, color: clr.textPrimary }}>{order.description}</div>
-                                {(order.partIds || []).length > 0 && (
-                                  <div style={{ fontSize: font.xs, color: clr.textFaint, marginTop: "2px" }}>
-                                    {(order.partIds || []).map((pid) => {
-                                      const pt = supplier.parts?.find((p) => p.id === pid);
-                                      return pt ? <span key={pid} style={{ marginRight: radius.sm, color: clr.cyan }}>{pt.partNumber}</span> : null;
-                                    })}
-                                  </div>
-                                )}
-                              </TD>
-                              <TD center style={{ fontSize: font.base, color: clr.textDim }}>{fmt(order.orderedDate)}</TD>
-                              <TD center style={{ fontSize: font.base, color: clr.textDim }}>{order.leadTimeDays}d</TD>
-                              <TD center style={{ fontSize: font.base, color: late ? clr.red : clr.textDim }}>{fmt(arrival)}</TD>
-                              <TD center>
-                                {order.arrived
-                                  ? <span style={{ fontSize: font.base, color: clr.green, background: "#48bb7818", padding: "2px 8px", borderRadius: radius.sm }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
-                                  : <span style={{ fontSize: font.base, color: late ? clr.red : clr.yellow, background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: radius.sm }}>{late ? "Overdue" : "Pending"}</span>
-                                }
-                              </TD>
-                              <TD center><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
-                              <TD center>
-                                {canManage && (
-                                  <button onClick={() => toggleArrived(supplier.id, order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: radius.sm, color: order.arrived ? clr.red : clr.green, fontSize: "0.7rem", cursor: "pointer" }}>
-                                    {order.arrived ? "Unmark" : "Mark Arrived"}
-                                  </button>
-                                )}
-                              </TD>
-                            </div>
-                          );
-                        })}
+                        {supplier.orders?.map((order) => (
+                          <OrderRow
+                            key={order.id}
+                            order={order}
+                            supplierParts={supplier.parts || []}
+                            now={now}
+                            canManage={canManage}
+                            onToggleArrived={(orderId) => toggleArrived(supplier.id, orderId)}
+                          />
+                        ))}
                       </div></div>
                     </div>
                   </div>
@@ -236,7 +282,7 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
             {(supplier.orders || []).length === 0 && (
               <div style={{ padding: "0.6rem 1.25rem", fontSize: font.md, color: clr.textGhost }}>
                 No orders yet.
-                {canManage && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.cyan, fontSize: font.md, cursor: "pointer" }}>+ Place one</button>}
+                {canManage && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.cyan, fontSize: font.md, cursor: "pointer" }} aria-label={`Add order to ${supplier.name}`}>+ Place one</button>}
               </div>
             )}
           </div>
@@ -252,7 +298,8 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
       )}
     </>
   );
-};
+});
+SupplierCard.displayName = "SupplierCard";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export const SuppliersPage = () => {

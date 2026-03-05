@@ -113,6 +113,24 @@ src/
 
 ## Changelog
 
+### v3.3 — Accessibility (WCAG AA)
+- **ARIA labels** — All interactive buttons now have descriptive `aria-label` attributes for screen readers (TasksPage, ProjectsPage, TeamPage, BomPage, SuppliersPage, DashboardPage, GanttPage, AuthScreens)
+- **ARIA roles** — Modals have `role="dialog"` and `aria-modal="true"`, clickable StatCards have `role="button"`, Toggle switches have `role="switch"` with `aria-checked`
+- **ARIA states** — Project filter buttons use `aria-pressed`, password visibility toggle has context-aware labels
+- **Keyboard navigation** — StatCards, Toggle switches, and all buttons support Enter/Space key activation
+- **Focus management** — Global `:focus-visible` styles with 2px cyan ring, 2px white offset; focus tokens in `theme.ts` exported for consistency
+- **Modal accessibility** — Escape key closes modals, focus restored on close
+- **Reduced motion** — `prefers-reduced-motion: reduce` media query disables animations for users with motion sensitivity
+- **High contrast** — `prefers-contrast: high` media query increases border visibility for accessibility
+- **Result** — Full keyboard navigability, screen reader support, and automatic accessibility features across all pages and components
+
+### v3.2 — Performance: React.memo Memoization
+- **TaskRow, ProjectCard, TeamMemberCard** — All extracted and memoized to prevent unnecessary re-renders when parent state updates
+- **Supplier list components** — `SupplierCard`, `PartRow`, `OrderRow` wrapped with `React.memo`
+- **BomRow** — Extracted and memoized with `useMemo` for linkedTask, linkedProj, alerts data
+- **useMemo audit** — All pages optimized to memoize derived data (task stats, project stats, BOM alerts, supplier summaries) to avoid recalculation on every render
+- **Result** — Significant performance improvement on pages with many items (Tasks, Projects, BOM, Suppliers, Team)
+
 ### v3.1 — Table Column Alignment
 - **Rule applied consistently** — text columns (title, name, description, notes) left-aligned; data columns (dates, quantities, status badges, action buttons) centred
 - **TasksPage** — Due, Status, Priority, Updated, Actions all centred; header TH matches
@@ -241,7 +259,7 @@ src/
 11. **Auth / security basics**
     Move passwords out of localStorage (hash with bcrypt-js or replace with a proper auth provider). Session expiry. Optional: Supabase Auth drop-in.
 
-12. **Perf & reliability tweaks**
+12. **~~Perf & reliability tweaks~~** ✅ *v3.2-v3.3*
     `React.memo` on heavy list components, `useMemo` audit, accessibility pass (keyboard nav, ARIA roles, focus trapping in modals).
 
 ---

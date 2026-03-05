@@ -94,6 +94,15 @@ export const z = {
   toast:    1100,
 } as const;
 
+// ── Focus / accessibility styles ──────────────────────────────────────────────
+export const focus = {
+  ring:        `0 0 0 3px ${clr.cyan}40`,      // cyan with 40% opacity
+  ringOffset:  `0 0 0 2px ${bg.base}`,          // dark offset for visibility
+  outline:     `2px solid ${clr.cyan}`,         // solid outline fallback
+  ringError:   `0 0 0 3px ${clr.red}40`,        // for error states
+  ringSuccess: `0 0 0 3px ${clr.green}40`,      // for success states
+} as const;
+
 // ── Composite helpers — commonly combined values ──────────────────────────────
 
 /** Standard card container style */
@@ -115,6 +124,12 @@ export const inputStyle = {
   boxSizing:    "border-box" as const,
   outline:      "none",
   colorScheme:  "dark",
+} as const;
+
+/** Focus style for inputs */
+export const inputFocusStyle = {
+  borderColor: clr.cyan,
+  boxShadow:   focus.ring,
 } as const;
 
 /** Row divider border */

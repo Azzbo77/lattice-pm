@@ -33,6 +33,16 @@ export const miniSel = (accentColor: string): React.CSSProperties => ({
 // ── Layout primitives ─────────────────────────────────────────────────────────
 export const Overlay = ({ children, onClose, wide }: { children: ReactNode; onClose: () => void; wide?: boolean }) => {
   const { isMobile } = useBreakpoint();
+  
+  // Handle Escape key to close modal
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+  
   return (
     <div
       onClick={onClose}
@@ -40,6 +50,8 @@ export const Overlay = ({ children, onClose, wide }: { children: ReactNode; onCl
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
         style={{ background: bg.card, border: `1px solid ${bg.muted}`, borderRadius: isMobile ? `${radius.xxl} ${radius.xxl} 0 0` : radius.xxl, padding: space[7], width: "100%", maxWidth: wide ? "580px" : "480px", maxHeight: isMobile ? "90vh" : "85vh", overflowY: "auto", boxShadow: shadow.modal }}
       >
         {children}

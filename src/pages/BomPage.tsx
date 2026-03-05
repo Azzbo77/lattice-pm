@@ -1,9 +1,76 @@
+import { useMemo, useCallback } from "react";
+import React from "react";
 import { useApp } from "../context/AppContext";
 import { bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
 import { TH, TD, UpdatedBadge, selStyle } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 import { bg, clr, font, radius, space } from "../constants/theme";
+import type { BomRow as BomRowType, Project, Task } from "../types";
+
+// ── BomRow component ──────────────────────────────────────────────────────────
+interface BomRowProps {
+  row: BomRowType;
+  linkedTask: Task | undefined;
+  linkedProj: Project | undefined;
+  alerts: string[];
+  canManage: boolean;
+  onEdit: (entry: BomRowType) => void;
+}
+
+const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onEdit }: BomRowProps) => {
+  const meta = bomStatusMeta[row.status];
+  const total = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
+  const hasAlert = alerts.length > 0;
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem", borderLeft: hasAlert ? "3px solid #fc818180" : "3px solid transparent" }}>
+      <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{row.part?.partNumber}</span></TD>
+      <TD style={{ fontSize: font.md }}>{row.part?.description}</TD>
+      <TD style={{ fontSize: space["5"], color: clr.textMuted }}>{row.supplier?.name}</TD>
+      <TD center style={{ fontSize: font.md }}>{row.qtyOrdered} {row.part?.unit}</TD>
+      <TD center style={{ fontSize: font.md }}>{total}</TD>
+      <TD center>
+        <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: radius.sm, background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
+          {meta?.icon} {meta?.label}
+        </span>
+      </TD>
+      <TD>
+        {linkedTask ? (
+          <div>
+            <div style={{ fontSize: font.base, color: linkedTask.status === "done" ? clr.green : linkedTask.status === "blocked" ? clr.red : clr.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {linkedTask.status === "done" ? "✓ " : linkedTask.status === "blocked" ? "⛔ " : ""}{linkedTask.title}
+            </div>
+            {linkedProj && <div style={{ fontSize: font.xs, color: linkedProj.color, marginTop: "1px" }}>{linkedProj.name}</div>}
+          </div>
+        ) : (
+          <span style={{ fontSize: "0.68rem", color: clr.textDeep, fontStyle: "italic" }}>—</span>
+        )}
+      </TD>
+      <TD style={{ fontSize: font.base, color: clr.textDim, fontStyle: row.notes ? "normal" : "italic" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          {hasAlert && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: radius.xs }}>
+              {alerts.map((a) => (
+                <span key={a} style={{ fontSize: font.xxs, color: clr.red, background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.xs, padding: "1px 4px", whiteSpace: "nowrap" }}>⚠ {a}</span>
+              ))}
+            </div>
+          )}
+          {row.notes || <span style={{ color: clr.textDeep }}>No notes</span>}
+        </div>
+      </TD>
+      <TD center>
+        <UpdatedBadge iso={row.updatedAt} byName={row.updatedBy} compact />
+      </TD>
+      <TD center>
+        {canManage && (
+          <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>
+        )}
+      </TD>
+    </div>
+  );
+});
+BomRow.displayName = "BomRow";
 
 export const BomPage = () => {
   const {
@@ -14,7 +81,7 @@ export const BomPage = () => {
   const now = todayStr();
 
   // Helper — is this BOM row alertable?
-  const getAlerts = (row: typeof bomRows[0]): string[] => {
+  const getAlerts = useCallback((row: typeof bomRows[0]): string[] => {
     const alerts: string[] = [];
     const linkedTask = tasks.find((t) => t.id === row.taskId);
     if (linkedTask && linkedTask.status !== "done" && linkedTask.endDate < now)
@@ -29,6 +96,21 @@ export const BomPage = () => {
     if (delayedOrders.length > 0) alerts.push("Part delivery delayed");
     if (row.status === "not-used" && row.taskId) alerts.push("Linked part unused");
     return alerts;
+  }, [tasks, suppliers, now]);
+
+  // Memoize BomRow data to prevent unnecessary re-renders
+  const bomRowsData = useMemo(() =>
+    filteredBom.map((row) => ({
+      row,
+      linkedTask: tasks.find((t) => t.id === row.taskId),
+      linkedProj: projects.find((p) => p.id === row.projectId),
+      alerts: getAlerts(row),
+    })),
+    [filteredBom, tasks, projects, getAlerts]
+  );
+
+  const handleEditBom = (row: BomRowType) => {
+    setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId });
   };
 
   const handleExport = () => {
@@ -117,61 +199,17 @@ export const BomPage = () => {
 
         {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No BOM entries match this filter.</div>}
 
-        {filteredBom.map((row) => {
-          const meta        = bomStatusMeta[row.status];
-          const total       = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
-          const linkedTask  = tasks.find((t) => t.id === row.taskId);
-          const linkedProj  = projects.find((p) => p.id === row.projectId);
-          const alerts      = getAlerts(row);
-          const hasAlert    = alerts.length > 0;
-
-          return (
-            <div key={row.id} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem", borderLeft: hasAlert ? "3px solid #fc818180" : "3px solid transparent" }}>
-              <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{row.part?.partNumber}</span></TD>
-              <TD style={{ fontSize: font.md }}>{row.part?.description}</TD>
-              <TD style={{ fontSize: space["5"], color: clr.textMuted }}>{row.supplier?.name}</TD>
-              <TD center style={{ fontSize: font.md }}>{row.qtyOrdered} {row.part?.unit}</TD>
-              <TD center style={{ fontSize: font.md }}>{total}</TD>
-              <TD center>
-                <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: radius.sm, background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
-                  {meta?.icon} {meta?.label}
-                </span>
-              </TD>
-              <TD>
-                {linkedTask ? (
-                  <div>
-                    <div style={{ fontSize: font.base, color: linkedTask.status === "done" ? clr.green : linkedTask.status === "blocked" ? clr.red : clr.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {linkedTask.status === "done" ? "✓ " : linkedTask.status === "blocked" ? "⛔ " : ""}{linkedTask.title}
-                    </div>
-                    {linkedProj && <div style={{ fontSize: font.xs, color: linkedProj.color, marginTop: "1px" }}>{linkedProj.name}</div>}
-                  </div>
-                ) : (
-                  <span style={{ fontSize: "0.68rem", color: clr.textDeep, fontStyle: "italic" }}>—</span>
-                )}
-              </TD>
-              <TD style={{ fontSize: font.base, color: clr.textDim, fontStyle: row.notes ? "normal" : "italic" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  {hasAlert && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: radius.xs }}>
-                      {alerts.map((a) => (
-                        <span key={a} style={{ fontSize: font.xxs, color: clr.red, background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.xs, padding: "1px 4px", whiteSpace: "nowrap" }}>⚠ {a}</span>
-                      ))}
-                    </div>
-                  )}
-                  {row.notes || <span style={{ color: clr.textDeep }}>No notes</span>}
-                </div>
-              </TD>
-              <TD center>
-                <UpdatedBadge iso={row.updatedAt} byName={row.updatedBy} compact />
-              </TD>
-              <TD center>
-                {canManage && (
-                  <button onClick={() => setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
-                )}
-              </TD>
-            </div>
-          );
-        })}
+        {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => (
+          <BomRow
+            key={row.id}
+            row={row}
+            linkedTask={linkedTask}
+            linkedProj={linkedProj}
+            alerts={alerts}
+            canManage={canManage}
+            onEdit={handleEditBom}
+          />
+        ))}
       </div></div></div>
     </div>
   );

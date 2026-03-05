@@ -30,7 +30,7 @@ const PasswordField = ({ label, value, onChange, placeholder }: { label: string;
       {label && <div style={{ fontSize: "0.7rem", color: clr.textFaint, marginBottom: radius.sm, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>}
       <div style={{ position: "relative" }}>
         <input type={show ? "text" : "password"} style={{ ...inp, paddingRight: "2.5rem" }} value={value} onChange={onChange} placeholder={placeholder || ""} />
-        <button type="button" onClick={() => setShow((s) => !s)} style={{ position: "absolute", right: space["3"], top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: clr.textFaint, cursor: "pointer", fontSize: "0.85rem" }}>
+        <button type="button" onClick={() => setShow((s) => !s)} style={{ position: "absolute", right: space["3"], top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: clr.textFaint, cursor: "pointer", fontSize: "0.85rem" }} aria-label={show ? "Hide password" : "Show password"}>
           {show ? "🙈" : "👁️"}
         </button>
       </div>

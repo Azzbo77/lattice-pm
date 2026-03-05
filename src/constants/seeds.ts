@@ -1,3 +1,5 @@
+export { bg, clr, font, space, radius, shadow } from "./theme";
+
 import type { User, Project, Task, Supplier, BomEntry, BomStatus, Role } from "../types";
 
 // ── Role constants ────────────────────────────────────────────────────────────

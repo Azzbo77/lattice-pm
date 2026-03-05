@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { Btn, TH, TD, UpdatedBadge, ConfirmModal, selStyle } from "../components/ui";
 import { addDays, fmt, todayStr } from "../utils/dateHelpers";
 import type { Supplier } from "../types";
+import { bg, clr, font, radius, space } from "../constants/theme";
 
 // ── Filter helpers ────────────────────────────────────────────────────────────
 type Filter = "active" | "archived" | "overdue";
@@ -26,14 +27,14 @@ const SupplierSummary = ({ supplier, now }: { supplier: Supplier; now: string })
   const overdue = (supplier.orders || []).filter((o) => !o.arrived && addDays(o.orderedDate, o.leadTimeDays) < now).length;
 
   return (
-    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+    <div style={{ display: "flex", gap: space["5"], flexWrap: "wrap", alignItems: "center" }}>
       {[
-        { label: "parts",          val: parts,   color: "#00d4ff" },
-        { label: "orders",         val: orders,  color: "#888"    },
-        { label: "pending",        val: pending, color: "#f6c90e" },
-        { label: "overdue",        val: overdue, color: "#fc8181", hide: overdue === 0 },
+        { label: "parts",          val: parts,   color: clr.cyan },
+        { label: "orders",         val: orders,  color: clr.textMuted    },
+        { label: "pending",        val: pending, color: clr.yellow },
+        { label: "overdue",        val: overdue, color: clr.red, hide: overdue === 0 },
       ].filter((s) => !s.hide).map(({ label, val, color }) => (
-        <span key={label} style={{ fontSize: "0.68rem", color, background: `${color}15`, border: `1px solid ${color}30`, borderRadius: "4px", padding: "1px 7px" }}>
+        <span key={label} style={{ fontSize: "0.68rem", color, background: `${color}15`, border: `1px solid ${color}30`, borderRadius: radius.sm, padding: "1px 7px" }}>
           {val} {label}
         </span>
       ))}
@@ -56,10 +57,10 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
   return (
     <>
       <div style={{
-        background: "#0f0f1e",
-        border: `1px solid ${supplier.archived ? "#252530" : "#1e1e35"}`,
-        borderRadius: "12px",
-        marginBottom: "1rem",
+        background: bg.card,
+        border: `1px solid ${supplier.archived ? bg.muted : bg.border}`,
+        borderRadius: radius.xxl,
+        marginBottom: space["6"],
         overflow: "hidden",
         opacity: supplier.archived ? 0.6 : 1,
         transition: "opacity 0.2s",
@@ -67,22 +68,22 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
         {/* ── Header (always visible) ── */}
         <div
           onClick={() => setOpen((o) => !o)}
-          style={{ padding: "0.85rem 1.25rem", background: "#0d0d20", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", cursor: "pointer", userSelect: "none" }}
+          style={{ padding: "0.85rem 1.25rem", background: bg.subtle, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: space["3"], cursor: "pointer", userSelect: "none" }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "4px" }}>
-              <span style={{ fontSize: "0.65rem", color: open ? "#00d4ff" : "#444", transition: "color 0.15s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: space["3"], marginBottom: radius.sm }}>
+              <span style={{ fontSize: font.sm, color: open ? clr.cyan : clr.textGhost, transition: "color 0.15s" }}>
                 {open ? "▾" : "▸"}
               </span>
-              <span style={{ fontWeight: 600, color: supplier.archived ? "#555" : "#e0e0e0", fontSize: "0.95rem" }}>
+              <span style={{ fontWeight: 600, color: supplier.archived ? clr.textFaint : clr.textPrimary, fontSize: font.h3 }}>
                 {supplier.name}
               </span>
               {supplier.archived && (
-                <span style={{ fontSize: "0.6rem", color: "#555", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "4px", padding: "1px 6px" }}>archived</span>
+                <span style={{ fontSize: font.xxs, color: clr.textFaint, background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, padding: "1px 6px" }}>archived</span>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-              <span style={{ fontSize: "0.72rem", color: "#555" }}>{supplier.contact} · {supplier.phone}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: space["5"], flexWrap: "wrap" }}>
+              <span style={{ fontSize: font.base, color: clr.textFaint }}>{supplier.contact} · {supplier.phone}</span>
               <UpdatedBadge iso={supplier.updatedAt} byName={supplier.updatedBy} compact />
             </div>
             {!open && (
@@ -94,22 +95,22 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
 
           {/* Action buttons — stop propagation so clicks don't toggle accordion */}
           {canManage && (
-            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: space["2"], flexWrap: "wrap" }}>
               {!supplier.archived && (
                 <>
-                  <Btn color="#ff6b35" small onClick={() => setSupplierModal(supplier)}>Edit</Btn>
-                  <Btn color="#48bb78" small onClick={() => setPartModal({ supplierId: supplier.id, part: {} })}>+ Part</Btn>
-                  <Btn color="#00d4ff" small onClick={() => setOrderModal(supplier.id)}>+ Order</Btn>
+                  <Btn color={clr.orange} small onClick={() => setSupplierModal(supplier)}>Edit</Btn>
+                  <Btn color={clr.green} small onClick={() => setPartModal({ supplierId: supplier.id, part: {} })}>+ Part</Btn>
+                  <Btn color={clr.cyan} small onClick={() => setOrderModal(supplier.id)}>+ Order</Btn>
                 </>
               )}
               <Btn
-                color={supplier.archived ? "#48bb78" : "#888"}
+                color={supplier.archived ? clr.green : clr.textMuted}
                 small
                 onClick={() => toggleArchiveSupplier(supplier.id)}
               >
                 {supplier.archived ? "Restore" : "Archive"}
               </Btn>
-              <Btn color="#fc8181" small onClick={() => setConfirmDelete(true)}>Delete</Btn>
+              <Btn color={clr.red} small onClick={() => setConfirmDelete(true)}>Delete</Btn>
             </div>
           )}
         </div>
@@ -122,34 +123,34 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
               <div style={{ borderBottom: "1px solid #141428" }}>
                 <div
                   onClick={() => setOpenParts((o) => !o)}
-                  style={{ padding: "0.75rem 1.25rem", background: "#0d0d20", display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", userSelect: "none" }}
+                  style={{ padding: "0.75rem 1.25rem", background: bg.subtle, display: "flex", alignItems: "center", gap: space["3"], cursor: "pointer", userSelect: "none" }}
                 >
-                  <span style={{ fontSize: "0.65rem", color: openParts ? "#00d4ff" : "#444", transition: "color 0.15s" }}>
+                  <span style={{ fontSize: font.sm, color: openParts ? clr.cyan : clr.textGhost, transition: "color 0.15s" }}>
                     {openParts ? "▾" : "▸"}
                   </span>
-                  <div style={{ fontSize: "0.75rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                  <div style={{ fontSize: space["5"], color: clr.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
                     Parts Catalogue
                   </div>
-                  <span style={{ fontSize: "0.68rem", color: "#555", marginLeft: "0.5rem" }}>({supplier.parts?.length || 0})</span>
+                  <span style={{ fontSize: "0.68rem", color: clr.textFaint, marginLeft: space["3"] }}>({supplier.parts?.length || 0})</span>
                 </div>
                 {openParts && (
                   <div style={{ padding: "0.75rem 1.25rem" }}>
-                    <div style={{ background: "#0a0a18", borderRadius: "8px", overflow: "hidden" }}>
+                    <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "480px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: "#0d0d20" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: bg.subtle }}>
                           {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                         </div>
                         {supplier.parts?.map((pt) => (
                           <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", alignItems: "center", padding: "0 0.5rem" }}>
-                            <TD><span style={{ fontFamily: "monospace", fontSize: "0.78rem", color: "#00d4ff" }}>{pt.partNumber}</span></TD>
+                            <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{pt.partNumber}</span></TD>
                             <TD>{pt.description}</TD>
                             <TD>{pt.unitQty}</TD>
                             <TD>{pt.unit}</TD>
-                            <TD style={{ display: "flex", gap: "4px" }}>
+                            <TD style={{ display: "flex", gap: radius.sm }}>
                               {canManage && (
                                 <>
-                                  <button onClick={() => setPartModal({ supplierId: supplier.id, part: { ...pt, _existing: true } })} style={{ padding: "3px 7px", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "4px", color: "#888", fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
-                                  <button onClick={() => deletePart(supplier.id, pt.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: "4px", color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }}>✕</button>
+                                  <button onClick={() => setPartModal({ supplierId: supplier.id, part: { ...pt, _existing: true } })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
+                                  <button onClick={() => deletePart(supplier.id, pt.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }}>✕</button>
                                 </>
                               )}
                             </TD>
@@ -162,9 +163,9 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
               </div>
             )}
             {(supplier.parts || []).length === 0 && (
-              <div style={{ padding: "0.6rem 1.25rem", borderBottom: "1px solid #141428", fontSize: "0.78rem", color: "#444" }}>
+              <div style={{ padding: "0.6rem 1.25rem", borderBottom: "1px solid #141428", fontSize: font.md, color: clr.textGhost }}>
                 No parts catalogued yet.
-                {canManage && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: "0.5rem", background: "none", border: "none", color: "#48bb78", fontSize: "0.78rem", cursor: "pointer" }}>+ Add one</button>}
+                {canManage && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.green, fontSize: font.md, cursor: "pointer" }}>+ Add one</button>}
               </div>
             )}
 
@@ -173,21 +174,21 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
               <div>
                 <div
                   onClick={() => setOpenOrders((o) => !o)}
-                  style={{ padding: "0.75rem 1.25rem", background: "#0d0d20", display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", userSelect: "none" }}
+                  style={{ padding: "0.75rem 1.25rem", background: bg.subtle, display: "flex", alignItems: "center", gap: space["3"], cursor: "pointer", userSelect: "none" }}
                 >
-                  <span style={{ fontSize: "0.65rem", color: openOrders ? "#00d4ff" : "#444", transition: "color 0.15s" }}>
+                  <span style={{ fontSize: font.sm, color: openOrders ? clr.cyan : clr.textGhost, transition: "color 0.15s" }}>
                     {openOrders ? "▾" : "▸"}
                   </span>
-                  <div style={{ fontSize: "0.75rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                  <div style={{ fontSize: space["5"], color: clr.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
                     Orders
                   </div>
-                  <span style={{ fontSize: "0.68rem", color: "#555", marginLeft: "0.5rem" }}>({supplier.orders?.length || 0})</span>
+                  <span style={{ fontSize: "0.68rem", color: clr.textFaint, marginLeft: space["3"] }}>({supplier.orders?.length || 0})</span>
                 </div>
                 {openOrders && (
                   <div style={{ padding: "0.75rem 1.25rem" }}>
-                    <div style={{ background: "#0a0a18", borderRadius: "8px", overflow: "hidden" }}>
+                    <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "640px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: "#0d0d20" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: bg.subtle }}>
                           {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i}>{h}</TH>)}
                         </div>
                         {supplier.orders?.map((order) => {
@@ -196,29 +197,29 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                           return (
                             <div key={order.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem" }}>
                               <TD>
-                                <div style={{ fontSize: "0.82rem", color: "#e0e0e0" }}>{order.description}</div>
+                                <div style={{ fontSize: font.lg, color: clr.textPrimary }}>{order.description}</div>
                                 {(order.partIds || []).length > 0 && (
-                                  <div style={{ fontSize: "0.62rem", color: "#555", marginTop: "2px" }}>
+                                  <div style={{ fontSize: font.xs, color: clr.textFaint, marginTop: "2px" }}>
                                     {(order.partIds || []).map((pid) => {
                                       const pt = supplier.parts?.find((p) => p.id === pid);
-                                      return pt ? <span key={pid} style={{ marginRight: "4px", color: "#00d4ff" }}>{pt.partNumber}</span> : null;
+                                      return pt ? <span key={pid} style={{ marginRight: radius.sm, color: clr.cyan }}>{pt.partNumber}</span> : null;
                                     })}
                                   </div>
                                 )}
                               </TD>
-                              <TD style={{ fontSize: "0.76rem", color: "#777" }}>{fmt(order.orderedDate)}</TD>
-                              <TD style={{ fontSize: "0.76rem", color: "#777" }}>{order.leadTimeDays}d</TD>
-                              <TD style={{ fontSize: "0.76rem", color: late ? "#fc8181" : "#777" }}>{fmt(arrival)}</TD>
+                              <TD style={{ fontSize: font.base, color: clr.textDim }}>{fmt(order.orderedDate)}</TD>
+                              <TD style={{ fontSize: font.base, color: clr.textDim }}>{order.leadTimeDays}d</TD>
+                              <TD style={{ fontSize: font.base, color: late ? clr.red : clr.textDim }}>{fmt(arrival)}</TD>
                               <TD>
                                 {order.arrived
-                                  ? <span style={{ fontSize: "0.72rem", color: "#48bb78", background: "#48bb7818", padding: "2px 8px", borderRadius: "4px" }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
-                                  : <span style={{ fontSize: "0.72rem", color: late ? "#fc8181" : "#f6c90e", background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: "4px" }}>{late ? "Overdue" : "Pending"}</span>
+                                  ? <span style={{ fontSize: font.base, color: clr.green, background: "#48bb7818", padding: "2px 8px", borderRadius: radius.sm }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
+                                  : <span style={{ fontSize: font.base, color: late ? clr.red : clr.yellow, background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: radius.sm }}>{late ? "Overdue" : "Pending"}</span>
                                 }
                               </TD>
                               <TD><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
                               <TD>
                                 {canManage && (
-                                  <button onClick={() => toggleArrived(supplier.id, order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: "4px", color: order.arrived ? "#fc8181" : "#48bb78", fontSize: "0.7rem", cursor: "pointer" }}>
+                                  <button onClick={() => toggleArrived(supplier.id, order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: radius.sm, color: order.arrived ? clr.red : clr.green, fontSize: "0.7rem", cursor: "pointer" }}>
                                     {order.arrived ? "Unmark" : "Mark Arrived"}
                                   </button>
                                 )}
@@ -233,9 +234,9 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
               </div>
             )}
             {(supplier.orders || []).length === 0 && (
-              <div style={{ padding: "0.6rem 1.25rem", fontSize: "0.78rem", color: "#444" }}>
+              <div style={{ padding: "0.6rem 1.25rem", fontSize: font.md, color: clr.textGhost }}>
                 No orders yet.
-                {canManage && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: "0.5rem", background: "none", border: "none", color: "#00d4ff", fontSize: "0.78rem", cursor: "pointer" }}>+ Place one</button>}
+                {canManage && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.cyan, fontSize: font.md, cursor: "pointer" }}>+ Place one</button>}
               </div>
             )}
           </div>
@@ -269,22 +270,22 @@ export const SuppliersPage = () => {
   return (
     <div>
       {/* Header bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <p style={{ color: "#555", fontSize: "0.8rem" }}>Supplier catalogue, parts, and orders</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space["6"], flexWrap: "wrap", gap: space["3"] }}>
+        <div style={{ display: "flex", alignItems: "center", gap: space["5"], flexWrap: "wrap" }}>
+          <p style={{ color: clr.textFaint, fontSize: "0.8rem" }}>Supplier catalogue, parts, and orders</p>
           <select value={filter} onChange={(e) => setFilter(e.target.value as Filter)} style={selStyle}>
             <option value="active">Active ({counts.active})</option>
             <option value="archived">Archived ({counts.archived})</option>
             <option value="overdue">Overdue orders ({counts.overdue})</option>
           </select>
         </div>
-        {canManage && <Btn color="#ff6b35" onClick={() => setSupplierModal({})}>+ Add Supplier</Btn>}
+        {canManage && <Btn color={clr.orange} onClick={() => setSupplierModal({})}>+ Add Supplier</Btn>}
       </div>
 
       {/* Empty states */}
-      {filtered.length === 0 && filter === "active"   && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No active suppliers. {canManage && "Add one above."}</div>}
-      {filtered.length === 0 && filter === "archived"  && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No archived suppliers.</div>}
-      {filtered.length === 0 && filter === "overdue"   && <div style={{ padding: "2rem", textAlign: "center", color: "#48bb78" }}>✓ No overdue orders.</div>}
+      {filtered.length === 0 && filter === "active"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No active suppliers. {canManage && "Add one above."}</div>}
+      {filtered.length === 0 && filter === "archived"  && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No archived suppliers.</div>}
+      {filtered.length === 0 && filter === "overdue"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.green }}>✓ No overdue orders.</div>}
 
       {/* Cards */}
       {filtered.map((supplier) => (

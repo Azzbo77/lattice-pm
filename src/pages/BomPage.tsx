@@ -3,6 +3,7 @@ import { bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
 import { TH, TD, UpdatedBadge, selStyle } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
+import { bg, clr, font, radius, space } from "../constants/theme";
 
 export const BomPage = () => {
   const {
@@ -70,15 +71,15 @@ export const BomPage = () => {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.75rem" }}>
-        <p style={{ color: "#555", fontSize: "0.8rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space["6"], flexWrap: "wrap", gap: space["5"] }}>
+        <p style={{ color: clr.textFaint, fontSize: "0.8rem" }}>
           {bomRows.length} parts across {[...new Set(bomRows.map((r) => r.supplierId))].length} suppliers
-          {alertCount > 0 && <span style={{ marginLeft: "0.75rem", color: "#fc8181", background: "#fc818115", border: "1px solid #fc818140", borderRadius: "4px", padding: "1px 7px", fontSize: "0.72rem" }}>⚠ {alertCount} alert{alertCount !== 1 ? "s" : ""}</span>}
+          {alertCount > 0 && <span style={{ marginLeft: space["5"], color: clr.red, background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, padding: "1px 7px", fontSize: font.base }}>⚠ {alertCount} alert{alertCount !== 1 ? "s" : ""}</span>}
         </p>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: space["3"], alignItems: "center", flexWrap: "wrap" }}>
           {/* Status filter pills */}
-          {[["all","#888","All"],["used","#48bb78","Used"],["not-used","#fc8181","Not Used"],["under-review","#f6c90e","Under Review"],["pending","#888","Pending"]].map(([k, c, l]) => (
-            <button key={k} onClick={() => setBomFilter(k)} style={{ padding: "0.3rem 0.75rem", borderRadius: "20px", border: `1px solid ${bomFilter === k ? c : "#252540"}`, background: bomFilter === k ? `${c}22` : "transparent", color: bomFilter === k ? c : "#555", fontSize: "0.75rem", cursor: "pointer" }}>{l}</button>
+          {[["all",clr.textMuted,"All"],["used",clr.green,"Used"],["not-used",clr.red,"Not Used"],["under-review",clr.yellow,"Under Review"],["pending",clr.textMuted,"Pending"]].map(([k, c, l]) => (
+            <button key={k} onClick={() => setBomFilter(k)} style={{ padding: "0.3rem 0.75rem", borderRadius: radius.pill, border: `1px solid ${bomFilter === k ? c : bg.muted}`, background: bomFilter === k ? `${c}22` : "transparent", color: bomFilter === k ? c : clr.textFaint, fontSize: space["5"], cursor: "pointer" }}>{l}</button>
           ))}
           {/* Task/project filter dropdown */}
           <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} style={{ ...selStyle, maxWidth: "200px" }}>
@@ -86,35 +87,35 @@ export const BomPage = () => {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <button onClick={handleExport} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.85rem", borderRadius: "20px", border: "1px solid #48bb7870", background: "#48bb7818", color: "#48bb78", fontSize: "0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}>⬇ Export CSV</button>
+          <button onClick={handleExport} style={{ display: "flex", alignItems: "center", gap: space["2"], padding: "0.3rem 0.85rem", borderRadius: radius.pill, border: "1px solid #48bb7870", background: "#48bb7818", color: clr.green, fontSize: space["5"], cursor: "pointer", whiteSpace: "nowrap" }}>⬇ Export CSV</button>
         </div>
       </div>
 
       {/* Summary stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "0.75rem", marginBottom: "1.25rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: space["5"], marginBottom: space["7"] }}>
         {Object.entries(bomStatusMeta).map(([k, v]) => {
           const count = bomRows.filter((r) => r.status === k).length;
           return (
-            <div key={k} onClick={() => setBomFilter(k)} style={{ background: "#0f0f1e", border: `1px solid ${bomFilter === k ? v.color : "#1e1e35"}`, borderRadius: "8px", padding: "0.75rem", cursor: "pointer", textAlign: "center" }}>
+            <div key={k} onClick={() => setBomFilter(k)} style={{ background: bg.card, border: `1px solid ${bomFilter === k ? v.color : bg.border}`, borderRadius: radius.lg, padding: space["5"], cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: "1.3rem" }}>{v.icon}</div>
               <div style={{ fontSize: "1.4rem", fontWeight: 700, color: v.color, lineHeight: 1.1 }}>{count}</div>
-              <div style={{ fontSize: "0.65rem", color: "#555", marginTop: "2px" }}>{v.label}</div>
+              <div style={{ fontSize: font.sm, color: clr.textFaint, marginTop: "2px" }}>{v.label}</div>
             </div>
           );
         })}
       </div>
 
       {/* Table */}
-      <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
+      <div style={{ background: bg.card, border: "1px solid #1e1e35", borderRadius: radius.xl, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: "960px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: "#0d0d20" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle }}>
           {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
             <TH key={i} center={i >= 5 && i !== 6 && i !== 7}>{h}</TH>
           ))}
         </div>
 
-        {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No BOM entries match this filter.</div>}
+        {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No BOM entries match this filter.</div>}
 
         {filteredBom.map((row) => {
           const meta        = bomStatusMeta[row.status];
@@ -126,38 +127,38 @@ export const BomPage = () => {
 
           return (
             <div key={row.id} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem", borderLeft: hasAlert ? "3px solid #fc818180" : "3px solid transparent" }}>
-              <TD><span style={{ fontFamily: "monospace", fontSize: "0.78rem", color: "#00d4ff" }}>{row.part?.partNumber}</span></TD>
-              <TD style={{ fontSize: "0.78rem" }}>{row.part?.description}</TD>
-              <TD style={{ fontSize: "0.75rem", color: "#888" }}>{row.supplier?.name}</TD>
-              <TD style={{ fontSize: "0.78rem" }}>{row.qtyOrdered} {row.part?.unit}</TD>
-              <TD style={{ fontSize: "0.78rem" }}>{total}</TD>
+              <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{row.part?.partNumber}</span></TD>
+              <TD style={{ fontSize: font.md }}>{row.part?.description}</TD>
+              <TD style={{ fontSize: space["5"], color: clr.textMuted }}>{row.supplier?.name}</TD>
+              <TD style={{ fontSize: font.md }}>{row.qtyOrdered} {row.part?.unit}</TD>
+              <TD style={{ fontSize: font.md }}>{total}</TD>
               <TD center>
-                <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: "4px", background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: radius.sm, background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
                   {meta?.icon} {meta?.label}
                 </span>
               </TD>
               <TD>
                 {linkedTask ? (
                   <div>
-                    <div style={{ fontSize: "0.72rem", color: linkedTask.status === "done" ? "#48bb78" : linkedTask.status === "blocked" ? "#fc8181" : "#e0e0e0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div style={{ fontSize: font.base, color: linkedTask.status === "done" ? clr.green : linkedTask.status === "blocked" ? clr.red : clr.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {linkedTask.status === "done" ? "✓ " : linkedTask.status === "blocked" ? "⛔ " : ""}{linkedTask.title}
                     </div>
-                    {linkedProj && <div style={{ fontSize: "0.62rem", color: linkedProj.color, marginTop: "1px" }}>{linkedProj.name}</div>}
+                    {linkedProj && <div style={{ fontSize: font.xs, color: linkedProj.color, marginTop: "1px" }}>{linkedProj.name}</div>}
                   </div>
                 ) : (
-                  <span style={{ fontSize: "0.68rem", color: "#333", fontStyle: "italic" }}>—</span>
+                  <span style={{ fontSize: "0.68rem", color: clr.textDeep, fontStyle: "italic" }}>—</span>
                 )}
               </TD>
-              <TD style={{ fontSize: "0.72rem", color: "#666", fontStyle: row.notes ? "normal" : "italic" }}>
+              <TD style={{ fontSize: font.base, color: clr.textDim, fontStyle: row.notes ? "normal" : "italic" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   {hasAlert && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: radius.xs }}>
                       {alerts.map((a) => (
-                        <span key={a} style={{ fontSize: "0.6rem", color: "#fc8181", background: "#fc818115", border: "1px solid #fc818140", borderRadius: "3px", padding: "1px 4px", whiteSpace: "nowrap" }}>⚠ {a}</span>
+                        <span key={a} style={{ fontSize: font.xxs, color: clr.red, background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.xs, padding: "1px 4px", whiteSpace: "nowrap" }}>⚠ {a}</span>
                       ))}
                     </div>
                   )}
-                  {row.notes || <span style={{ color: "#333" }}>No notes</span>}
+                  {row.notes || <span style={{ color: clr.textDeep }}>No notes</span>}
                 </div>
               </TD>
               <TD center>
@@ -165,7 +166,7 @@ export const BomPage = () => {
               </TD>
               <TD center>
                 {canManage && (
-                  <button onClick={() => setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId })} style={{ padding: "3px 7px", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "4px", color: "#888", fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
+                  <button onClick={() => setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
                 )}
               </TD>
             </div>

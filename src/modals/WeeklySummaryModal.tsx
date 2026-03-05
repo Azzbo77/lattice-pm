@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { ROLES, bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays, fmt, daysBetween } from "../utils/dateHelpers";
+import { bg, clr, font, radius, space } from "../constants/theme";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const weekRange = () => {
@@ -47,21 +48,21 @@ ${sections}
 // ── Section components (in-app preview) ──────────────────────────────────────
 const S = {
   head: (title: string) => (
-    <div style={{ fontSize: "0.7rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, margin: "1.25rem 0 0.6rem", paddingBottom: "5px", borderBottom: "1px solid #1e1e35" }}>
+    <div style={{ fontSize: "0.7rem", color: clr.textMuted, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, margin: "1.25rem 0 0.6rem", paddingBottom: "5px", borderBottom: "1px solid #1e1e35" }}>
       {title}
     </div>
   ),
   empty: (msg: string) => (
-    <div style={{ fontSize: "0.78rem", color: "#444", fontStyle: "italic", padding: "0.4rem 0 0.6rem" }}>{msg}</div>
+    <div style={{ fontSize: font.md, color: clr.textGhost, fontStyle: "italic", padding: "0.4rem 0 0.6rem" }}>{msg}</div>
   ),
   table: (cols: string[], rows: any[][], emptyMsg?: string) => (
     rows.length === 0 ? S.empty(emptyMsg || "None.") : (
-      <div style={{ overflowX: "auto", marginBottom: "0.5rem" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
+      <div style={{ overflowX: "auto", marginBottom: space["3"] }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: font.md }}>
           <thead>
             <tr>
               {cols.map((c: string) => (
-                <th key={c} style={{ textAlign: "left", padding: "0.3rem 0.6rem", fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", background: "#0d0d20", borderBottom: "1px solid #1e1e35" }}>{c}</th>
+                <th key={c} style={{ textAlign: "left", padding: "0.3rem 0.6rem", fontSize: font.xs, color: clr.textGhost, textTransform: "uppercase", letterSpacing: "0.05em", background: bg.subtle, borderBottom: "1px solid #1e1e35" }}>{c}</th>
               ))}
             </tr>
           </thead>
@@ -69,7 +70,7 @@ const S = {
             {rows.map((row: any[], i: number) => (
               <tr key={i}>
                 {row.map((cell: any, j: number) => (
-                  <td key={j} style={{ padding: "0.4rem 0.6rem", borderBottom: "1px solid #141428", color: "#ccc", verticalAlign: "top" }}>
+                  <td key={j} style={{ padding: "0.4rem 0.6rem", borderBottom: "1px solid #141428", color: clr.textSecondary, verticalAlign: "top" }}>
                     {cell}
                   </td>
                 ))}
@@ -82,11 +83,11 @@ const S = {
   ),
 };
 
-const mapColors = { red: ["#fc818130","#fc8181"], amber: ["#f6c90e30","#f6c90e"], green: ["#48bb7830","#48bb78"], blue: ["#00d4ff30","#00d4ff"], grey: ["#55555530","#888"] } as const;
+const mapColors = { red: ["#fc818130",clr.red], amber: ["#f6c90e30",clr.yellow], green: ["#48bb7830",clr.green], blue: ["#00d4ff30",clr.cyan], grey: ["#55555530",clr.textMuted] } as const;
 
 const Badge = ({ text, color }: { text: string; color: keyof typeof mapColors }) => {
   const [bg, fg] = mapColors[color] || mapColors.grey;
-  return <span style={{ background: bg, color: fg, borderRadius: "4px", padding: "1px 7px", fontSize: "0.68rem", fontWeight: 600, whiteSpace: "nowrap" }}>{text}</span>;
+  return <span style={{ background: bg, color: fg, borderRadius: radius.sm, padding: "1px 7px", fontSize: "0.68rem", fontWeight: 600, whiteSpace: "nowrap" }}>{text}</span>;
 };
 
 // ── Main modal ────────────────────────────────────────────────────────────────
@@ -127,7 +128,7 @@ export const WeeklySummaryModal = () => {
     const proj     = projects.find((p) => p.id === t.projectId);
     const assignee = users.find((u) => u.id === t.assigneeId);
     return [
-      <span style={{ color: "#e0e0e0" }}>{t.title}</span>,
+      <span style={{ color: clr.textPrimary }}>{t.title}</span>,
       proj ? <span style={{ color: proj.color, fontSize: "0.7rem" }}>{proj.name}</span> : "—",
       role !== ROLES.WORKER ? (assignee?.name || "—") : undefined,
       <Badge text={fmt(t.endDate)} color={t.endDate < now ? "red" : "amber"} />,
@@ -216,8 +217,8 @@ export const WeeklySummaryModal = () => {
       const late = ut.filter((t) => t.endDate < now && t.status !== "done").length;
       const ip   = ut.filter((t) => t.status === "in-progress").length;
       return [
-        <span style={{ color: "#e0e0e0" }}>{u.name}</span>,
-        <span style={{ color: "#888", fontSize: "0.72rem", textTransform: "capitalize" }}>{u.role}</span>,
+        <span style={{ color: clr.textPrimary }}>{u.name}</span>,
+        <span style={{ color: clr.textMuted, fontSize: font.base, textTransform: "capitalize" }}>{u.role}</span>,
         `${ut.length}`,
         <Badge text={`${ip} active`} color="blue" />,
         late > 0 ? <Badge text={`${late} late`} color="red" /> : <Badge text="Clear" color="green" />,
@@ -235,7 +236,7 @@ export const WeeklySummaryModal = () => {
             o.description,
             <Badge text={fmt(due)} color={late ? "red" : "amber"} />,
             late ? <Badge text={`${daysBetween(due, now)}d overdue`} color="red" /> : <Badge text="Due soon" color="amber" />,
-            <span style={{ fontSize: "0.7rem", color: "#555" }}>{s.contact}</span>,
+            <span style={{ fontSize: "0.7rem", color: clr.textFaint }}>{s.contact}</span>,
           ];
         })
     );
@@ -248,7 +249,7 @@ export const WeeklySummaryModal = () => {
         pt?.description || "—",
         sup?.name || "—",
         <Badge text={bomStatusMeta[entry.status]?.label || entry.status} color={entry.status === "under-review" ? "amber" : "grey"} />,
-        entry.notes ? <span style={{ fontSize: "0.7rem", color: "#666" }}>{entry.notes.slice(0, 60)}{entry.notes.length > 60 ? "…" : ""}</span> : "—",
+        entry.notes ? <span style={{ fontSize: "0.7rem", color: clr.textDim }}>{entry.notes.slice(0, 60)}{entry.notes.length > 60 ? "…" : ""}</span> : "—",
       ];
     });
 
@@ -430,49 +431,49 @@ export const WeeklySummaryModal = () => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "#0f0f1e", border: "1px solid #252540", borderRadius: "14px", width: "100%", maxWidth: "760px", marginBottom: "1.5rem" }}
+        style={{ background: bg.card, border: "1px solid #252540", borderRadius: "14px", width: "100%", maxWidth: "760px", marginBottom: "1.5rem" }}
       >
         {/* Header */}
-        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid #1e1e35", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid #1e1e35", display: "flex", alignItems: "center", justifyContent: "space-between", gap: space["6"], flexWrap: "wrap" }}>
           <div>
-            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.2rem", color: "#e0e0e0" }}>📊 Weekly Summary</h2>
-            <div style={{ fontSize: "0.75rem", color: "#555", marginTop: "3px" }}>
-              {dateLabel} · {currentUser.name} · <span style={{ color: "#00d4ff" }}>{roleLabel}</span>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.2rem", color: clr.textPrimary }}>📊 Weekly Summary</h2>
+            <div style={{ fontSize: space["5"], color: clr.textFaint, marginTop: radius.xs }}>
+              {dateLabel} · {currentUser.name} · <span style={{ color: clr.cyan }}>{roleLabel}</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: space["3"], flexWrap: "wrap" }}>
             <button
               onClick={copyText}
-              style={{ padding: "0.4rem 0.9rem", background: copied ? "#48bb7818" : "#15152a", border: `1px solid ${copied ? "#48bb78" : "#252540"}`, borderRadius: "6px", color: copied ? "#48bb78" : "#888", fontSize: "0.78rem", cursor: "pointer", transition: "all 0.2s" }}
+              style={{ padding: "0.4rem 0.9rem", background: copied ? "#48bb7818" : bg.raised, border: `1px solid ${copied ? clr.green : bg.muted}`, borderRadius: radius.md, color: copied ? clr.green : clr.textMuted, fontSize: font.md, cursor: "pointer", transition: "all 0.2s" }}
             >
               {copied ? "✓ Copied!" : "📋 Copy Text"}
             </button>
             <button
               onClick={exportHTML}
-              style={{ padding: "0.4rem 0.9rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: "6px", color: "#00d4ff", fontSize: "0.78rem", cursor: "pointer" }}
+              style={{ padding: "0.4rem 0.9rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.md, cursor: "pointer" }}
             >
               ⬇ Export HTML
             </button>
             <button
               onClick={() => setShowSummary(false)}
-              style={{ padding: "0.4rem 0.75rem", background: "transparent", border: "1px solid #252540", borderRadius: "6px", color: "#555", fontSize: "0.78rem", cursor: "pointer" }}
+              style={{ padding: "0.4rem 0.75rem", background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: font.md, cursor: "pointer" }}
             >
               ✕ Close
             </button>
           </div>
         </div>
         {/* Summary stats pills */}
-        <div style={{ display: "flex", gap: "0.6rem", padding: "0.9rem 1.5rem", borderBottom: "1px solid #141428", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: font.xxs, padding: "0.9rem 1.5rem", borderBottom: "1px solid #141428", flexWrap: "wrap" }}>
           {([
-            [overdue.length,       "Overdue",    overdue.length > 0       ? "#fc8181" : "#48bb78"] as const,
-            [thisWeek.length,      "Due This Week", "#f6c90e"] as const,
-            [blocked.length,       "Blocked",    blocked.length > 0       ? "#fc8181" : "#888"] as const,
-            [doneRecent.length,    "Done Recently", "#48bb78"] as const,
-            ...(role !== ROLES.WORKER ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? "#fc8181" : "#48bb78"] as const] : []),
+            [overdue.length,       "Overdue",    overdue.length > 0       ? clr.red : clr.green] as const,
+            [thisWeek.length,      "Due This Week", clr.yellow] as const,
+            [blocked.length,       "Blocked",    blocked.length > 0       ? clr.red : clr.textMuted] as const,
+            [doneRecent.length,    "Done Recently", clr.green] as const,
+            ...(role !== ROLES.WORKER ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? clr.red : clr.green] as const] : []),
           ] as const).map(([val, label, color]) => (
-            <div key={label} style={{ background: "#15152a", border: "1px solid #1e1e35", borderRadius: "8px", padding: "0.4rem 0.85rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <span style={{ fontSize: "1rem", fontWeight: 700, color }}>{val}</span>
-              <span style={{ fontSize: "0.68rem", color: "#555" }}>{label}</span>
+            <div key={label} style={{ background: bg.raised, border: "1px solid #1e1e35", borderRadius: radius.lg, padding: "0.4rem 0.85rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+              <span style={{ fontSize: space["6"], fontWeight: 700, color }}>{val}</span>
+              <span style={{ fontSize: "0.68rem", color: clr.textFaint }}>{label}</span>
             </div>
           ))}
         </div>

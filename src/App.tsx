@@ -21,6 +21,7 @@ import { MemberModal }    from "./modals/MemberModal";
 import { BackupModal }    from "./modals/BackupModal";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
+import { bg, clr, font, radius, space } from "./constants/theme";
 
 type TabId = "dashboard" | "gantt" | "tasks" | "projects" | "suppliers" | "bom" | "team";
 const TAB_ICONS:  Record<TabId, string> = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" };
@@ -53,7 +54,7 @@ const AppShell = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a18", color: "#e0e0e0", fontFamily: "'IBM Plex Sans',system-ui,sans-serif", display: "flex" }}>
+    <div style={{ minHeight: "100vh", background: bg.deep, color: clr.textPrimary, fontFamily: "'IBM Plex Sans',system-ui,sans-serif", display: "flex" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,7 +79,7 @@ const AppShell = () => {
         <div style={{ padding: isMobile ? "0.5rem 0.75rem" : "0.6rem 1.25rem", background: "#0d0d20", borderBottom: "1px solid #1a1a30", display: "flex", alignItems: "center", gap: "0.75rem", position: "sticky", top: 0, zIndex: 50 }}>
           {/* Page title — hidden on mobile to save space */}
           {!isMobile && (
-            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", flexShrink: 0 }}>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: clr.textPrimary, flexShrink: 0 }}>
               {TAB_ICONS[tab as TabId]} {TAB_LABELS[tab as TabId]}
             </h2>
           )}
@@ -86,7 +87,7 @@ const AppShell = () => {
           {isMobile && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
               <div style={{ width: "22px", height: "22px", background: "linear-gradient(135deg,#00d4ff,#ff6b35)", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem" }}>◈</div>
-              <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "0.95rem", color: "#e0e0e0" }}>Lattice</span>
+              <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "0.95rem", color: clr.textPrimary }}>Lattice</span>
             </div>
           )}
           <SearchBar />
@@ -94,9 +95,9 @@ const AppShell = () => {
           {/* Mobile action buttons */}
           {isMobile && (
             <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
-              <button onClick={() => setShowSummary(true)} style={{ padding: "0.35rem 0.5rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: "6px", color: "#00d4ff", fontSize: "0.72rem", cursor: "pointer" }}>📊</button>
-              {isAdmin && <button onClick={() => setShowBackup(true)} style={{ padding: "0.35rem 0.5rem", background: "#48bb7818", border: "1px solid #48bb7850", borderRadius: "6px", color: "#48bb78", fontSize: "0.72rem", cursor: "pointer" }}>💾</button>}
-              <button onClick={logout} style={{ padding: "0.35rem 0.5rem", background: "transparent", border: "1px solid #252540", borderRadius: "6px", color: "#555", fontSize: "0.72rem", cursor: "pointer" }}>⎋</button>
+              <button onClick={() => setShowSummary(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.cyan}18`, border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.base, cursor: "pointer" }}>📊</button>
+              {isAdmin && <button onClick={() => setShowBackup(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.green}18`, border: "1px solid #48bb7850", borderRadius: radius.md, color: clr.green, fontSize: font.base, cursor: "pointer" }}>💾</button>}
+              <button onClick={logout} style={{ padding: space["2"]+" "+space["3"], background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: "#555", fontSize: font.base, cursor: "pointer" }}>⎋</button>
             </div>
           )}
         </div>

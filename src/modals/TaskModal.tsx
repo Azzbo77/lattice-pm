@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp, miniSel } from "../components/ui";
 import { statusColor, prioColor } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
+import { bg, clr, font, radius, space } from "../constants/theme";
 
 
 // ── Dep Selector — compact searchable multi-select ───────────────────────────
@@ -39,26 +40,26 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
         onClick={() => !disabled && setOpen((o) => !o)}
         style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0.4rem 0.75rem", background: "#15152a",
-          border: `1px solid ${open ? "#00d4ff60" : "#252540"}`,
-          borderRadius: open ? "6px 6px 0 0" : "6px",
+          padding: "0.4rem 0.75rem", background: bg.raised,
+          border: `1px solid ${open ? "#00d4ff60" : bg.muted}`,
+          borderRadius: open ? "6px 6px 0 0" : radius.md,
           cursor: disabled ? "default" : "pointer",
-          minHeight: "36px", gap: "0.5rem",
+          minHeight: "36px", gap: space["3"],
         }}
       >
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", flex: 1 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: radius.sm, flex: 1 }}>
           {selectedTasks.length === 0 ? (
-            <span style={{ fontSize: "0.78rem", color: "#444" }}>
+            <span style={{ fontSize: font.md, color: clr.textGhost }}>
               {candidates.length === 0 ? "No other tasks in this project" : "None — click to add prerequisites"}
             </span>
           ) : (
             selectedTasks.map((t) => (
               <span key={t.id} style={{
-                fontSize: "0.68rem", padding: "2px 7px", borderRadius: "20px",
-                background: `${statusColor[t.status] || "#888"}20`,
-                border: `1px solid ${statusColor[t.status] || "#888"}50`,
-                color: statusColor[t.status] || "#888",
-                display: "flex", alignItems: "center", gap: "3px",
+                fontSize: "0.68rem", padding: "2px 7px", borderRadius: radius.pill,
+                background: `${statusColor[t.status] || clr.textMuted}20`,
+                border: `1px solid ${statusColor[t.status] || clr.textMuted}50`,
+                color: statusColor[t.status] || clr.textMuted,
+                display: "flex", alignItems: "center", gap: radius.xs,
               }}>
                 {statusIcon[t.status]} {t.title}
                 {!disabled && (
@@ -72,7 +73,7 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
           )}
         </div>
         {candidates.length > 0 && (
-          <span style={{ fontSize: "0.7rem", color: "#444", flexShrink: 0 }}>
+          <span style={{ fontSize: "0.7rem", color: clr.textGhost, flexShrink: 0 }}>
             {open ? "▲" : "▼"}
           </span>
         )}
@@ -81,7 +82,7 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
       {/* Dropdown list */}
       {open && candidates.length > 0 && (
         <div style={{
-          background: "#0f0f1e", border: "1px solid #00d4ff60", borderTop: "none",
+          background: bg.card, border: "1px solid #00d4ff60", borderTop: "none",
           borderRadius: "0 0 6px 6px", maxHeight: "200px", overflowY: "auto",
         }}>
           {/* Search box */}
@@ -93,13 +94,13 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                style={{ ...inp, fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
+                style={{ ...inp, fontSize: space["5"], padding: "0.25rem 0.5rem" }}
               />
             </div>
           )}
 
           {filtered.length === 0 && (
-            <div style={{ padding: "0.75rem", fontSize: "0.75rem", color: "#444", textAlign: "center" }}>No tasks match</div>
+            <div style={{ padding: space["5"], fontSize: space["5"], color: clr.textGhost, textAlign: "center" }}>No tasks match</div>
           )}
 
           {filtered.map((t) => {
@@ -109,39 +110,39 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
                 key={t.id}
                 onClick={() => toggle(t.id)}
                 style={{
-                  display: "flex", alignItems: "center", gap: "0.6rem",
+                  display: "flex", alignItems: "center", gap: font.xxs,
                   padding: "0.5rem 0.75rem",
-                  background: sel ? `${statusColor[t.status] || "#888"}12` : "transparent",
+                  background: sel ? `${statusColor[t.status] || clr.textMuted}12` : "transparent",
                   borderBottom: "1px solid #141428",
                   cursor: "pointer",
                   transition: "background 0.1s",
                 }}
-                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.background = "#15152a"; }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.background = bg.raised; }}
                 onMouseLeave={(e) => { if (!sel) e.currentTarget.style.background = "transparent"; }}
               >
                 {/* Checkbox */}
                 <div style={{
-                  width: "14px", height: "14px", borderRadius: "3px", flexShrink: 0,
-                  border: `1.5px solid ${sel ? statusColor[t.status] || "#888" : "#333"}`,
-                  background: sel ? `${statusColor[t.status] || "#888"}30` : "transparent",
+                  width: "14px", height: "14px", borderRadius: radius.xs, flexShrink: 0,
+                  border: `1.5px solid ${sel ? statusColor[t.status] || clr.textMuted : clr.textDeep}`,
+                  background: sel ? `${statusColor[t.status] || clr.textMuted}30` : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.6rem", color: statusColor[t.status] || "#888",
+                  fontSize: font.xxs, color: statusColor[t.status] || clr.textMuted,
                 }}>
                   {sel ? "✓" : ""}
                 </div>
                 {/* Status icon */}
-                <span style={{ fontSize: "0.72rem", width: "14px", textAlign: "center" }}>
+                <span style={{ fontSize: font.base, width: "14px", textAlign: "center" }}>
                   {statusIcon[t.status]}
                 </span>
                 {/* Title */}
-                <span style={{ fontSize: "0.78rem", color: sel ? "#e0e0e0" : "#aaa", flex: 1 }}>
+                <span style={{ fontSize: font.md, color: sel ? clr.textPrimary : "#aaa", flex: 1 }}>
                   {t.title}
                 </span>
                 {/* Status badge */}
                 <span style={{
-                  fontSize: "0.62rem", padding: "1px 6px", borderRadius: "3px",
-                  background: `${statusColor[t.status] || "#888"}18`,
-                  color: statusColor[t.status] || "#888",
+                  fontSize: font.xs, padding: "1px 6px", borderRadius: radius.xs,
+                  background: `${statusColor[t.status] || clr.textMuted}18`,
+                  color: statusColor[t.status] || clr.textMuted,
                 }}>
                   {t.status}
                 </span>
@@ -151,7 +152,7 @@ const DepSelector = ({ candidates, selected, onChange, disabled }: DepSelectorPr
         </div>
       )}
       {selected.length > 0 && (
-        <div style={{ marginTop: "4px", fontSize: "0.65rem", color: "#444" }}>
+        <div style={{ marginTop: radius.sm, fontSize: font.sm, color: clr.textGhost }}>
           {selected.length} prerequisite{selected.length !== 1 ? "s" : ""} — this task can't start until they're done
         </div>
       )}
@@ -208,32 +209,32 @@ export const TaskModal = () => {
 
   return (
     <Overlay onClose={() => setTaskModal(null)} wide>
-      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", marginBottom: "1.25rem" }}>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary, marginBottom: space["7"] }}>
         {task.id ? "Edit Task" : "New Task"}
       </h3>
-      <div style={{ display: "grid", gap: "0.75rem" }}>
+      <div style={{ display: "grid", gap: space["5"] }}>
         <div><Lbl c="Title" /><input style={inp} value={f.title} onChange={u("title")} disabled={!canManage} /></div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space["5"] }}>
           <div><Lbl c="Project" /><select style={inp} value={f.projectId} onChange={u("projectId")} disabled={!canManage}>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
           <div><Lbl c="Assignee" /><select style={inp} value={f.assigneeId} onChange={u("assigneeId")} disabled={!canManage}>{users.map((u2) => <option key={u2.id} value={u2.id}>{u2.name}</option>)}</select></div>
           <div><Lbl c="Start Date" /><input type="date" style={inp} value={f.startDate} onChange={u("startDate")} disabled={!canManage} /></div>
           <div><Lbl c="End Date" /><input type="date" style={inp} value={f.endDate} onChange={u("endDate")} disabled={!canManage} /></div>
           <div>
             <Lbl c="Status" />
-            <select style={{ ...inp, ...miniSel(statusColor[f.status] || "#888") }} value={f.status} onChange={u("status")}>
-              <option value="todo"        style={{ background:"#0f0f1e", color:"#e0e0e0" }}>To Do</option>
-              <option value="in-progress" style={{ background:"#0f0f1e", color:"#00d4ff" }}>In Progress</option>
-              <option value="done"        style={{ background:"#0f0f1e", color:"#48bb78" }}>Done</option>
-              <option value="blocked"     style={{ background:"#0f0f1e", color:"#fc8181" }}>Blocked</option>
+            <select style={{ ...inp, ...miniSel(statusColor[f.status] || clr.textMuted) }} value={f.status} onChange={u("status")}>
+              <option value="todo"        style={{ background:bg.card, color:clr.textPrimary }}>To Do</option>
+              <option value="in-progress" style={{ background:bg.card, color:clr.cyan }}>In Progress</option>
+              <option value="done"        style={{ background:bg.card, color:clr.green }}>Done</option>
+              <option value="blocked"     style={{ background:bg.card, color:clr.red }}>Blocked</option>
             </select>
           </div>
           <div>
             <Lbl c="Priority" />
-            <select style={{ ...inp, ...miniSel(prioColor[f.priority] || "#888") }} value={f.priority} onChange={u("priority")} disabled={!canManage}>
-              <option value="low"    style={{ background:"#0f0f1e", color:"#e0e0e0" }}>Low</option>
-              <option value="medium" style={{ background:"#0f0f1e", color:"#f6c90e" }}>Medium</option>
-              <option value="high"   style={{ background:"#0f0f1e", color:"#fc8181" }}>High</option>
+            <select style={{ ...inp, ...miniSel(prioColor[f.priority] || clr.textMuted) }} value={f.priority} onChange={u("priority")} disabled={!canManage}>
+              <option value="low"    style={{ background:bg.card, color:clr.textPrimary }}>Low</option>
+              <option value="medium" style={{ background:bg.card, color:clr.yellow }}>Medium</option>
+              <option value="high"   style={{ background:bg.card, color:clr.red }}>High</option>
             </select>
           </div>
         </div>
@@ -251,10 +252,10 @@ export const TaskModal = () => {
         )}
       </div>
 
-      <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
+      <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setTaskModal(null)}>Cancel</Btn>
         {canManage && (
-          <Btn color="#00d4ff" onClick={() => saveTask({
+          <Btn color={clr.cyan} onClick={() => saveTask({
             ...f,
             id: (task.id as string) || `t${Date.now()}`,
             status:   f.status   as any,

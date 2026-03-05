@@ -1,53 +1,46 @@
-import React from "react";
-import { roleColor } from "../../constants/seeds";
+import React, { ReactNode } from "react";
+import { useBreakpoint } from "../../hooks/useBreakpoint";
 import type { Role } from "../../types";
-import { initials, timeAgo, isRecent } from "../../utils/dateHelpers";
+import { bg, clr, font, space, radius, shadow, inputStyle } from "../../constants/theme";
 
-export const inp: React.CSSProperties = {
-  width: "100%", padding: "0.5rem 0.75rem",
-  background: "#15152a", border: "1px solid #252540",
-  borderRadius: "6px", color: "#e0e0e0",
-  fontSize: "0.875rem", boxSizing: "border-box", outline: "none",
-  colorScheme: "dark",
-};
+// ── Shared style objects ──────────────────────────────────────────────────────
+export const inp: React.CSSProperties = inputStyle;
 
-// Shared style for filter/page-level selects (smaller than modal inp)
 export const selStyle: React.CSSProperties = {
-  padding: "0.3rem 0.6rem",
-  background: "#15152a",
-  border: "1px solid #252540",
-  borderRadius: "6px",
-  color: "#e0e0e0",
-  fontSize: "0.8rem",
-  cursor: "pointer",
-  outline: "none",
-  colorScheme: "dark",
+  padding:      `${space[2]} ${space[4]}`,
+  background:   bg.raised,
+  border:       `1px solid ${bg.muted}`,
+  borderRadius: radius.md,
+  color:        clr.textPrimary,
+  fontSize:     font.base,
+  cursor:       "pointer",
+  outline:      "none",
+  colorScheme:  "dark",
 };
 
-// Shared style for inline status/priority mini-selects inside table rows
 export const miniSel = (accentColor: string): React.CSSProperties => ({
-  padding: "2px 5px",
-  background: `${accentColor}25`,
-  border: `1px solid ${accentColor}70`,
-  borderRadius: "4px",
-  color: accentColor,
-  fontSize: "0.7rem",
-  cursor: "pointer",
-  outline: "none",
-  fontWeight: 600,
-  colorScheme: "dark",
+  background:   `${accentColor}18`,
+  border:       `1px solid ${accentColor}50`,
+  color:        accentColor,
+  borderRadius: radius.sm,
+  padding:      `2px ${space[3]}`,
+  fontSize:     font.xs,
+  cursor:       "pointer",
+  outline:      "none",
+  colorScheme:  "dark",
 });
 
-export const Overlay = ({ children, onClose, wide }: { children: React.ReactNode; onClose?: () => void; wide?: boolean }) => {
-  const isMobile = window.innerWidth < 640;
+// ── Layout primitives ─────────────────────────────────────────────────────────
+export const Overlay = ({ children, onClose, wide }: { children: ReactNode; onClose: () => void; wide?: boolean }) => {
+  const { isMobile } = useBreakpoint();
   return (
     <div
       onClick={onClose}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : "1rem" }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center", padding: isMobile ? "0" : space[6] }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "#0f0f1e", border: "1px solid #252540", borderRadius: isMobile ? "16px 16px 0 0" : "12px", padding: "1.5rem", width: "100%", maxWidth: isMobile ? "100%" : (wide ? "720px" : "500px"), maxHeight: isMobile ? "90vh" : "92vh", overflowY: "auto" }}
+        style={{ background: bg.card, border: `1px solid ${bg.muted}`, borderRadius: isMobile ? `${radius.xxl} ${radius.xxl} 0 0` : radius.xxl, padding: space[7], width: "100%", maxWidth: wide ? "580px" : "480px", maxHeight: isMobile ? "90vh" : "85vh", overflowY: "auto", boxShadow: shadow.modal }}
       >
         {children}
       </div>
@@ -55,90 +48,99 @@ export const Overlay = ({ children, onClose, wide }: { children: React.ReactNode
   );
 };
 
+// ── Typography ────────────────────────────────────────────────────────────────
 export const Lbl = ({ c }: { c: string }) => (
-  <div style={{ fontSize: "0.7rem", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{c}</div>
+  <div style={{ fontSize: font.xs, color: clr.textGhost, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: space[1] }}>{c}</div>
 );
 
-export const Btn = ({ children, color, small, ...p }: { children: React.ReactNode; color?: string; small?: boolean; [key: string]: unknown }) => (
+// ── Buttons ───────────────────────────────────────────────────────────────────
+export const Btn = ({ children, color, small, ...p }: { children: ReactNode; color: string; small?: boolean; [key: string]: any }) => (
   <button
-    style={{
-      padding: small ? "0.3rem 0.65rem" : "0.45rem 1rem",
-      borderRadius: "6px",
-      border: color === "ghost" ? "1px solid #252540" : "none",
-      background: color === "ghost" ? "transparent" : color || "#252540",
-      color: color === "ghost" ? "#666" : "#fff",
-      fontSize: small ? "0.72rem" : "0.83rem",
-      fontWeight: 600, cursor: "pointer",
-    }}
     {...p}
+    style={{
+      padding:      small ? `3px ${space[3]}` : `${space[2]} ${space[5]}`,
+      borderRadius: radius.md,
+      border:       color === "ghost" ? `1px solid ${bg.muted}` : `1px solid ${color}70`,
+      background:   color === "ghost" ? "transparent" : `${color}20`,
+      color:        color === "ghost" ? clr.textMuted : color,
+      fontSize:     small ? font.xs : font.base,
+      cursor:       "pointer",
+      fontWeight:   500,
+      whiteSpace:   "nowrap" as const,
+      ...p.style,
+    }}
   >
     {children}
   </button>
 );
 
-export const Avatar = ({ name, role, size = 32 }: { name: string; role: Role; size?: number }) => (
-  <div style={{
-    width: size, height: size, borderRadius: "50%", flexShrink: 0,
-    background: `${roleColor[role]}18`, border: `2px solid ${roleColor[role]}`,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontWeight: 700, color: roleColor[role], fontSize: size * 0.27,
-  }}>
-    {initials(name)}
-  </div>
-);
-
-export const TH = ({ children, center }: { children: React.ReactNode; center?: boolean }) => (
-  <div style={{ fontSize: "0.62rem", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0.4rem 0.5rem", display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start" }}>
+// ── Table primitives ──────────────────────────────────────────────────────────
+export const TH = ({ children, center }: { children: ReactNode; center?: boolean }) => (
+  <div style={{ fontSize: font.xs, color: clr.textGhost, textTransform: "uppercase", letterSpacing: "0.05em", padding: `${space[2]} ${space[3]}`, display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start" }}>
     {children}
   </div>
 );
 
-export const TD = ({ children, style, center }: { children: React.ReactNode; style?: React.CSSProperties; center?: boolean }) => (
-  <div style={{ padding: "0.65rem 0.5rem", fontSize: "0.82rem", color: "#ccc", borderTop: "1px solid #141428", display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start", ...style }}>
+export const TD = ({ children, style, center }: { children: ReactNode; style?: React.CSSProperties; center?: boolean }) => (
+  <div style={{ padding: `${space[5]} ${space[3]}`, fontSize: font.lg, color: clr.textSecondary, borderTop: `1px solid ${bg.line}`, display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start", ...style }}>
     {children}
   </div>
 );
 
-export const ConfirmModal = ({ message, onConfirm, onClose }: { message: string; onConfirm: () => void; onClose: () => void }) => (
-  <Overlay onClose={onClose}>
-    <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", marginBottom: "0.75rem" }}>Are you sure?</h3>
-    <p style={{ color: "#888", fontSize: "0.875rem", marginBottom: "1.25rem" }}>{message}</p>
-    <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end" }}>
-      <Btn color="ghost" onClick={onClose}>Cancel</Btn>
-      <Btn color="#fc8181" onClick={onConfirm}>Remove</Btn>
-    </div>
-  </Overlay>
-);
+// ── Avatar ────────────────────────────────────────────────────────────────────
+const roleColor: Record<Role, string> = { admin: clr.orange, manager: clr.cyan, worker: clr.green };
 
-// ── Timestamp badge ───────────────────────────────────────────────────────────
-
-export const UpdatedBadge = ({ iso, byName, compact = false }: { iso?: string; byName?: string; compact?: boolean }) => {
-  if (!iso) return null;
-  const recent = isRecent(iso);
-  const ago    = timeAgo(iso);
-
-  if (compact) {
-    return (
-      <span
-        title={byName ? `Updated ${ago} by ${byName}` : `Updated ${ago}`}
-        style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "0.62rem", color: recent ? "#00d4ff" : "#444", whiteSpace: "nowrap" }}
-      >
-        {recent && (
-          <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#00d4ff", display: "inline-block", flexShrink: 0 }} />
-        )}
-        {ago}
-      </span>
-    );
-  }
-
+export const Avatar = ({ name, role, size = 32 }: { name: string; role: Role; size?: number }) => {
+  const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  const color    = roleColor[role] || clr.textMuted;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.68rem", color: recent ? "#00d4ff88" : "#333" }}>
-      {recent && (
-        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00d4ff", flexShrink: 0 }} />
-      )}
-      <span>
-        {byName ? `Updated ${ago} by ${byName}` : `Updated ${ago}`}
-      </span>
+    <div style={{ width: size, height: size, borderRadius: radius.full, background: `${color}25`, border: `1.5px solid ${color}60`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size < 28 ? font.xxs : font.xs, color, fontWeight: 700, flexShrink: 0 }}>
+      {initials}
     </div>
   );
 };
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const isRecent = (iso?: string) => {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < 12 * 60 * 60 * 1000;
+};
+
+export const UpdatedBadge = ({ iso, byName, compact }: { iso?: string; byName?: string; compact?: boolean }) => {
+  if (!iso) return null;
+  const recent = isRecent(iso);
+  const date   = new Date(iso);
+  const diff   = Date.now() - date.getTime();
+  const mins   = Math.floor(diff / 60000);
+  const hrs    = Math.floor(diff / 3600000);
+  const days   = Math.floor(diff / 86400000);
+  const rel    = mins < 1 ? "just now" : mins < 60 ? `${mins}m ago` : hrs < 24 ? `${hrs}h ago` : `${days}d ago`;
+  const full   = date.toLocaleString();
+
+  if (compact) return (
+    <div title={`${byName ? `by ${byName} — ` : ""}${full}`} style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: font.xs, color: recent ? clr.cyan : clr.textGhost, whiteSpace: "nowrap" }}>
+      {recent && <span style={{ width: "5px", height: "5px", borderRadius: radius.full, background: clr.cyan, display: "inline-block" }} />}
+      {rel}
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: space[2], fontSize: font.xs, color: recent ? `${clr.cyan}88` : clr.textDeep }}>
+      {recent && <span style={{ width: "5px", height: "5px", borderRadius: radius.full, background: clr.cyan, display: "inline-block" }} />}
+      <span>{byName}</span>
+      <span>{rel}</span>
+    </div>
+  );
+};
+
+// ── Confirm Modal ─────────────────────────────────────────────────────────────
+export const ConfirmModal = ({ message, onConfirm, onClose }: { message: string; onConfirm: () => void; onClose: () => void }) => (
+  <Overlay onClose={onClose}>
+    <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary, marginBottom: space[5] }}>Are you sure?</h3>
+    <p style={{ color: clr.textMuted, fontSize: font.md, marginBottom: space[7], lineHeight: 1.6 }}>{message}</p>
+    <div style={{ display: "flex", gap: space[4], justifyContent: "flex-end" }}>
+      <Btn color="ghost" onClick={onClose}>Cancel</Btn>
+      <Btn color={clr.red} onClick={onConfirm}>Delete</Btn>
+    </div>
+  </Overlay>
+);

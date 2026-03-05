@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
+import { bg, clr, font, radius, space } from "../constants/theme";
 
 export const BomModal = () => {
   const { bomModal, setBomModal, saveBomEntry, suppliers, projects, tasks } = useApp();
@@ -62,36 +63,36 @@ export const BomModal = () => {
 
   return (
     <Overlay onClose={() => setBomModal(null)}>
-      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.1rem", color: "#e0e0e0", marginBottom: "0.25rem" }}>BOM Entry</h3>
-      <div style={{ marginBottom: "1.25rem", fontSize: "0.78rem", color: "#555" }}>
-        {supplier?.name} — <span style={{ color: "#00d4ff", fontFamily: "monospace" }}>{part?.partNumber}</span>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary, marginBottom: "0.25rem" }}>BOM Entry</h3>
+      <div style={{ marginBottom: space["7"], fontSize: font.md, color: clr.textFaint }}>
+        {supplier?.name} — <span style={{ color: clr.cyan, fontFamily: "monospace" }}>{part?.partNumber}</span>
       </div>
 
       {/* Part info */}
-      <div style={{ padding: "0.75rem", background: "#15152a", borderRadius: "8px", marginBottom: "1rem", border: "1px solid #252540" }}>
-        <div style={{ fontSize: "0.72rem", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Part</div>
-        <div style={{ color: "#e0e0e0", fontSize: "0.88rem", fontWeight: 600 }}>{part?.description}</div>
-        <div style={{ fontSize: "0.72rem", color: "#666", marginTop: "4px" }}>Unit: {part?.unitQty} × {part?.unit} per order</div>
+      <div style={{ padding: space["5"], background: bg.raised, borderRadius: radius.lg, marginBottom: space["6"], border: "1px solid #252540" }}>
+        <div style={{ fontSize: font.base, color: clr.textFaint, marginBottom: radius.sm, textTransform: "uppercase", letterSpacing: "0.05em" }}>Part</div>
+        <div style={{ color: clr.textPrimary, fontSize: font.xl, fontWeight: 600 }}>{part?.description}</div>
+        <div style={{ fontSize: font.base, color: clr.textDim, marginTop: radius.sm }}>Unit: {part?.unitQty} × {part?.unit} per order</div>
       </div>
 
       {/* Alerts */}
       {taskOverdue && (
-        <div style={{ padding: "0.6rem 0.75rem", background: "#fc818115", border: "1px solid #fc818150", borderRadius: "6px", marginBottom: "0.75rem", fontSize: "0.75rem", color: "#fc8181" }}>
+        <div style={{ padding: "0.6rem 0.75rem", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.md, marginBottom: space["5"], fontSize: space["5"], color: clr.red }}>
           ⚠ Linked task <strong>"{linkedTask.title}"</strong> is overdue — check if this part is still needed on schedule.
         </div>
       )}
       {delayedOrders.length > 0 && (
-        <div style={{ padding: "0.6rem 0.75rem", background: "#f6c90e15", border: "1px solid #f6c90e50", borderRadius: "6px", marginBottom: "0.75rem", fontSize: "0.75rem", color: "#f6c90e" }}>
+        <div style={{ padding: "0.6rem 0.75rem", background: "#f6c90e15", border: "1px solid #f6c90e50", borderRadius: radius.md, marginBottom: space["5"], fontSize: space["5"], color: clr.yellow }}>
           ⚠ {delayedOrders.length} overdue order{delayedOrders.length !== 1 ? "s" : ""} for this part — delivery may be delayed.
         </div>
       )}
 
-      <div style={{ display: "grid", gap: "0.75rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+      <div style={{ display: "grid", gap: space["5"] }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space["5"] }}>
           <div>
             <Lbl c="Qty Ordered" />
             <input type="number" style={inp} value={f.qtyOrdered} onChange={u("qtyOrdered")} min="0" />
-            {part && <div style={{ fontSize: "0.7rem", color: "#555", marginTop: "4px" }}>= {(parseInt(f.qtyOrdered as unknown as string) || 0) * (part.unitQty || 1)} {part.unit}(s) total</div>}
+            {part && <div style={{ fontSize: "0.7rem", color: clr.textFaint, marginTop: radius.sm }}>= {(parseInt(f.qtyOrdered as unknown as string) || 0) * (part.unitQty || 1)} {part.unit}(s) total</div>}
           </div>
           <div>
             <Lbl c="Usage Status" />
@@ -101,14 +102,14 @@ export const BomModal = () => {
               onChange={u("status")}
             >
               {Object.entries(bomStatusMeta).map(([k, v]) => (
-                <option key={k} value={k} style={{ background: "#0a0a18", color: "#e0e0e0" }}>{v.icon} {v.label}</option>
+                <option key={k} value={k} style={{ background: bg.deep, color: clr.textPrimary }}>{v.icon} {v.label}</option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Project + Task linking */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space["5"] }}>
           <div>
             <Lbl c="Linked Project" />
             <select style={inp} value={f.projectId} onChange={u("projectId")}>
@@ -128,23 +129,23 @@ export const BomModal = () => {
                 </option>
               ))}
             </select>
-            {!f.projectId && <div style={{ fontSize: "0.65rem", color: "#444", marginTop: "3px" }}>Select a project first</div>}
+            {!f.projectId && <div style={{ fontSize: font.sm, color: clr.textGhost, marginTop: radius.xs }}>Select a project first</div>}
           </div>
         </div>
 
         {/* Linked task status indicator */}
         {linkedTask && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: "#15152a", borderRadius: "6px", fontSize: "0.75rem" }}>
-            <span style={{ color: "#555" }}>Task status:</span>
+          <div style={{ display: "flex", alignItems: "center", gap: space["3"], padding: "0.5rem 0.75rem", background: bg.raised, borderRadius: radius.md, fontSize: space["5"] }}>
+            <span style={{ color: clr.textFaint }}>Task status:</span>
             <span style={{
-              padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem",
+              padding: "2px 8px", borderRadius: radius.sm, fontSize: "0.7rem",
               background: linkedTask.status === "done" ? "#48bb7820" : linkedTask.status === "blocked" ? "#fc818120" : "#f6c90e20",
-              color:      linkedTask.status === "done" ? "#48bb78"   : linkedTask.status === "blocked" ? "#fc8181"   : "#f6c90e",
+              color:      linkedTask.status === "done" ? clr.green   : linkedTask.status === "blocked" ? clr.red   : clr.yellow,
               border:     `1px solid ${linkedTask.status === "done" ? "#48bb7850" : linkedTask.status === "blocked" ? "#fc818150" : "#f6c90e50"}`,
             }}>
               {linkedTask.status}
             </span>
-            <span style={{ color: "#555" }}>due {linkedTask.endDate}</span>
+            <span style={{ color: clr.textFaint }}>due {linkedTask.endDate}</span>
           </div>
         )}
 
@@ -153,9 +154,9 @@ export const BomModal = () => {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
+      <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setBomModal(null)}>Cancel</Btn>
-        <Btn color="#00d4ff" onClick={() => saveBomEntry({
+        <Btn color={clr.cyan} onClick={() => saveBomEntry({
           ...entry, ...f,
           qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0,
           status: f.status as any,

@@ -1,5 +1,6 @@
 import type { Task, Project, User, Supplier, BomEntry, SearchResult } from "../types";
 import { statusColor, bomStatusMeta } from "../constants/seeds";
+import { clr } from "../constants/theme";
 
 interface SearchDeps {
   tasks:     Task[];
@@ -33,7 +34,7 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
       icon:   "✅",
       label:  t.title,
       sub:    proj?.name || "",
-      color:  statusColor[t.status] || "#888",
+      color:  statusColor[t.status] || clr.textMuted,
       action: () => { setTaskModal(t); setTab("tasks"); },
     });
   });
@@ -55,17 +56,17 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
     // Suppliers
     suppliers.forEach((s) => {
       if (s.name.toLowerCase().includes(q) || s.contact.toLowerCase().includes(q)) {
-        results.push({ type: "supplier", icon: "📦", label: s.name, sub: s.contact, color: "#ff6b35", action: () => setTab("suppliers") });
+        results.push({ type: "supplier", icon: "📦", label: s.name, sub: s.contact, color: clr.orange, action: () => setTab("suppliers") });
       }
       // Parts
       (s.parts || []).forEach((pt) => {
         if (!pt.partNumber.toLowerCase().includes(q) && !pt.description.toLowerCase().includes(q)) return;
-        results.push({ type: "part", icon: "🔧", label: pt.partNumber, sub: pt.description, color: "#00d4ff", action: () => setTab("suppliers") });
+        results.push({ type: "part", icon: "🔧", label: pt.partNumber, sub: pt.description, color: clr.cyan, action: () => setTab("suppliers") });
       });
       // Orders
       (s.orders || []).forEach((o) => {
         if (!o.description.toLowerCase().includes(q)) return;
-        results.push({ type: "order", icon: "📋", label: o.description, sub: s.name, color: "#f6c90e", action: () => setTab("suppliers") });
+        results.push({ type: "order", icon: "📋", label: o.description, sub: s.name, color: clr.yellow, action: () => setTab("suppliers") });
       });
     });
 
@@ -76,13 +77,13 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
       const pt  = (sup?.parts || []).find((p) => p.id === entry.partId);
       if (!pt) return;
       const meta = bomStatusMeta[entry.status];
-      results.push({ type: "bom", icon: "🔩", label: pt.partNumber, sub: entry.notes.slice(0, 60), color: meta?.color || "#888", action: () => setTab("bom") });
+      results.push({ type: "bom", icon: "🔩", label: pt.partNumber, sub: entry.notes.slice(0, 60), color: meta?.color || clr.textMuted, action: () => setTab("bom") });
     });
 
     // Team members
     users.forEach((u) => {
       if (!u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return;
-      results.push({ type: "member", icon: "👤", label: u.name, sub: u.email, color: "#a78bfa", action: () => setTab("team") });
+      results.push({ type: "member", icon: "👤", label: u.name, sub: u.email, color: clr.purple, action: () => setTab("team") });
     });
   }
 

@@ -21,6 +21,7 @@ export interface AppContextType {
   tab:       string;
   pf:        string;
   bomFilter: string;
+  taskFilter: string;
   // Modal state
   taskModal:            Task | null | Record<string, unknown>;
   projectModal:         Project | null | Record<string, unknown>;
@@ -68,6 +69,7 @@ export interface AppContextType {
   setTab:                   (tab: string) => void;
   setPf:                    (pf: string) => void;
   setBomFilter:             (f: string) => void;
+  setTaskFilter:            (f: string) => void;
   setTaskModal:             (m: Task | null | Record<string, unknown>) => void;
   setProjectModal:          (m: Project | null | Record<string, unknown>) => void;
   setSupplierModal:         (m: Supplier | null | Record<string, unknown>) => void;
@@ -105,6 +107,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [tab,                  setTab]                  = useState("dashboard");
   const [pf,                   setPf]                   = useState("all");
   const [bomFilter,            setBomFilter]            = useState("all");
+  const [taskFilter,           setTaskFilter]           = useState("all");
   const [dismissed,            setDismissed]            = useState<string[]>([]);
 
   // Modal visibility
@@ -136,9 +139,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return { ...entry, supplier, part };
   }).filter((r) => r.supplier && r.part) as unknown) as BomRow[];
 
-  const filteredBom = bomFilter === "all"
-    ? bomRows
-    : bomRows.filter((r) => r.status === bomFilter);
+  const filteredBom = bomRows
+    .filter((r) => bomFilter  === "all" || r.status    === bomFilter)
+    .filter((r) => {
+      if (taskFilter === "all")      return true;
+      if (taskFilter === "unlinked") return !r.taskId;
+      if (taskFilter.startsWith("p:")) return r.projectId === taskFilter.slice(2) || r.project === taskFilter.slice(2);
+      return r.taskId === taskFilter;
+    });
 
   const notifications = (() => {
     if (!currentUser) return [];
@@ -381,7 +389,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // UI state
       tab, setTab,
       pf, setPf,
-      bomFilter, setBomFilter,
+      bomFilter, setBomFilter, taskFilter, setTaskFilter,
       // Modals
       taskModal,            setTaskModal,
       projectModal,         setProjectModal,

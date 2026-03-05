@@ -1,35 +1,91 @@
 import { useApp } from "../context/AppContext";
 import { bomStatusMeta } from "../constants/seeds";
-import { todayStr } from "../utils/dateHelpers";
-import { TH, TD, UpdatedBadge } from "../components/ui";
+import { todayStr, addDays } from "../utils/dateHelpers";
+import { TH, TD, UpdatedBadge, selStyle } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 
 export const BomPage = () => {
-  const { bomRows, filteredBom, bomFilter, setBomFilter, setBomModal } = useApp();
+  const {
+    bomRows, filteredBom, bomFilter, setBomFilter,
+    taskFilter, setTaskFilter,
+    setBomModal, projects, tasks, suppliers, canManage,
+  } = useApp();
+  const now = todayStr();
+
+  // Helper — is this BOM row alertable?
+  const getAlerts = (row: typeof bomRows[0]): string[] => {
+    const alerts: string[] = [];
+    const linkedTask = tasks.find((t) => t.id === row.taskId);
+    if (linkedTask && linkedTask.status !== "done" && linkedTask.endDate < now)
+      alerts.push("Linked task overdue");
+    if (linkedTask && linkedTask.status === "blocked")
+      alerts.push("Linked task blocked");
+    const supplier = suppliers.find((s) => s.id === row.supplierId);
+    const delayedOrders = (supplier?.orders || []).filter((o) =>
+      !o.arrived && addDays(o.orderedDate, o.leadTimeDays) < now &&
+      (o.partIds || []).includes(row.partId)
+    );
+    if (delayedOrders.length > 0) alerts.push("Part delivery delayed");
+    if (row.status === "not-used" && row.taskId) alerts.push("Linked part unused");
+    return alerts;
+  };
 
   const handleExport = () => {
-    const rows = bomRows.map((r) => [
-      r.part?.partNumber || "", r.part?.description || "", r.supplier?.name || "",
-      r.part?.unit || "", r.part?.unitQty || "", r.qtyOrdered,
-      (r.qtyOrdered || 0) * (r.part?.unitQty || 1),
-      bomStatusMeta[r.status]?.label || r.status, r.project || "", r.notes || "",
-      r.updatedAt || "", r.updatedBy || "",
-    ]);
+    const rows = filteredBom.map((r) => {
+      const linkedTask = tasks.find((t) => t.id === r.taskId);
+      const proj       = projects.find((p) => p.id === r.projectId);
+      return [
+        r.part?.partNumber || "", r.part?.description || "", r.supplier?.name || "",
+        r.part?.unit || "", r.part?.unitQty || "", r.qtyOrdered,
+        (r.qtyOrdered || 0) * (r.part?.unitQty || 1),
+        bomStatusMeta[r.status]?.label || r.status,
+        proj?.name || r.project || "",
+        linkedTask?.title || "",
+        r.notes || "", r.updatedAt || "", r.updatedBy || "",
+      ];
+    });
     exportCSV(
       `BOM-export-${todayStr()}.csv`,
-      ["Part Number","Description","Supplier","Unit","Unit Qty","Qty Ordered","Total Units","Status","Project / Assembly","Engineering Notes","Last Updated","Updated By"],
+      ["Part Number","Description","Supplier","Unit","Unit Qty","Qty Ordered","Total Units","Status","Project","Linked Task","Engineering Notes","Last Updated","Updated By"],
       rows
     );
   };
 
+  // Build task filter options — grouped by project
+  const taskFilterOptions = [
+    { value: "all",      label: "All parts" },
+    { value: "unlinked", label: "Unlinked parts" },
+    ...projects.flatMap((p) => {
+      const pts = tasks.filter((t) => t.projectId === p.id);
+      if (pts.length === 0) return [{ value: `p:${p.id}`, label: `▸ ${p.name} (all)` }];
+      return [
+        { value: `p:${p.id}`, label: `▸ ${p.name} (all)` },
+        ...pts.map((t) => ({ value: t.id, label: `  · ${t.title}` })),
+      ];
+    }),
+  ];
+
+  const alertCount = bomRows.filter((r) => getAlerts(r).length > 0).length;
+
   return (
     <div>
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.75rem" }}>
-        <p style={{ color: "#555", fontSize: "0.8rem" }}>{bomRows.length} parts across {[...new Set(bomRows.map((r) => r.supplierId))].length} suppliers</p>
+        <p style={{ color: "#555", fontSize: "0.8rem" }}>
+          {bomRows.length} parts across {[...new Set(bomRows.map((r) => r.supplierId))].length} suppliers
+          {alertCount > 0 && <span style={{ marginLeft: "0.75rem", color: "#fc8181", background: "#fc818115", border: "1px solid #fc818140", borderRadius: "4px", padding: "1px 7px", fontSize: "0.72rem" }}>⚠ {alertCount} alert{alertCount !== 1 ? "s" : ""}</span>}
+        </p>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+          {/* Status filter pills */}
           {[["all","#888","All"],["used","#48bb78","Used"],["not-used","#fc8181","Not Used"],["under-review","#f6c90e","Under Review"],["pending","#888","Pending"]].map(([k, c, l]) => (
             <button key={k} onClick={() => setBomFilter(k)} style={{ padding: "0.3rem 0.75rem", borderRadius: "20px", border: `1px solid ${bomFilter === k ? c : "#252540"}`, background: bomFilter === k ? `${c}22` : "transparent", color: bomFilter === k ? c : "#555", fontSize: "0.75rem", cursor: "pointer" }}>{l}</button>
           ))}
+          {/* Task/project filter dropdown */}
+          <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} style={{ ...selStyle, maxWidth: "200px" }}>
+            {taskFilterOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
           <button onClick={handleExport} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.85rem", borderRadius: "20px", border: "1px solid #48bb7870", background: "#48bb7818", color: "#48bb78", fontSize: "0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}>⬇ Export CSV</button>
         </div>
       </div>
@@ -48,38 +104,69 @@ export const BomPage = () => {
         })}
       </div>
 
+      {/* Table */}
       <div style={{ background: "#0f0f1e", border: "1px solid #1e1e35", borderRadius: "10px", overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: "860px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.8fr 0.8fr 0.7fr 0.7fr 1fr 2fr 0.8fr auto", background: "#0d0d20" }}>
-          {["Part No.","Description","Supplier","Qty Ord.","Total","Status","Notes / CI","Updated",""].map((h, i) => <TH key={i} center={i >= 5}>{h}</TH>)}
+        <div style={{ minWidth: "960px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: "#0d0d20" }}>
+          {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
+            <TH key={i} center={i >= 5 && i !== 6 && i !== 7}>{h}</TH>
+          ))}
         </div>
 
         {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: "#555" }}>No BOM entries match this filter.</div>}
 
         {filteredBom.map((row) => {
-          const meta  = bomStatusMeta[row.status];
-          const total = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
+          const meta        = bomStatusMeta[row.status];
+          const total       = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
+          const linkedTask  = tasks.find((t) => t.id === row.taskId);
+          const linkedProj  = projects.find((p) => p.id === row.projectId);
+          const alerts      = getAlerts(row);
+          const hasAlert    = alerts.length > 0;
+
           return (
-            <div key={row.id} style={{ display: "grid", gridTemplateColumns: "1.1fr 1.8fr 0.8fr 0.7fr 0.7fr 1fr 2fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem" }}>
+            <div key={row.id} style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem", borderLeft: hasAlert ? "3px solid #fc818180" : "3px solid transparent" }}>
               <TD><span style={{ fontFamily: "monospace", fontSize: "0.78rem", color: "#00d4ff" }}>{row.part?.partNumber}</span></TD>
               <TD style={{ fontSize: "0.78rem" }}>{row.part?.description}</TD>
               <TD style={{ fontSize: "0.75rem", color: "#888" }}>{row.supplier?.name}</TD>
               <TD style={{ fontSize: "0.78rem" }}>{row.qtyOrdered} {row.part?.unit}</TD>
               <TD style={{ fontSize: "0.78rem" }}>{total}</TD>
-              <TD>
+              <TD center>
                 <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: "4px", background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
                   {meta?.icon} {meta?.label}
                 </span>
               </TD>
+              <TD>
+                {linkedTask ? (
+                  <div>
+                    <div style={{ fontSize: "0.72rem", color: linkedTask.status === "done" ? "#48bb78" : linkedTask.status === "blocked" ? "#fc8181" : "#e0e0e0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {linkedTask.status === "done" ? "✓ " : linkedTask.status === "blocked" ? "⛔ " : ""}{linkedTask.title}
+                    </div>
+                    {linkedProj && <div style={{ fontSize: "0.62rem", color: linkedProj.color, marginTop: "1px" }}>{linkedProj.name}</div>}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: "0.68rem", color: "#333", fontStyle: "italic" }}>—</span>
+                )}
+              </TD>
               <TD style={{ fontSize: "0.72rem", color: "#666", fontStyle: row.notes ? "normal" : "italic" }}>
-                {row.notes || <span style={{ color: "#333" }}>No notes</span>}
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  {hasAlert && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
+                      {alerts.map((a) => (
+                        <span key={a} style={{ fontSize: "0.6rem", color: "#fc8181", background: "#fc818115", border: "1px solid #fc818140", borderRadius: "3px", padding: "1px 4px", whiteSpace: "nowrap" }}>⚠ {a}</span>
+                      ))}
+                    </div>
+                  )}
+                  {row.notes || <span style={{ color: "#333" }}>No notes</span>}
+                </div>
               </TD>
               <TD center>
                 <UpdatedBadge iso={row.updatedAt} byName={row.updatedBy} compact />
               </TD>
-              <TD>
-                <button onClick={() => setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId })} style={{ padding: "3px 7px", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "4px", color: "#888", fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
+              <TD center>
+                {canManage && (
+                  <button onClick={() => setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId })} style={{ padding: "3px 7px", background: "#1a1a2e", border: "1px solid #252540", borderRadius: "4px", color: "#888", fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
+                )}
               </TD>
             </div>
           );

@@ -76,7 +76,9 @@ export interface BomEntry extends Stamp {
   qtyOrdered: number;
   status: BomStatus;
   notes: string;
-  project: string;
+  project:   string;     // legacy free-text label
+  projectId?: string;    // linked Project entity
+  taskId?:   string;     // linked Task entity
 }
 
 // Derived — BomEntry enriched with resolved supplier + part

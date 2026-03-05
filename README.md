@@ -80,7 +80,8 @@ src/
 │   └── dateHelpers.ts
 │
 ├── constants/
-│   └── seeds.ts               # ROLES, colors, status meta, demo seed data
+│   ├── theme.ts               # Design tokens — all colours, spacing, typography, radii
+│   └── seeds.ts               # ROLES, color maps, BOM status meta, demo seed data
 │
 ├── components/
 │   ├── ui/index.tsx           # Shared primitives — Btn, TH, TD, Overlay, Avatar, etc.
@@ -111,6 +112,13 @@ src/
 ---
 
 ## Changelog
+
+### v3.0 — Theme Centralisation
+- **`src/constants/theme.ts`** — new design token file: `bg` (9 background layers), `clr` (brand + text colours), `font` (11 size steps + families), `space` (spacing scale), `radius` (8 steps), `shadow`, `z` (z-index scale), plus composite helpers `cardStyle`, `inputStyle`, `rowDivider`
+- **960+ replacements** across 19 source files — all magic hex values, font sizes, spacing, and border radii now reference tokens
+- **`ui/index.tsx`** fully rewritten to use tokens throughout — `inp`, `selStyle`, `miniSel`, `Overlay`, `Btn`, `TH`, `TD`, `Avatar`, `UpdatedBadge`, `ConfirmModal`
+- **`seeds.ts`** re-exports theme tokens so existing `import { roleColor } from "../constants/seeds"` imports continue to work
+- Foundation for future light-mode — swap token values in one file to re-theme the entire app
 
 ### v2.9 — BOM ↔ Task Bridging
 - **`BomEntry.projectId` + `BomEntry.taskId`** — proper entity links added to type (legacy `project` string field retained for compatibility)
@@ -214,8 +222,8 @@ src/
 
 ### Phase 3 — Polish & Prep *(ongoing)*
 
-8. **Theme / styles centralisation**
-   Extract all colour, spacing, and typography values into a single `theme.ts` constant. Eliminates magic hex values across components and makes light-mode trivial to add.
+8. **~~Theme / styles centralisation~~** ✅ *(v3.0)*
+   `theme.ts` defines all design tokens. 960+ magic values replaced across 19 files.
 
 9. **Table column alignment audit**
    Tasks and BOM tables have inconsistent horizontal alignment on badge/status/updated columns. Full audit of all `TH`/`TD` usage — left for text, centre for badges and actions — applied consistently across all pages.

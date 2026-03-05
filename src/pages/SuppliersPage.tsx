@@ -137,13 +137,13 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                   <div style={{ padding: "0.75rem 1.25rem" }}>
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "480px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: bg.subtle }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", background: bg.subtle, padding: "0 0.5rem", justifyItems: "center", alignItems: "center" }}>
                           {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i} center={i >= 2}>{h}</TH>)}
                         </div>
                         {supplier.parts?.map((pt) => (
-                          <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", alignItems: "center", padding: "0 0.5rem" }}>
-                            <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{pt.partNumber}</span></TD>
-                            <TD>{pt.description}</TD>
+                          <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
+                            <TD style={{ justifyContent: "flex-start" }}><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{pt.partNumber}</span></TD>
+                            <TD style={{ justifyContent: "flex-start" }}>{pt.description}</TD>
                             <TD center>{pt.unitQty}</TD>
                             <TD center>{pt.unit}</TD>
                             <TD center style={{ gap: radius.sm }}>
@@ -188,15 +188,15 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                   <div style={{ padding: "0.75rem 1.25rem" }}>
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "640px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: bg.subtle }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", background: bg.subtle, padding: "0 0.5rem", justifyItems: "center", alignItems: "center" }}>
                           {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i} center={i >= 1}>{h}</TH>)}
                         </div>
                         {supplier.orders?.map((order) => {
                           const arrival = addDays(order.orderedDate, order.leadTimeDays);
                           const late    = !order.arrived && arrival < now;
                           return (
-                            <div key={order.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", alignItems: "center", padding: "0 0.5rem" }}>
-                              <TD>
+                            <div key={order.id} style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
+                              <TD style={{ justifyContent: "flex-start" }}>
                                 <div style={{ fontSize: font.lg, color: clr.textPrimary }}>{order.description}</div>
                                 {(order.partIds || []).length > 0 && (
                                   <div style={{ fontSize: font.xs, color: clr.textFaint, marginTop: "2px" }}>

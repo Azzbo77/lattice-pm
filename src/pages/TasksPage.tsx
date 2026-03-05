@@ -55,7 +55,7 @@ export const TasksPage = () => {
       <div style={{ background: bg.card, border: "1px solid #1e1e35", borderRadius: radius.xl, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: "680px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", background: bg.subtle }}>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", background: bg.subtle, padding: "0 0.5rem" }}>
           {["Task","Assignee","Due","Status","Priority","Updated",""].map((h, i) => (
             <TH key={i} center={i >= 2}>{h}</TH>
           ))}

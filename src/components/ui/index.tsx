@@ -82,7 +82,7 @@ export const TH = ({ children, center }: { children: ReactNode; center?: boolean
 );
 
 export const TD = ({ children, style, center }: { children: ReactNode; style?: React.CSSProperties; center?: boolean }) => (
-  <div style={{ padding: `${space[5]} ${space[3]}`, fontSize: font.lg, color: clr.textSecondary, borderTop: `1px solid ${bg.line}`, display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start", ...style }}>
+  <div style={{ padding: `${space[2]} ${space[3]}`, fontSize: font.lg, color: clr.textSecondary, borderTop: `1px solid ${bg.line}`, display: "flex", alignItems: "center", justifyContent: center ? "center" : "flex-start", ...style }}>
     {children}
   </div>
 );

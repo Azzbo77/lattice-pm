@@ -109,7 +109,7 @@ export const BomPage = () => {
       <div style={{ background: bg.card, border: "1px solid #1e1e35", borderRadius: radius.xl, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
         <div style={{ minWidth: "960px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle, padding: "0 0.5rem" }}>
           {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
             <TH key={i} center={i === 3 || i === 4 || i === 5 || i === 8 || i === 9}>{h}</TH>
           ))}

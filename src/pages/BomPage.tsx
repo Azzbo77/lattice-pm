@@ -111,7 +111,7 @@ export const BomPage = () => {
         <div style={{ minWidth: "960px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle }}>
           {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
-            <TH key={i} center={i >= 5 && i !== 6 && i !== 7}>{h}</TH>
+            <TH key={i} center={i === 3 || i === 4 || i === 5 || i === 8 || i === 9}>{h}</TH>
           ))}
         </div>
 
@@ -130,8 +130,8 @@ export const BomPage = () => {
               <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{row.part?.partNumber}</span></TD>
               <TD style={{ fontSize: font.md }}>{row.part?.description}</TD>
               <TD style={{ fontSize: space["5"], color: clr.textMuted }}>{row.supplier?.name}</TD>
-              <TD style={{ fontSize: font.md }}>{row.qtyOrdered} {row.part?.unit}</TD>
-              <TD style={{ fontSize: font.md }}>{total}</TD>
+              <TD center style={{ fontSize: font.md }}>{row.qtyOrdered} {row.part?.unit}</TD>
+              <TD center style={{ fontSize: font.md }}>{total}</TD>
               <TD center>
                 <span style={{ fontSize: "0.68rem", padding: "2px 7px", borderRadius: radius.sm, background: meta?.bg, color: meta?.color, border: `1px solid ${meta?.color}40`, whiteSpace: "nowrap" }}>
                   {meta?.icon} {meta?.label}

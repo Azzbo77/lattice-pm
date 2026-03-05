@@ -57,7 +57,7 @@ export const TasksPage = () => {
         <div style={{ minWidth: "680px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr 0.8fr 1fr auto", background: bg.subtle }}>
           {["Task","Assignee","Due","Status","Priority","Updated",""].map((h, i) => (
-            <TH key={i} center={i >= 3}>{h}</TH>
+            <TH key={i} center={i >= 2}>{h}</TH>
           ))}
         </div>
         {filteredTasks.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No tasks found.</div>}
@@ -84,7 +84,7 @@ export const TasksPage = () => {
                 <span style={{ fontSize: font.xs, color: proj?.color, background: `${proj?.color}15`, padding: "1px 5px", borderRadius: radius.xs }}>{proj?.name}</span>
               </TD>
               <TD>{assignee?.name}</TD>
-              <TD style={{ color: overdue ? clr.red : clr.textDim, fontSize: font.base }}>{fmt(task.endDate)}</TD>
+              <TD center style={{ color: overdue ? clr.red : clr.textDim, fontSize: font.base }}>{fmt(task.endDate)}</TD>
               <TD center>
                 <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} style={miniSel(statusColor[task.status])}>
                   <option value="todo">To Do</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="blocked">Blocked</option>
@@ -96,7 +96,7 @@ export const TasksPage = () => {
               <TD center>
                 <UpdatedBadge iso={task.updatedAt} byName={task.updatedBy} compact />
               </TD>
-              <TD style={{ display: "flex", gap: radius.sm }}>
+              <TD center style={{ gap: radius.sm }}>
                 <button onClick={() => setTaskModal(task)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
                 {canManage && <button onClick={() => deleteTask(task.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }}>✕</button>}
               </TD>

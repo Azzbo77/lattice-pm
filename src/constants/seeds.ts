@@ -1,6 +1,6 @@
-export { bg, clr, font, space, radius, shadow } from "./theme";
-
 import type { User, Project, Task, Supplier, BomEntry, BomStatus, Role } from "../types";
+
+export { bg, clr, font, space, radius, shadow } from "./theme";
 
 // ── Role constants ────────────────────────────────────────────────────────────
 export const ROLES = {

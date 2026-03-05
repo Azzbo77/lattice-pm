@@ -138,15 +138,15 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "480px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", background: bg.subtle }}>
-                          {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i}>{h}</TH>)}
+                          {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i} center={i >= 2}>{h}</TH>)}
                         </div>
                         {supplier.parts?.map((pt) => (
                           <div key={pt.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 0.6fr 0.6fr auto", alignItems: "center", padding: "0 0.5rem" }}>
                             <TD><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{pt.partNumber}</span></TD>
                             <TD>{pt.description}</TD>
-                            <TD>{pt.unitQty}</TD>
-                            <TD>{pt.unit}</TD>
-                            <TD style={{ display: "flex", gap: radius.sm }}>
+                            <TD center>{pt.unitQty}</TD>
+                            <TD center>{pt.unit}</TD>
+                            <TD center style={{ gap: radius.sm }}>
                               {canManage && (
                                 <>
                                   <button onClick={() => setPartModal({ supplierId: supplier.id, part: { ...pt, _existing: true } })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }}>Edit</button>
@@ -189,7 +189,7 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
                       <div style={{ overflowX: "auto" }}><div style={{ minWidth: "640px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 1fr 1fr 0.8fr auto", background: bg.subtle }}>
-                          {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i}>{h}</TH>)}
+                          {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i} center={i >= 1}>{h}</TH>)}
                         </div>
                         {supplier.orders?.map((order) => {
                           const arrival = addDays(order.orderedDate, order.leadTimeDays);
@@ -207,17 +207,17 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => {
                                   </div>
                                 )}
                               </TD>
-                              <TD style={{ fontSize: font.base, color: clr.textDim }}>{fmt(order.orderedDate)}</TD>
-                              <TD style={{ fontSize: font.base, color: clr.textDim }}>{order.leadTimeDays}d</TD>
-                              <TD style={{ fontSize: font.base, color: late ? clr.red : clr.textDim }}>{fmt(arrival)}</TD>
-                              <TD>
+                              <TD center style={{ fontSize: font.base, color: clr.textDim }}>{fmt(order.orderedDate)}</TD>
+                              <TD center style={{ fontSize: font.base, color: clr.textDim }}>{order.leadTimeDays}d</TD>
+                              <TD center style={{ fontSize: font.base, color: late ? clr.red : clr.textDim }}>{fmt(arrival)}</TD>
+                              <TD center>
                                 {order.arrived
                                   ? <span style={{ fontSize: font.base, color: clr.green, background: "#48bb7818", padding: "2px 8px", borderRadius: radius.sm }}>✓ Arrived {order.arrivedDate ? fmt(order.arrivedDate) : ""}</span>
                                   : <span style={{ fontSize: font.base, color: late ? clr.red : clr.yellow, background: late ? "#fc818118" : "#f6c90e18", padding: "2px 8px", borderRadius: radius.sm }}>{late ? "Overdue" : "Pending"}</span>
                                 }
                               </TD>
-                              <TD><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
-                              <TD>
+                              <TD center><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
+                              <TD center>
                                 {canManage && (
                                   <button onClick={() => toggleArrived(supplier.id, order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: radius.sm, color: order.arrived ? clr.red : clr.green, fontSize: "0.7rem", cursor: "pointer" }}>
                                     {order.arrived ? "Unmark" : "Mark Arrived"}

@@ -113,6 +113,13 @@ src/
 
 ## Changelog
 
+### v3.1 — Table Column Alignment
+- **Rule applied consistently** — text columns (title, name, description, notes) left-aligned; data columns (dates, quantities, status badges, action buttons) centred
+- **TasksPage** — Due, Status, Priority, Updated, Actions all centred; header TH matches
+- **BomPage** — Qty, Total, Status, Updated, Actions centred; Part No., Description, Supplier, Task, Notes remain left
+- **SuppliersPage parts sub-table** — Qty and Unit centred; actions centred
+- **SuppliersPage orders sub-table** — Ordered, Lead, Est. Arrival, Status, Updated, Actions all centred
+
 ### v3.0 — Theme Centralisation
 - **`src/constants/theme.ts`** — new design token file: `bg` (9 background layers), `clr` (brand + text colours), `font` (11 size steps + families), `space` (spacing scale), `radius` (8 steps), `shadow`, `z` (z-index scale), plus composite helpers `cardStyle`, `inputStyle`, `rowDivider`
 - **960+ replacements** across 19 source files — all magic hex values, font sizes, spacing, and border radii now reference tokens
@@ -225,8 +232,8 @@ src/
 8. **~~Theme / styles centralisation~~** ✅ *(v3.0)*
    `theme.ts` defines all design tokens. 960+ magic values replaced across 19 files.
 
-9. **Table column alignment audit**
-   Tasks and BOM tables have inconsistent horizontal alignment on badge/status/updated columns. Full audit of all `TH`/`TD` usage — left for text, centre for badges and actions — applied consistently across all pages.
+9. **~~Table column alignment audit~~** ✅ *(v3.1)*
+   Full audit of Tasks, BOM, and Suppliers sub-tables. Rule: left for text/descriptions, centre for dates/badges/numbers/actions. Applied consistently across all `TH`/`TD` usages.
 
 10. **~~TypeScript strict mode~~** ✅ *(v2.6)*
     All files migrated, strict mode enabled, `useStorage` returns proper `Dispatch<SetStateAction<T>>`.

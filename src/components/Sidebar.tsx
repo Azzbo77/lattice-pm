@@ -5,6 +5,7 @@ import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Avatar } from "./ui";
 import { roleColor } from "../constants/seeds";
 import { bg, clr, font, radius, space } from "../constants/theme";
+import { APP_VERSION } from "../modals/GuidePanel";
 
 const TABS = [
   { id: "dashboard", icon: "🏠", label: "Dashboard" },
@@ -81,6 +82,7 @@ const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBack
     <div style={{ display: "flex", alignItems: "center", gap: space["3"], marginBottom: "2rem", paddingLeft: "0.25rem" }}>
       <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg,#00d4ff,#ff6b35)", borderRadius: "7px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.9rem", flexShrink: 0 }}>◈</div>
       <span style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary }}>Lattice</span>
+      <span style={{ fontSize: font.xxs, color: clr.textGhost, background: bg.muted, padding: "1px 5px", borderRadius: radius.xs, alignSelf: "flex-end", marginBottom: "2px" }}>{APP_VERSION}</span>
     </div>
 
     {/* Nav */}

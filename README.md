@@ -98,7 +98,8 @@ src/
 │   ├── BomModal.tsx
 │   ├── MemberModal.tsx
 │   ├── BackupModal.tsx
-│   └── WeeklySummaryModal.tsx
+│   ├── WeeklySummaryModal.tsx
+│   └── GuidePanel.tsx          # Onboarding guide + APP_VERSION constant
 │
 └── pages/
     ├── AuthScreens.tsx
@@ -114,6 +115,11 @@ src/
 ---
 
 ## Changelog
+
+### v3.6 — Onboarding Guide & Version Number
+- **`src/modals/GuidePanel.tsx`** — new slide-in onboarding guide covering all 9 features: Team, Projects, Suppliers, BOM, Tasks, Timeline, Dashboard, Weekly Summary, Backup
+- **Guide panel** — opens from a `?` button in the topbar (desktop and mobile); backdrop click or ✕ closes it; pill nav to jump between topics; numbered steps per topic; tip block per topic; Back/Next/Done footer navigation; app remains visible behind the panel
+- **`APP_VERSION`** — exported from `GuidePanel.tsx`; displayed as a small badge next to the page title in the topbar (desktop) and next to the Lattice logo (mobile)
 
 ### v3.5 — Session Persistence & Expiry
 - **`src/hooks/useSession.ts`** — new session utility: `createSession`, `readSession`, `writeSession`, `clearSession`, `refreshSession`, `sessionMinutesRemaining`; session stores `{ userId, token, expiresAt }` in localStorage with an 8-hour TTL; token generated via `crypto.randomUUID()` (native browser API, no polyfills)

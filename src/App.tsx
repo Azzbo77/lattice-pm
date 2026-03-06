@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import { Sidebar }             from "./components/Sidebar";
 import { SearchBar }           from "./components/SearchBar";
@@ -19,6 +20,7 @@ import { SupplierModal, PartModal, OrderModal } from "./modals/SupplierModals";
 import { BomModal }       from "./modals/BomModal";
 import { MemberModal }    from "./modals/MemberModal";
 import { BackupModal }    from "./modals/BackupModal";
+import { GuidePanel, APP_VERSION } from "./modals/GuidePanel";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
 import { bg, clr, font, radius, space } from "./constants/theme";
@@ -39,6 +41,7 @@ const AppShell = () => {
   } = useApp();
 
   const { isMobile } = useBreakpoint();
+  const [showGuide, setShowGuide] = useState(false);
 
   // Wait for session rehydration before rendering — prevents login screen flash on refresh
   if (!sessionReady)   return <div style={{ minHeight: "100vh", background: "#06060f" }} />;
@@ -90,13 +93,19 @@ const AppShell = () => {
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
               <div style={{ width: "22px", height: "22px", background: "linear-gradient(135deg,#00d4ff,#ff6b35)", borderRadius: "5px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem" }}>◈</div>
               <span style={{ fontFamily: "'Playfair Display',serif", fontSize: "0.95rem", color: clr.textPrimary }}>Lattice</span>
+              <span style={{ fontSize: font.xxs, color: clr.textGhost, background: bg.muted, padding: "1px 5px", borderRadius: radius.xs }}>{APP_VERSION}</span>
             </div>
           )}
           <SearchBar />
           <NotificationBell />
+          {/* Guide button */}
+          {!isMobile && (
+            <button onClick={() => setShowGuide(true)} title="Getting started guide" style={{ padding: `${space["2"]} ${space["3"]}`, background: "transparent", border: `1px solid ${bg.muted}`, borderRadius: radius.md, color: clr.textGhost, fontSize: font.base, cursor: "pointer", flexShrink: 0 }} aria-label="Open getting started guide">?</button>
+          )}
           {/* Mobile action buttons */}
           {isMobile && (
             <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
+              <button onClick={() => setShowGuide(true)} style={{ padding: space["2"]+" "+space["3"], background: "transparent", border: `1px solid ${bg.muted}`, borderRadius: radius.md, color: clr.textGhost, fontSize: font.base, cursor: "pointer" }} aria-label="Open guide">?</button>
               <button onClick={() => setShowSummary(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.cyan}18`, border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.base, cursor: "pointer" }}>📊</button>
               {isAdmin && <button onClick={() => setShowBackup(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.green}18`, border: "1px solid #48bb7850", borderRadius: radius.md, color: clr.green, fontSize: font.base, cursor: "pointer" }}>💾</button>}
               <button onClick={logout} style={{ padding: space["2"]+" "+space["3"], background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: "#555", fontSize: font.base, cursor: "pointer" }}>⎋</button>
@@ -119,6 +128,7 @@ const AppShell = () => {
       {bomModal       && <BomModal />}
       {memberModal    && <MemberModal />}
       {showBackup     && <BackupModal />}
+      {showGuide      && <GuidePanel onClose={() => setShowGuide(false)} />}
       {showSummary    && <WeeklySummaryModal />}
       {confirmRemove  && (
         <ConfirmModal

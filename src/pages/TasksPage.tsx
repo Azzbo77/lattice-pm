@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import React from "react";
 import { useApp } from "../context/AppContext";
 import { statusColor, prioColor } from "../constants/seeds";
@@ -87,19 +87,19 @@ export const TasksPage = () => {
   const now = todayStr();
 
   // Returns true if any dependency is not done (blocking this task)
-  const isBlocked = (task: Task): boolean =>
+  const isBlocked = useCallback((task: Task): boolean =>
     (task.dependsOn || []).some((depId) => {
       const dep = tasks.find((t) => t.id === depId);
       return dep && dep.status !== "done";
-    });
+    }), [tasks]);
 
   // Returns list of incomplete dep titles for tooltip
-  const blockedBy = (task: Task): string =>
+  const blockedBy = useCallback((task: Task): string =>
     (task.dependsOn || [])
       .map((depId) => tasks.find((t) => t.id === depId))
       .filter((dep): dep is Task => !!dep && dep.status !== "done")
       .map((dep) => dep.title)
-      .join(", ");
+      .join(", "), [tasks]);
 
   // Memoize task data to avoid TaskRow re-renders
   const taskRowsData = useMemo(() =>

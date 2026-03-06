@@ -6,6 +6,7 @@ import {
   DEMO_SUPPLIERS, DEMO_BOM, ROLES,
 } from "../constants/seeds";
 import type { User, Project, Task, Supplier, Part, Order, BomEntry, BomRow, Notification } from "../types";
+import { verifyPassword, hashPassword } from "../utils/password";
 
 export interface AppContextType {
   // Data
@@ -176,8 +177,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // ── Auth handlers ────────────────────────────────────────────────────────
   const login = (email: string, password: string): string | null => {
-    const u = users.find((u) => u.email === email && u.password === password);
-    if (!u) return "Invalid email or password.";
+    const u = users.find((u) => u.email === email);
+    if (!u || !verifyPassword(password, u.password)) return "Invalid email or password.";
+    // Migrate plain-text password to hash on successful login
+    if (!u.password.startsWith("$2")) {
+      setUsers((p) => p.map((x) => x.id === u.id ? { ...x, password: hashPassword(password) } : x));
+    }
     setCurrentUser(u);
     if (u.mustChangePassword) setMustSetPassword(true);
     return null;
@@ -190,7 +195,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const completePasswordReset = (newPassword: string) => {
     if (!currentUser) return;
-    const updated: User = { ...currentUser, password: newPassword, mustChangePassword: false };
+    const updated: User = { ...currentUser, password: hashPassword(newPassword), mustChangePassword: false };
     setUsers((prev) => prev.map((u) => (u.id === currentUser!.id ? updated : u)));
     setCurrentUser(updated);
     setMustSetPassword(false);

@@ -39,7 +39,7 @@ const PasswordField = ({ label, value, onChange, placeholder }: { label: string;
 };
 
 export const LoginScreen = () => {
-  const { login, users } = useApp();
+  const { login } = useApp();
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [err,      setErr]      = useState("");
@@ -66,15 +66,16 @@ export const LoginScreen = () => {
         <button onClick={attempt} style={{ width: "100%", padding: space["5"], background: "linear-gradient(135deg,#00d4ff,#0088aa)", border: "none", borderRadius: radius.lg, color: bg.deep, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
           Sign In
         </button>
-        {/* Demo account quick-fill */}
-        <div style={{ marginTop: "1.5rem", borderTop: "1px solid #1a1a2e", paddingTop: space["6"] }}>
-          <div style={{ fontSize: font.sm, color: clr.textDeep, textAlign: "center", marginBottom: font.xxs, textTransform: "uppercase", letterSpacing: "0.08em" }}>Demo Accounts</div>
-          {users.filter((u) => SEED_USERS.find((s) => s.id === u.id)).map((u) => (
-            <button key={u.id} onClick={() => { setEmail(u.email); setPassword(u.password); }} style={{ width: "100%", marginBottom: "5px", padding: "0.5rem 0.75rem", background: bg.raised, border: "1px solid #252540", borderRadius: radius.md, color: clr.textMuted, fontSize: font.md, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {/* Demo account quick-fill — fills email only, password must be typed */}
+        <div style={{ marginTop: "1.5rem", borderTop: `1px solid ${bg.overlay}`, paddingTop: space["6"] }}>
+          <div style={{ fontSize: font.sm, color: clr.textDeep, textAlign: "center", marginBottom: space["3"], textTransform: "uppercase", letterSpacing: "0.08em" }}>Demo Accounts</div>
+          {SEED_USERS.map((u) => (
+            <button key={u.id} onClick={() => { setEmail(u.email); setPassword(""); }} style={{ width: "100%", marginBottom: "5px", padding: "0.5rem 0.75rem", background: bg.raised, border: `1px solid ${bg.muted}`, borderRadius: radius.md, color: clr.textMuted, fontSize: font.md, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>{u.name}</span>
-              <span style={{ color: { admin: clr.orange, manager: clr.cyan, worker: clr.green }[u.role], textTransform: "capitalize", fontSize: "0.7rem" }}>{u.role}</span>
+              <span style={{ color: ({ admin: clr.orange, manager: clr.cyan, worker: clr.green } as Record<string,string>)[u.role], textTransform: "capitalize", fontSize: "0.7rem" }}>{u.role}</span>
             </button>
           ))}
+          <div style={{ fontSize: font.xs, color: clr.textGhost, textAlign: "center", marginTop: space["3"] }}>See README for demo passwords</div>
         </div>
       </div>
     </div>

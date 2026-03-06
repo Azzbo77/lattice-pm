@@ -113,6 +113,18 @@ src/
 
 ## Changelog
 
+### v3.4 — Password Hashing
+- **`bcryptjs`** added as a dependency (cost factor 10)
+- **`@craco/craco`** added to resolve Webpack 5 / CRA Node core-module polyfill errors (`crypto`, `buffer`, `stream`, `vm` set to `false` in `craco.config.js`)
+- **`craco.config.js`** — disables Node core-module polyfills; bcryptjs falls back to `Math.random`-based salt generation in browser context ⚠ acceptable for localStorage demo use, not for production auth
+- **`src/utils/password.ts`** — new utility module: `hashPassword`, `verifyPassword`, `isHashed`; handles both hashed and legacy plain-text passwords during migration window
+- **`AppContext.login`** — uses `verifyPassword` instead of `===`; migrates plain-text passwords to bcrypt hash on successful login
+- **`AppContext.completePasswordReset`** — hashes new password before saving
+- **`AppContext` startup migration** — `useEffect` on mount detects any unhashed passwords in storage and upgrades them automatically
+- **`MemberModal`** — hashes password via `hashPassword` before passing to `saveMember`
+- **`AuthScreens`** — demo account buttons fill email only; passwords no longer read from user state
+- **`TasksPage`** — `isBlocked` and `blockedBy` wrapped in `useCallback([tasks])` to fix `react-hooks/exhaustive-deps` warnings
+
 ### v3.3 — Accessibility (WCAG AA)
 - **ARIA labels** — All interactive buttons now have descriptive `aria-label` attributes for screen readers (TasksPage, ProjectsPage, TeamPage, BomPage, SuppliersPage, DashboardPage, GanttPage, AuthScreens)
 - **ARIA roles** — Modals have `role="dialog"` and `aria-modal="true"`, clickable StatCards have `role="button"`, Toggle switches have `role="switch"` with `aria-checked`
@@ -256,8 +268,8 @@ src/
 10. **~~TypeScript strict mode~~** ✅ *(v2.6)*
     All files migrated, strict mode enabled, `useStorage` returns proper `Dispatch<SetStateAction<T>>`.
 
-11. **Auth / security basics**
-    Move passwords out of localStorage (hash with bcrypt-js or replace with a proper auth provider). Session expiry. Optional: Supabase Auth drop-in.
+11. **~~Auth / security basics — passwords~~** ✅ *(v3.4)*
+    bcryptjs hashing on all password save paths. Startup migration hashes any plain-text passwords already in localStorage. Demo login buttons no longer expose passwords.
 
 12. **~~Perf & reliability tweaks~~** ✅ *v3.2-v3.3*
     `React.memo` on heavy list components, `useMemo` audit, accessibility pass (keyboard nav, ARIA roles, focus trapping in modals).

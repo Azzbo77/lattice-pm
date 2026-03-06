@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
+import { hashPassword } from "../utils/password";
 import { Overlay, Lbl, Btn, inp } from "../components/ui";
 import { ROLES } from "../constants/seeds";
 import { initials } from "../utils/dateHelpers";
@@ -97,12 +98,13 @@ export const MemberModal = () => {
     if (!f.email.trim())             return setErr("Email is required.");
     if (isNew && !f.password)        return setErr("A temporary password is required for new members.");
     if (f.password && f.password !== f.confirmPassword) return setErr("Passwords do not match.");
+    const pwToSave = f.password ? hashPassword(f.password) : undefined;
     saveMember({
       id:                  member.id || `u${Date.now()}`,
       name:                f.name.trim(),
       email:               f.email.trim(),
       role:                f.role,
-      password:            f.password || member.password,
+      password:            pwToSave || member.password,
       mustChangePassword:  f.mustChangePassword,
       avatar:              initials(f.name.trim()),
     });

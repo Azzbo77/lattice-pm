@@ -1,17 +1,18 @@
 {
   "name": "lattice-pm",
   "version": "1.0.0",
-  "description": "Lattice \u2014 Project Management Tool with Gantt, Tasks, Suppliers, BOM and Team Management",
+  "description": "Lattice — Project Management Tool with Gantt, Tasks, Suppliers, BOM and Team Management",
   "private": true,
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -32,8 +33,10 @@
     ]
   },
   "devDependencies": {
-    "typescript": "4.9.5",
+    "@craco/craco": "^7.1.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@types/react-dom": "^18.2.0",
+    "typescript": "4.9.5"
   }
 }

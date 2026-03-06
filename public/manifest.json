@@ -1,0 +1,42 @@
+{
+  "name": "Lattice PM",
+  "short_name": "Lattice",
+  "description": "Project management with Gantt, Tasks, Suppliers, BOM and Team Management",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#06060f",
+  "theme_color": "#0a0a18",
+  "orientation": "any",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open the daily briefing",
+      "url": "./?tab=dashboard",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tasks",
+      "short_name": "Tasks",
+      "description": "View and manage tasks",
+      "url": "./?tab=tasks",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

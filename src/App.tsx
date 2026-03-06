@@ -42,6 +42,7 @@ const AppShell = () => {
 
   const { isMobile } = useBreakpoint();
   const [showGuide, setShowGuide] = useState(false);
+  const [updateReady, setUpdateReady] = useState(false);
 
   // Wait for session rehydration before rendering — prevents login screen flash on refresh
   if (!sessionReady)   return <div style={{ minHeight: "100vh", background: "#06060f" }} />;
@@ -76,6 +77,27 @@ const AppShell = () => {
         input:focus, textarea:focus { outline: 1px solid #00d4ff80; border-color: #00d4ff80 !important; }
       `}</style>
 
+      {/* Update available banner */}
+      {updateReady && (
+        <div style={{
+          position: "fixed", bottom: "1rem", left: "50%", transform: "translateX(-50%)",
+          background: bg.card, border: `1px solid ${clr.cyan}50`,
+          borderRadius: radius.lg, padding: `${space["3"]} ${space["5"]}`,
+          display: "flex", alignItems: "center", gap: space["4"],
+          zIndex: 500, boxShadow: "0 4px 24px rgba(0,0,0,0.6)",
+          fontSize: font.base, color: clr.textSecondary,
+        }}>
+          <span>🔄 A new version is available</span>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ padding: `${space["1"]} ${space["4"]}`, borderRadius: radius.md, border: `1px solid ${clr.cyan}50`, background: `${clr.cyan}15`, color: clr.cyan, fontSize: font.base, cursor: "pointer" }}
+          >Refresh</button>
+          <button
+            onClick={() => setUpdateReady(false)}
+            style={{ background: "none", border: "none", color: clr.textGhost, cursor: "pointer", fontSize: "0.9rem" }}
+          >✕</button>
+        </div>
+      )}
       {/* Sidebar / mobile tab bar */}
       <Sidebar />
 

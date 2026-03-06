@@ -116,6 +116,16 @@ src/
 
 ## Changelog
 
+### v3.7 — PWA Support
+- **`public/manifest.json`** — app identity, icons, `standalone` display mode, shortcuts to Dashboard and Tasks
+- **`public/sw.js`** — service worker with three caching strategies: network-first for HTML navigation (picks up new deploys promptly), cache-first for JS/CSS/images (fast loads), network-only for `/pb/` and `/api/` routes (never serves stale data); clears old caches on activate
+- **`public/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`** — generated PWA icons matching the ◈ Lattice brand mark
+- **`src/serviceWorkerRegistration.ts`** — registers `sw.js` in production only; fires `onUpdate` callback when a new version is installed
+- **`index.html`** — full PWA meta tags: `theme-color`, apple-mobile-web-app tags, manifest link, apple-touch-icon
+- **`src/index.tsx`** — calls `serviceWorkerRegistration.register()`
+- **Update banner** — when a new build is deployed, a "New version available → Refresh" toast appears at the bottom of the screen; dismissible without refreshing
+- **Note:** SW only activates in production builds (`npm run build`). `npm start` skips registration intentionally.
+
 ### v3.6 — Onboarding Guide & Version Number
 - **`src/modals/GuidePanel.tsx`** — new slide-in onboarding guide covering all 9 features: Team, Projects, Suppliers, BOM, Tasks, Timeline, Dashboard, Weekly Summary, Backup
 - **Guide panel** — opens from a `?` button in the topbar (desktop and mobile); backdrop click or ✕ closes it; pill nav to jump between topics; numbered steps per topic; tip block per topic; Back/Next/Done footer navigation; app remains visible behind the panel

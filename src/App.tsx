@@ -30,7 +30,7 @@ const TAB_LABELS: Record<TabId, string> = { dashboard:"Dashboard", gantt:"Timeli
 // ── Inner app ─────────────────────────────────────────────────────────────────
 const AppShell = () => {
   const {
-    currentUser, mustSetPassword, tab,
+    currentUser, sessionReady, mustSetPassword, tab,
     taskModal, projectModal, supplierModal, orderModal, partModal,
     bomModal, memberModal, showBackup, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
@@ -40,6 +40,8 @@ const AppShell = () => {
 
   const { isMobile } = useBreakpoint();
 
+  // Wait for session rehydration before rendering — prevents login screen flash on refresh
+  if (!sessionReady)   return <div style={{ minHeight: "100vh", background: "#06060f" }} />;
   if (!currentUser)    return <LoginScreen />;
   if (mustSetPassword) return <MustSetPasswordScreen />;
 

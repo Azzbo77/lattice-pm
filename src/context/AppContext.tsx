@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, ReactNode } from "react";
+import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useStorage } from "../hooks/useStorage";
 import { todayStr, addDays, nowISO } from "../utils/dateHelpers";
 import {
@@ -7,6 +7,7 @@ import {
 } from "../constants/seeds";
 import type { User, Project, Task, Supplier, Part, Order, BomEntry, BomRow, Notification } from "../types";
 import { verifyPassword, hashPassword } from "../utils/password";
+import { createSession, readSession, writeSession, clearSession } from "../hooks/useSession";
 
 export interface AppContextType {
   // Data
@@ -17,6 +18,7 @@ export interface AppContextType {
   bom:       BomEntry[];
   // Session
   currentUser:     User | null;
+  sessionReady:    boolean;
   mustSetPassword: boolean;
   // UI
   tab:       string;
@@ -101,8 +103,50 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [bom,       setBom]       = useStorage("pm5:bom",       DEMO_BOM);
 
   // ── Session state ────────────────────────────────────────────────────────
-  const [currentUser,      setCurrentUser]      = useState<User | null>(null);
+  // Rehydrate currentUser from valid session on first render
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
   const [mustSetPassword,  setMustSetPassword]  = useState(false);
+
+  // Rehydrate from storage on first render and keep user in sync with session.
+  useEffect(() => {
+    const session = readSession();
+
+    if (!session) {
+      setCurrentUser(null);
+      setMustSetPassword(false);
+      setSessionReady(true);
+      return;
+    }
+
+    const user = users.find((u) => u.id === session.userId);
+    if (!user) {
+      clearSession();
+      setCurrentUser(null);
+      setMustSetPassword(false);
+      setSessionReady(true);
+      return;
+    }
+
+    setCurrentUser(user);
+    setMustSetPassword(!!user.mustChangePassword);
+    setSessionReady(true);
+  }, [users]);
+
+  // Poll every minute and auto-logout once the session expires.
+  useEffect(() => {
+    if (!sessionReady) return;
+
+    const timer = window.setInterval(() => {
+      const session = readSession();
+      if (!session) {
+        setCurrentUser(null);
+        setMustSetPassword(false);
+      }
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, [sessionReady]);
 
   // ── UI state ─────────────────────────────────────────────────────────────
   const [tab,                  setTab]                  = useState("dashboard");
@@ -184,11 +228,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setUsers((p) => p.map((x) => x.id === u.id ? { ...x, password: hashPassword(password) } : x));
     }
     setCurrentUser(u);
+    writeSession(createSession(u.id));
     if (u.mustChangePassword) setMustSetPassword(true);
     return null;
   };
 
   const logout = () => {
+    clearSession();
     setCurrentUser(null);
     setMustSetPassword(false);
   };
@@ -198,6 +244,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const updated: User = { ...currentUser, password: hashPassword(newPassword), mustChangePassword: false };
     setUsers((prev) => prev.map((u) => (u.id === currentUser!.id ? updated : u)));
     setCurrentUser(updated);
+    // Refresh session with new token after password change
+    writeSession(createSession(updated.id));
     setMustSetPassword(false);
   };
 
@@ -313,11 +361,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const saveMember = (m: User) => {
     setUsers((p) => p.find((x) => x.id === m.id) ? p.map((x) => x.id === m.id ? m : x) : [...p, m]);
     if (currentUser?.id === m.id) setCurrentUser(m);
+    // If admin forced a password reset on another user, invalidate their session
+    // so they must re-login and hit the MustSetPassword screen
+    if (m.mustChangePassword && m.id !== currentUser?.id) {
+      const session = readSession();
+      if (session?.userId === m.id) clearSession();
+    }
     setMemberModal(null);
   };
 
   const removeMember = (id: string) => {
     setUsers((p) => p.filter((u) => u.id !== id));
+    // Clear session if the removed user is currently logged in elsewhere
+    const session = readSession();
+    if (session?.userId === id) clearSession();
     setConfirmRemove(null);
   };
 
@@ -375,7 +432,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       filteredTasks, bomRows, filteredBom, notifications,
       isAdmin, canManage,
       // Auth
-      currentUser, mustSetPassword,
+      currentUser, sessionReady, mustSetPassword,
       login, logout, completePasswordReset,
       // Task
       saveTask, deleteTask, updateTaskStatus,

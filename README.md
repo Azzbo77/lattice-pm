@@ -73,11 +73,13 @@ src/
 ├── hooks/
 │   ├── useStorage.ts          # localStorage abstraction with Dispatch<SetStateAction<T>>
 │   ├── useSearch.ts           # Global search engine
-│   └── useBreakpoint.ts       # Responsive breakpoint detection
+│   ├── useBreakpoint.ts       # Responsive breakpoint detection
+│   └── useSession.ts          # Session token — create, read, write, clear, expiry helpers
 │
 ├── utils/
 │   ├── csvExport.ts
-│   └── dateHelpers.ts
+│   ├── dateHelpers.ts
+│   └── password.ts            # bcryptjs helpers — hashPassword, verifyPassword, isHashed
 │
 ├── constants/
 │   ├── theme.ts               # Design tokens — all colours, spacing, typography, radii
@@ -112,6 +114,17 @@ src/
 ---
 
 ## Changelog
+
+### v3.5 — Session Persistence & Expiry
+- **`src/hooks/useSession.ts`** — new session utility: `createSession`, `readSession`, `writeSession`, `clearSession`, `refreshSession`, `sessionMinutesRemaining`; session stores `{ userId, token, expiresAt }` in localStorage with an 8-hour TTL; token generated via `crypto.randomUUID()` (native browser API, no polyfills)
+- **Session rehydration** — on app mount, AppContext reads the stored session and restores `currentUser` silently; page refresh no longer logs the user out
+- **`sessionReady` flag** — App.tsx waits for rehydration before rendering; prevents the login screen flashing briefly on refresh
+- **Session expiry polling** — `setInterval` checks every 60 seconds; auto-logout when session expires or is cleared
+- **Login writes session** — `createSession(userId)` written on every successful login
+- **Logout clears session** — `clearSession()` called before nulling `currentUser`
+- **Password reset refreshes token** — `completePasswordReset` issues a fresh session token after the password change
+- **Force-reset invalidates session** — when an admin marks a user for password reset, their stored session is cleared so they must re-login immediately
+- **Member removal invalidates session** — removing a user clears their session token
 
 ### v3.4 — Password Hashing
 - **`bcryptjs`** added as a dependency (cost factor 10)
@@ -157,69 +170,19 @@ src/
 - **`seeds.ts`** re-exports theme tokens so existing `import { roleColor } from "../constants/seeds"` imports continue to work
 - Foundation for future light-mode — swap token values in one file to re-theme the entire app
 
-### v2.9 — BOM ↔ Task Bridging
-- **`BomEntry.projectId` + `BomEntry.taskId`** — proper entity links added to type (legacy `project` string field retained for compatibility)
-- **BomModal** — "Linked Project" and "Linked Task" dropdowns replace free-text field; task list filters to selected project; switching project clears task selection; inline task status badge shown when linked
-- **BomModal alerts** — warns if linked task is overdue or if part has delayed orders at time of editing
-- **BomPage — Task/Project filter** — dropdown groups tasks by project; filter by individual task, full project, or unlinked parts only
-- **BomPage — Linked Task column** — shows task name (colour-coded by status) and project name; "—" for unlinked parts
-- **BomPage — Alert indicators** — rows with issues get a red left border; alert badges in Notes column: "Linked task overdue", "Linked task blocked", "Part delivery delayed", "Linked part unused"
-- **BomPage — Alert count** — header shows total alert count across all BOM rows
-- **CSV export** — now includes Project and Linked Task columns
-
-### v2.8 — Task Dependencies
-- **`Task.dependsOn`** — new optional `string[]` field storing prerequisite task IDs
-- **TaskModal** — searchable "Depends on" multi-select dropdown; tasks grouped by status; switching project clears selections; stale dep IDs cleaned up on task delete
-- **TasksPage** — ⛔ "blocked" badge on tasks with incomplete dependencies (tooltip lists blocking tasks); ✓ "deps done" badge when all dependencies complete
-- **DashboardPage** — ⛔ indicator on blocked tasks in the active task list
-- **GanttPage** — SVG dependency arrows between task bars; green solid = dep complete, red dashed = dep still pending
-- **Notifications** — new alert type for tasks blocked by an overdue dependency
-
-### v2.7 — Suppliers Mini-Epic
-- **Collapsible supplier cards** — click header to expand/collapse; collapsed view shows part count, order count, pending and overdue badges
-- **Delete suppliers** — permanent delete with confirmation modal; also removes all associated BOM entries
-- **Archive/restore suppliers** — soft-delete toggle; archived cards shown at reduced opacity with "archived" badge
-- **Page-level filters** — Active / Archived / Overdue orders dropdown with live counts
-- **Empty states** — contextual messages per filter ("No overdue orders ✓" in green)
-- **`Supplier.archived`** field added to type; `deleteSupplier` + `toggleArchiveSupplier` handlers added to AppContext
-
-### v2.6 — Full TypeScript Migration
-- All 29 source files converted from `.jsx`/`.js` to `.tsx`/`.ts`
-- `src/types.ts` — central domain interfaces: `User`, `Project`, `Task`, `Supplier`, `Part`, `Order`, `BomEntry`, `BomRow`, `Notification`, `SearchResult`, `BackupPayload`
-- `AppContext` fully typed with `AppContextType` interface; `createContext<AppContextType | null>` with null guard hook
-- `useStorage` returns `Dispatch<SetStateAction<T>>` — supports functional updaters throughout
-- All component prop interfaces explicit; all handler params typed; strict mode enabled (`noImplicitAny`)
-- TypeScript downgraded to 4.9.5 for react-scripts@5.0.1 compatibility
-- `cleanup-old-files.bat` included to remove stale `.jsx`/`.js` files before upgrade
-
-### v2.5 — Dashboard UI Polish
-- Dropdown contrast fixes across all selects (colorScheme dark)
-- Colour-coded status and priority selects throughout Tasks and BOM
-- Global option styles for consistent dark-mode rendering
-
-### v2.4 — Mobile / Responsive
-- Bottom tab bar navigation on mobile
-- Sheet-style modals on small screens
-- Horizontal-scroll tables with minimum widths
-- Single-column dashboard layout on narrow viewports
-
-### v2.3 — Last-Updated Timestamps
-- All entities stamped with `updatedAt` / `updatedBy` on every save
-- `UpdatedBadge` component shown on all tables and supplier cards
-- Recent Activity feed on Dashboard (last 10 changes across all entities)
-
-### v2.2 — Weekly Summary Generator
-- Role-filtered report modal (Worker / Manager / Admin views)
-- Copy as plain text or export as standalone HTML file
-
-### v2.1 — Project-Focused Gantt
-- Project pill selector with "show all" overlay
-- Date axis with auto-scaling
-- Click any bar to edit the task
-
-### v2.0 — Full Modular Refactor
-- Split monolithic file into context, hooks, utils, pages, modals (26 files)
-- `AppContext` as single source of truth
+### v2.x
+| Version | What changed |
+|---------|-------------|
+| 2.9 | BOM ↔ Task bridging — `projectId`/`taskId` links, linked task column, alert indicators, task/project filter dropdown |
+| 2.8 | Task dependencies — `dependsOn` field, searchable multi-select, Gantt SVG arrows, blocked indicators, cascade delete |
+| 2.7 | Suppliers mini-epic — collapsible cards, archive/delete, page-level filters, empty states |
+| 2.6 | Full TypeScript migration — `types.ts`, all 29 files converted, strict mode, `useStorage` typed |
+| 2.5 | Dashboard UI polish — dropdown contrast, colorScheme dark, colour-coded selects |
+| 2.4 | Mobile / responsive — bottom tab bar, sheet modals, horizontal-scroll tables |
+| 2.3 | Last-updated timestamps — `updatedAt`/`updatedBy` on all entities, UpdatedBadge, Recent Activity feed |
+| 2.2 | Weekly Summary generator — role-filtered report, copy text + HTML export |
+| 2.1 | Project-focused Gantt — pill selector, show-all overlay, date axis, click-to-edit |
+| 2.0 | Full modular refactor — context, hooks, utils, pages, modals (26 files) |
 
 ### v1.x
 | Version | What changed |

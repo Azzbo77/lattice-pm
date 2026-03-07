@@ -7,8 +7,8 @@ import {
   dbGetUsers, dbSaveUser, dbDeleteUser,
   dbGetProjects, dbSaveProject, dbDeleteProject,
   dbGetTasks, dbSaveTask, dbDeleteTask,
-  dbGetSuppliers, dbSaveSupplier, dbDeleteSupplier, dbSavePart, dbDeletePart, dbSaveOrder,
-  dbGetBom, dbSaveBomEntry,
+  dbGetSuppliers, dbSaveSupplier, dbDeleteSupplier, dbSavePart, dbDeletePart, dbSaveOrder, dbDeleteOrder,
+  dbGetBom, dbSaveBomEntry, dbDeleteBomEntry,
   subscribeToCollection,
 } from "../lib/db";
 import { todayStr, addDays } from "../utils/dateHelpers";
@@ -315,11 +315,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [currentUser]);
 
   const deleteProject = useCallback(async (id: string) => {
+    // Delete child tasks first to avoid PocketBase referential integrity errors
+    const childTasks = tasks.filter(t => t.projectId === id);
+    await Promise.all(childTasks.map(t => dbDeleteTask(t.id)));
     await dbDeleteProject(id);
     setProjects(prev => prev.filter(p => p.id !== id));
     setTasks(prev => prev.filter(t => t.projectId !== id));
     setConfirmDeleteProject(null);
-  }, []);
+  }, [tasks]);
 
   // ── Supplier handlers ─────────────────────────────────────────────────────
   const saveSupplier = useCallback(async (s: Supplier) => {
@@ -331,10 +334,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [currentUser]);
 
   const deleteSupplier = useCallback(async (id: string) => {
+    const supplier = suppliers.find(s => s.id === id);
+    if (supplier) {
+      // Delete child bom, orders and parts first to avoid referential integrity errors
+      const relatedBom = bom.filter(b => b.supplierId === id);
+      await Promise.all(relatedBom.map(b => dbDeleteBomEntry(b.id)));
+      await Promise.all((supplier.orders ?? []).map(o => dbDeleteOrder(o.id)));
+      await Promise.all((supplier.parts ?? []).map(p => dbDeletePart(p.id)));
+    }
     await dbDeleteSupplier(id);
     setSuppliers(prev => prev.filter(s => s.id !== id));
     setBom(prev => prev.filter(b => b.supplierId !== id));
-  }, []);
+  }, [suppliers, bom]);
 
   const toggleArchiveSupplier = useCallback(async (id: string) => {
     const s = suppliers.find(x => x.id === id);

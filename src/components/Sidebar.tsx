@@ -110,8 +110,7 @@ const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowSumm
       <button onClick={() => setShowSummary(true)} style={{ width: "100%", padding: space["2"], marginBottom: "5px", background: "transparent", border: "1px solid #00d4ff60", borderRadius: radius.md, color: clr.cyan, fontSize: space["5"], cursor: "pointer" }}>
         📊 Weekly Summary
       </button>
-      {isAdmin && (
-      )}
+
       <button onClick={logout} style={{ width: "100%", padding: space["2"], background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: space["5"], cursor: "pointer" }}>
         Sign Out
       </button>

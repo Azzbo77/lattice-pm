@@ -66,7 +66,15 @@ npx ts-node --project scripts/tsconfig.json scripts/seed.ts \
   --password yourPBadminpassword
 ```
 
-Start the app:
+**Or with Docker (recommended):**
+
+```bash
+docker compose up --build
+```
+
+App runs at http://localhost:3000, PocketBase admin at http://localhost:8090/_/.
+
+**Or without Docker:**
 
 ```bash
 npm start        # Development — http://localhost:3000
@@ -262,6 +270,7 @@ Role-based access control. Add, edit or remove team members with password reset 
 - [PocketBase](https://pocketbase.io/) — self-hosted backend, auth and realtime
 - TypeScript 4.9.5
 - Google Fonts — Playfair Display + IBM Plex Sans
+- [Docker](https://www.docker.com/) + nginx — containerised deployment
 
 ---
 

@@ -1,0 +1,6 @@
+node_modules
+build
+pb_data
+.env*
+.git
+*.md

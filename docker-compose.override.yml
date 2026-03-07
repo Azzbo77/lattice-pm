@@ -1,0 +1,23 @@
+# ── Local dev overrides ───────────────────────────────────────────────────────
+# Applied automatically when you run: docker compose up
+#
+# Note: this runs the production-built React app via nginx, not a hot-reload
+# dev server. Use "npm start" for active coding with live reload.
+# Use Docker when you want to test the full stack locally without installing
+# PocketBase separately.
+#
+# App:                 http://localhost:3000
+# PocketBase admin UI: http://localhost:8090/_/
+
+services:
+
+  pocketbase:
+    ports:
+      - "8090:8090"
+
+  app:
+    build:
+      args:
+        REACT_APP_PB_URL: /pb
+    ports:
+      - "3000:80"

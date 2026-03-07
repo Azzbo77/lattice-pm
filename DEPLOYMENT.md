@@ -247,3 +247,84 @@ If PocketBase already ran without it, delete `pb_data/` and restart.
 **CORS errors in dev**
 Check `.env.development` points to `http://127.0.0.1:8090` (not `localhost` — they differ on some systems).
 In PocketBase admin → Settings → Application → allowed origins, add `http://localhost:3000`.
+
+---
+
+## Docker Deployment
+
+Docker is the recommended way to run Lattice PM — it spins up both PocketBase and the React app together with a single command.
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Port 3000 free (dev) or port 80 free (prod)
+
+---
+
+### Local Development (full stack, no hot reload)
+
+> Use this when you want to test the full stack locally without installing PocketBase separately.
+> For active coding with live reload, run PocketBase standalone and use `npm start` instead — see the manual setup section.
+
+```bash
+docker compose up --build
+```
+
+- App: http://localhost:3000
+- PocketBase admin UI: http://localhost:8090/_/
+
+On first run, open the PocketBase admin UI and create your admin account. Then run the seed script (see the manual setup section) or create the collections and users manually.
+
+---
+
+### Production (Pi)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+- App: http://<your-pi-ip>
+- PocketBase admin UI is **not** exposed publicly — only accessible from within the Pi itself via `http://localhost:8090/_/`
+
+To access the PocketBase admin UI on the Pi:
+
+```bash
+ssh -L 8090:localhost:8090 user@your-pi-ip
+# Then open http://localhost:8090/_/ on your local machine
+```
+
+---
+
+### Data Persistence
+
+PocketBase data is stored in a Docker named volume (`pb_data`). It persists across container restarts and rebuilds.
+
+```bash
+# View volumes
+docker volume ls
+
+# Back up pb_data to a local folder
+docker run --rm -v lattice-pm_pb_data:/data -v $(pwd):/backup alpine   tar czf /backup/pb_data_backup.tar.gz /data
+```
+
+---
+
+### Updating
+
+```bash
+# Rebuild the app after code changes
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build app
+
+# Update PocketBase image
+docker compose pull pocketbase
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d pocketbase
+```
+
+---
+
+### Stopping
+
+```bash
+docker compose down          # Stop containers, keep volumes
+docker compose down -v       # Stop containers AND delete all data ⚠
+```
+

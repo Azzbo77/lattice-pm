@@ -1,0 +1,20 @@
+# ── Production overrides (Pi) ─────────────────────────────────────────────────
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# App runs on port 80. Put a reverse proxy in front if you need HTTPS.
+
+services:
+
+  pocketbase:
+    # Do not expose PocketBase port publicly in production —
+    # the app container reaches it via the internal Docker network.
+    restart: always
+
+  app:
+    build:
+      args:
+        REACT_APP_PB_URL: /pb
+    ports:
+      - "80:80"
+    restart: always
+    environment:
+      - NODE_ENV=production

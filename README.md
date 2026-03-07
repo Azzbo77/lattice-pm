@@ -1,6 +1,10 @@
 # ◈ Lattice PM
 
-A modular React project management tool for engineering and operations teams, backed by PocketBase.
+A self-hosted, browser-based project management tool built for small engineering and operations teams. Written in TypeScript and React, it runs as a web app and connects to a PocketBase backend — no cloud subscription required.
+
+Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.
+
+**The problem it solves:** most project management tools are either too generic (no BOM, no supplier tracking) or too expensive and complex for a small team. Lattice is purpose-built for environments where tasks, parts, and delivery dates are all interconnected.
 
 ---
 
@@ -210,6 +214,45 @@ Timestamps, Weekly Summary, mobile layout, TypeScript, theme centralisation, per
 - Reporting — exportable PDF/Excel reports, project burn-down charts, supplier performance dashboard
 - Security audit — input sanitisation, role enforcement review, session expiry
 - Dependency & Gantt enhancements — critical path highlighting, milestone markers, drag-to-reschedule bars
+
+---
+
+## Screenshots
+
+### Dashboard
+Daily briefing with stat cards, due-this-week tasks, delivery alerts, project progress and team workload at a glance.
+
+![Dashboard](public/screenshots/dashboard.png)
+
+### Timeline
+Project-focused Gantt with pill selector, status breakdown, dependency arrows and click-to-edit task bars.
+
+![Timeline](public/screenshots/timeline.png)
+
+### Tasks
+Create, assign and track tasks with status, priority, dates, project tagging, dependency linking and CSV export.
+
+![Tasks](public/screenshots/tasks.png)
+
+### Projects
+Colour-coded project cards with progress bars and per-project task breakdown.
+
+![Projects](public/screenshots/projects.png)
+
+### Suppliers
+Collapsible supplier cards with parts catalogue and order tracking.
+
+![Suppliers](public/screenshots/suppliers.png)
+
+### BOM
+Bill of Materials linked to tasks and projects, with usage status, alert indicators and CSV export.
+
+![BOM](public/screenshots/bom.png)
+
+### Team
+Role-based access control. Add, edit or remove team members with password reset options.
+
+![Team](public/screenshots/team.png)
 
 ---
 

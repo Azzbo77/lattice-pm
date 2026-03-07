@@ -41,7 +41,7 @@ export interface AppContextType {
   supplierModal:        Supplier | null | Record<string, unknown>;
   orderModal:           string | null;
   partModal:            { supplierId: string; part: Partial<Part> } | null;
-  bomModal:             { entry: BomRow; partId: string; supplierId: string } | null;
+  bomModal:             { entry: BomRow | null; partId: string; supplierId: string } | null;
   memberModal:          User | null | Record<string, unknown>;
   showSummary:          boolean;
   confirmRemove:        { userId: string; name: string } | null;
@@ -86,7 +86,7 @@ export interface AppContextType {
   setSupplierModal:        (m: Supplier | null | Record<string, unknown>) => void;
   setOrderModal:           (m: string | null) => void;
   setPartModal:            (m: { supplierId: string; part: Partial<Part> } | null) => void;
-  setBomModal:             (m: { entry: BomRow; partId: string; supplierId: string } | null) => void;
+  setBomModal:             (m: { entry: BomRow | null; partId: string; supplierId: string } | null) => void;
   setMemberModal:          (m: User | null | Record<string, unknown>) => void;
   setShowSummary:          (v: boolean) => void;
   setConfirmRemove:        (m: { userId: string; name: string } | null) => void;
@@ -129,7 +129,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [supplierModal,        setSupplierModal]        = useState<Supplier | null | Record<string, unknown>>(null);
   const [orderModal,           setOrderModal]           = useState<string | null>(null);
   const [partModal,            setPartModal]            = useState<{ supplierId: string; part: Partial<Part> } | null>(null);
-  const [bomModal,             setBomModal]             = useState<{ entry: BomRow; partId: string; supplierId: string } | null>(null);
+  const [bomModal,             setBomModal]             = useState<{ entry: BomRow | null; partId: string; supplierId: string } | null>(null);
   const [memberModal,          setMemberModal]          = useState<User | null | Record<string, unknown>>(null);
   const [showSummary,          setShowSummary]          = useState(false);
   const [confirmRemove,        setConfirmRemove]        = useState<{ userId: string; name: string } | null>(null);

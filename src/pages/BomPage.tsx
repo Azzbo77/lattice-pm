@@ -171,6 +171,9 @@ export const BomPage = () => {
             ))}
           </select>
           <button onClick={handleExport} style={{ display: "flex", alignItems: "center", gap: space["2"], padding: "0.3rem 0.85rem", borderRadius: radius.pill, border: "1px solid #48bb7870", background: "#48bb7818", color: clr.green, fontSize: space["5"], cursor: "pointer", whiteSpace: "nowrap" }}>⬇ Export CSV</button>
+          {canSuppliers && (
+            <button onClick={() => setBomModal({ entry: null, partId: "", supplierId: "" })} style={{ padding: "0.3rem 0.85rem", borderRadius: radius.pill, border: "1px solid #00d4ff70", background: "#00d4ff18", color: clr.cyan, fontSize: space["5"], cursor: "pointer", whiteSpace: "nowrap" }}>+ Add Entry</button>
+          )}
         </div>
       </div>
 

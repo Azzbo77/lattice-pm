@@ -43,7 +43,6 @@ export interface AppContextType {
   partModal:            { supplierId: string; part: Partial<Part> } | null;
   bomModal:             { entry: BomRow; partId: string; supplierId: string } | null;
   memberModal:          User | null | Record<string, unknown>;
-  showBackup:           boolean;
   showSummary:          boolean;
   confirmRemove:        { userId: string; name: string } | null;
   confirmDeleteProject: Project | null;
@@ -77,8 +76,6 @@ export interface AppContextType {
   saveMember:           (m: User) => Promise<void>;
   removeMember:         (id: string) => Promise<void>;
   setUsers:             React.Dispatch<React.SetStateAction<User[]>>;
-  exportBackup:         () => void;
-  importBackup:         (data: unknown) => Promise<void>;
   // Setters
   setTab:                  (tab: string) => void;
   setPf:                   (pf: string) => void;
@@ -91,7 +88,6 @@ export interface AppContextType {
   setPartModal:            (m: { supplierId: string; part: Partial<Part> } | null) => void;
   setBomModal:             (m: { entry: BomRow; partId: string; supplierId: string } | null) => void;
   setMemberModal:          (m: User | null | Record<string, unknown>) => void;
-  setShowBackup:           (v: boolean) => void;
   setShowSummary:          (v: boolean) => void;
   setConfirmRemove:        (m: { userId: string; name: string } | null) => void;
   setConfirmDeleteProject: (m: Project | null) => void;
@@ -135,7 +131,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [partModal,            setPartModal]            = useState<{ supplierId: string; part: Partial<Part> } | null>(null);
   const [bomModal,             setBomModal]             = useState<{ entry: BomRow; partId: string; supplierId: string } | null>(null);
   const [memberModal,          setMemberModal]          = useState<User | null | Record<string, unknown>>(null);
-  const [showBackup,           setShowBackup]           = useState(false);
   const [showSummary,          setShowSummary]          = useState(false);
   const [confirmRemove,        setConfirmRemove]        = useState<{ userId: string; name: string } | null>(null);
   const [confirmDeleteProject, setConfirmDeleteProject] = useState<Project | null>(null);
@@ -423,42 +418,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setConfirmRemove(null);
   }, []);
 
-  // ── Backup / restore ──────────────────────────────────────────────────────
-  const exportBackup = useCallback(() => {
-    if (!currentUser) return;
-    const payload = {
-      _meta: { app: "Lattice PM", version: "4.1", exportedAt: new Date().toISOString(), exportedBy: currentUser.name },
-      users, projects, tasks, suppliers, bom,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const a    = document.createElement("a");
-    a.href     = URL.createObjectURL(blob);
-    a.download = `lattice-backup-${todayStr()}.json`;
-    a.click();
-  }, [currentUser, users, projects, tasks, suppliers, bom]);
-
-  const importBackup = useCallback(async (data: unknown) => {
-    const d = data as any;
-    if (!d?._meta) throw new Error("Invalid backup file");
-    // Re-seed each collection from the backup
-    for (const proj of d.projects ?? [])  await dbSaveProject(proj);
-    for (const task of d.tasks ?? [])     await dbSaveTask(task);
-    for (const supp of d.suppliers ?? []) {
-      await dbSaveSupplier(supp);
-      for (const part  of supp.parts  ?? []) await dbSavePart({ ...part, supplierId: supp.id });
-      for (const order of supp.orders ?? []) await dbSaveOrder({ ...order, supplierId: supp.id });
-    }
-    for (const entry of d.bom ?? []) await dbSaveBomEntry(entry);
-    await loadAll();
-  }, [loadAll]);
-
   // ── Context value ─────────────────────────────────────────────────────────
   const value: AppContextType = {
     users, projects, tasks, suppliers, bom, loading,
     currentUser, sessionReady, mustSetPassword,
     tab, pf, bomFilter, taskFilter,
     taskModal, projectModal, supplierModal, orderModal, partModal,
-    bomModal, memberModal, showBackup, showSummary,
+    bomModal, memberModal, showSummary,
     confirmRemove, confirmDeleteProject,
     isAdmin, canManage, canSuppliers,
     filteredTasks, bomRows, filteredBom, notifications,
@@ -471,11 +437,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     addOrder, toggleArrived,
     saveBomEntry,
     saveMember, removeMember, setUsers,
-    exportBackup, importBackup,
     setTab, setPf, setBomFilter, setTaskFilter,
     setTaskModal, setProjectModal, setSupplierModal,
-    setOrderModal, setPartModal, setBomModal, setMemberModal,
-    setShowBackup, setShowSummary,
+    setOrderModal, setPartModal, setBomModal, setMemberModal, setShowSummary,
     setConfirmRemove, setConfirmDeleteProject,
   };
 

@@ -103,16 +103,3 @@ export interface SearchResult {
   action: () => void;
 }
 
-export interface BackupPayload {
-  _meta: {
-    app: string;
-    version: string;
-    exportedAt: string;
-    exportedBy: string;
-  };
-  users: User[];
-  projects: Project[];
-  tasks: Task[];
-  suppliers: Supplier[];
-  bom: BomEntry[];
-}

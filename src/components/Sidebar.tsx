@@ -76,7 +76,7 @@ const MobileTabBar = ({ tab, setTab, notifications }: { tab: string; setTab: (t:
 };
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
-const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBackup, setShowSummary }: { tab: string; setTab: (t: string) => void; currentUser: User; isAdmin: boolean; logout: () => void; setShowBackup: (v: boolean) => void; setShowSummary: (v: boolean) => void }) => (
+const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowSummary }: { tab: string; setTab: (t: string) => void; currentUser: User; isAdmin: boolean; logout: () => void; setShowSummary: (v: boolean) => void }) => (
   <div style={{ width: "180px", flexShrink: 0, background: bg.subtle, borderRight: "1px solid #1a1a30", display: "flex", flexDirection: "column", padding: "1rem 0.75rem", minHeight: "100vh", position: "sticky", top: 0 }}>
     {/* Logo */}
     <div style={{ display: "flex", alignItems: "center", gap: space["3"], marginBottom: "2rem", paddingLeft: "0.25rem" }}>
@@ -111,9 +111,6 @@ const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBack
         📊 Weekly Summary
       </button>
       {isAdmin && (
-        <button onClick={() => setShowBackup(true)} style={{ width: "100%", padding: space["2"], marginBottom: "5px", background: "transparent", border: "1px solid #48bb7860", borderRadius: radius.md, color: clr.green, fontSize: space["5"], cursor: "pointer" }}>
-          💾 Backup
-        </button>
       )}
       <button onClick={logout} style={{ width: "100%", padding: space["2"], background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: space["5"], cursor: "pointer" }}>
         Sign Out
@@ -124,7 +121,7 @@ const DesktopSidebar = ({ tab, setTab, currentUser, isAdmin, logout, setShowBack
 
 // ── Exported component ────────────────────────────────────────────────────────
 export const Sidebar = () => {
-  const { currentUser, tab, setTab, isAdmin, logout, setShowBackup, setShowSummary, notifications } = useApp();
+  const { currentUser, tab, setTab, isAdmin, logout, setShowSummary, notifications } = useApp();
   const { isMobile } = useBreakpoint();
 
   if (isMobile) {
@@ -139,8 +136,7 @@ export const Sidebar = () => {
       currentUser={currentUser}
       isAdmin={isAdmin}
       logout={logout}
-      setShowBackup={setShowBackup}
-      setShowSummary={setShowSummary}
+            setShowSummary={setShowSummary}
     />
   );
 };

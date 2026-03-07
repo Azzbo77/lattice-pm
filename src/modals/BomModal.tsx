@@ -8,82 +8,123 @@ import { bg, clr, font, radius, space } from "../constants/theme";
 export const BomModal = () => {
   const { bomModal, setBomModal, saveBomEntry, suppliers, projects, tasks } = useApp();
 
+  const isNew = bomModal && !bomModal.entry;
+
+  const [selectedSupplierId, setSelectedSupplierId] = useState("");
+  const [selectedPartId,     setSelectedPartId]     = useState("");
+
   const [f, setF] = useState({
     qtyOrdered: 1,
     status:     "pending",
     notes:      "",
-    project:    "",   // legacy label kept for compatibility
+    project:    "",
     projectId:  "",
     taskId:     "",
   });
 
   useEffect(() => {
     if (!bomModal) return;
-    const { entry } = bomModal;
+    const { entry, supplierId, partId } = bomModal;
+    setSelectedSupplierId(supplierId || "");
+    setSelectedPartId(partId || "");
     setF({
-      qtyOrdered: entry.qtyOrdered ?? 1,
-      status:     entry.status    || "pending",
-      notes:      entry.notes     || "",
-      project:    entry.project   || "",
-      projectId:  entry.projectId || "",
-      taskId:     entry.taskId    || "",
+      qtyOrdered: entry?.qtyOrdered ?? 1,
+      status:     entry?.status    || "pending",
+      notes:      entry?.notes     || "",
+      project:    entry?.project   || "",
+      projectId:  entry?.projectId || "",
+      taskId:     entry?.taskId    || "",
     });
   }, [bomModal]);
 
   if (!bomModal) return null;
-  const { entry, partId, supplierId } = bomModal;
-  const supplier = suppliers.find((s) => s.id === supplierId);
-  const part     = (supplier?.parts || []).find((p) => p.id === partId);
+  const { entry } = bomModal;
+
+  const supplierId    = isNew ? selectedSupplierId : bomModal.supplierId;
+  const partId        = isNew ? selectedPartId     : bomModal.partId;
+  const supplier      = suppliers.find((s) => s.id === supplierId);
+  const supplierParts = supplier?.parts || [];
+  const part          = supplierParts.find((p) => p.id === partId);
 
   const u = (k: string) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) =>
-    setF((p) => ({
-      ...p,
-      [k]: e.target.value,
-      // Clear taskId when project changes
-      ...(k === "projectId" ? { taskId: "" } : {}),
-    }));
+    setF((p) => ({ ...p, [k]: e.target.value, ...(k === "projectId" ? { taskId: "" } : {}) }));
 
-  const meta = bomStatusMeta[f.status as keyof typeof bomStatusMeta];
-
-  // Tasks in the selected project
-  const projectTasks = f.projectId
-    ? tasks.filter((t) => t.projectId === f.projectId)
-    : [];
-
-  // Linked task for alert display
+  const meta         = bomStatusMeta[f.status as keyof typeof bomStatusMeta];
+  const projectTasks = f.projectId ? tasks.filter((t) => t.projectId === f.projectId) : [];
   const linkedTask   = tasks.find((t) => t.id === f.taskId);
   const now          = todayStr();
   const taskOverdue  = linkedTask && linkedTask.status !== "done" && linkedTask.endDate < now;
-
-  // Check if part has any delayed orders
   const delayedOrders = (supplier?.orders || []).filter((o) =>
-    !o.arrived && addDays(o.orderedDate, o.leadTimeDays) < now &&
-    (o.partIds || []).includes(partId)
+    !o.arrived && addDays(o.orderedDate, o.leadTimeDays) < now && (o.partIds || []).includes(partId)
   );
+
+  const canSave = isNew ? !!(supplierId && partId) : true;
+
+  const handleSave = () => {
+    if (!canSave) return;
+    saveBomEntry({
+      ...entry, ...f,
+      supplierId,
+      partId,
+      qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0,
+      status: f.status as any,
+      project: f.projectId ? (projects.find((p) => p.id === f.projectId)?.name || f.project) : f.project,
+    });
+  };
 
   return (
     <Overlay onClose={() => setBomModal(null)}>
-      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary, marginBottom: "0.25rem" }}>BOM Entry</h3>
+      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: font.h2, color: clr.textPrimary, marginBottom: "0.25rem" }}>
+        {isNew ? "Add BOM Entry" : "Edit BOM Entry"}
+      </h3>
       <div style={{ marginBottom: space["7"], fontSize: font.md, color: clr.textFaint }}>
-        {supplier?.name} — <span style={{ color: clr.cyan, fontFamily: "monospace" }}>{part?.partNumber}</span>
+        {isNew ? "Link a part to a project or task" : <>{supplier?.name} — <span style={{ color: clr.cyan, fontFamily: "monospace" }}>{part?.partNumber}</span></>}
       </div>
 
-      {/* Part info */}
-      <div style={{ padding: space["5"], background: bg.raised, borderRadius: radius.lg, marginBottom: space["6"], border: "1px solid #252540" }}>
-        <div style={{ fontSize: font.base, color: clr.textFaint, marginBottom: radius.sm, textTransform: "uppercase", letterSpacing: "0.05em" }}>Part</div>
-        <div style={{ color: clr.textPrimary, fontSize: font.xl, fontWeight: 600 }}>{part?.description}</div>
-        <div style={{ fontSize: font.base, color: clr.textDim, marginTop: radius.sm }}>Unit: {part?.unitQty} × {part?.unit} per order</div>
-      </div>
+      {/* Supplier + Part selectors (new entry only) */}
+      {isNew && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space["5"], marginBottom: space["6"] }}>
+          <div>
+            <Lbl c="Supplier *" />
+            <select style={inp} value={selectedSupplierId} onChange={(e) => { setSelectedSupplierId(e.target.value); setSelectedPartId(""); }}>
+              <option value="">— Select supplier —</option>
+              {suppliers.filter(s => !s.archived).map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Lbl c="Part *" />
+            <select style={inp} value={selectedPartId} onChange={(e) => setSelectedPartId(e.target.value)} disabled={!selectedSupplierId}>
+              <option value="">— Select part —</option>
+              {supplierParts.map((p) => (
+                <option key={p.id} value={p.id}>{p.partNumber}{p.description ? ` — ${p.description}` : ""}</option>
+              ))}
+            </select>
+            {selectedSupplierId && supplierParts.length === 0 && (
+              <div style={{ fontSize: font.sm, color: clr.yellow, marginTop: radius.xs }}>No parts for this supplier yet</div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* Alerts */}
+      {/* Part info card */}
+      {part && (
+        <div style={{ padding: space["5"], background: bg.raised, borderRadius: radius.lg, marginBottom: space["6"], border: "1px solid #252540" }}>
+          <div style={{ fontSize: font.base, color: clr.textFaint, marginBottom: radius.sm, textTransform: "uppercase", letterSpacing: "0.05em" }}>Part</div>
+          <div style={{ color: clr.textPrimary, fontSize: font.xl, fontWeight: 600 }}>{part.description}</div>
+          <div style={{ fontSize: font.base, color: clr.textDim, marginTop: radius.sm }}>Unit: {part.unitQty} × {part.unit} per order</div>
+        </div>
+      )}
+
       {taskOverdue && (
         <div style={{ padding: "0.6rem 0.75rem", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.md, marginBottom: space["5"], fontSize: space["5"], color: clr.red }}>
-          ⚠ Linked task <strong>"{linkedTask.title}"</strong> is overdue — check if this part is still needed on schedule.
+          ⚠ Linked task <strong>"{linkedTask.title}"</strong> is overdue.
         </div>
       )}
       {delayedOrders.length > 0 && (
         <div style={{ padding: "0.6rem 0.75rem", background: "#f6c90e15", border: "1px solid #f6c90e50", borderRadius: radius.md, marginBottom: space["5"], fontSize: space["5"], color: clr.yellow }}>
-          ⚠ {delayedOrders.length} overdue order{delayedOrders.length !== 1 ? "s" : ""} for this part — delivery may be delayed.
+          ⚠ {delayedOrders.length} overdue order{delayedOrders.length !== 1 ? "s" : ""} for this part.
         </div>
       )}
 
@@ -96,11 +137,7 @@ export const BomModal = () => {
           </div>
           <div>
             <Lbl c="Usage Status" />
-            <select
-              style={{ ...inp, color: meta.color, background: meta.bg, border: `1px solid ${meta.color}55` }}
-              value={f.status}
-              onChange={u("status")}
-            >
+            <select style={{ ...inp, color: meta.color, background: meta.bg, border: `1px solid ${meta.color}55` }} value={f.status} onChange={u("status")}>
               {Object.entries(bomStatusMeta).map(([k, v]) => (
                 <option key={k} value={k} style={{ background: bg.deep, color: clr.textPrimary }}>{v.icon} {v.label}</option>
               ))}
@@ -108,15 +145,12 @@ export const BomModal = () => {
           </div>
         </div>
 
-        {/* Project + Task linking */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space["5"] }}>
           <div>
             <Lbl c="Linked Project" />
             <select style={inp} value={f.projectId} onChange={u("projectId")}>
               <option value="">— None —</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div>
@@ -124,45 +158,35 @@ export const BomModal = () => {
             <select style={inp} value={f.taskId} onChange={u("taskId")} disabled={!f.projectId}>
               <option value="">— None —</option>
               {projectTasks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.status === "done" ? "✓ " : t.status === "blocked" ? "⛔ " : ""}{t.title}
-                </option>
+                <option key={t.id} value={t.id}>{t.status === "done" ? "✓ " : t.status === "blocked" ? "⛔ " : ""}{t.title}</option>
               ))}
             </select>
             {!f.projectId && <div style={{ fontSize: font.sm, color: clr.textGhost, marginTop: radius.xs }}>Select a project first</div>}
           </div>
         </div>
 
-        {/* Linked task status indicator */}
         {linkedTask && (
           <div style={{ display: "flex", alignItems: "center", gap: space["3"], padding: "0.5rem 0.75rem", background: bg.raised, borderRadius: radius.md, fontSize: space["5"] }}>
             <span style={{ color: clr.textFaint }}>Task status:</span>
             <span style={{
               padding: "2px 8px", borderRadius: radius.sm, fontSize: "0.7rem",
               background: linkedTask.status === "done" ? "#48bb7820" : linkedTask.status === "blocked" ? "#fc818120" : "#f6c90e20",
-              color:      linkedTask.status === "done" ? clr.green   : linkedTask.status === "blocked" ? clr.red   : clr.yellow,
+              color:      linkedTask.status === "done" ? clr.green : linkedTask.status === "blocked" ? clr.red : clr.yellow,
               border:     `1px solid ${linkedTask.status === "done" ? "#48bb7850" : linkedTask.status === "blocked" ? "#fc818150" : "#f6c90e50"}`,
-            }}>
-              {linkedTask.status}
-            </span>
+            }}>{linkedTask.status}</span>
             <span style={{ color: clr.textFaint }}>due {linkedTask.endDate}</span>
           </div>
         )}
 
-        <div><Lbl c="Engineering Notes / CI Suggestions" />
+        <div>
+          <Lbl c="Engineering Notes / CI Suggestions" />
           <textarea style={{ ...inp, minHeight: "70px", resize: "vertical" }} value={f.notes} onChange={u("notes")} placeholder="e.g. Part worked well but consider higher-spec alternative for next revision…" />
         </div>
       </div>
 
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setBomModal(null)}>Cancel</Btn>
-        <Btn color={clr.cyan} onClick={async () => saveBomEntry({
-          ...entry, ...f,
-          qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0,
-          status: f.status as any,
-          // Keep legacy project label in sync with selected project name
-          project: f.projectId ? (projects.find((p) => p.id === f.projectId)?.name || f.project) : f.project,
-        })}>Save</Btn>
+        <Btn color={clr.cyan} onClick={handleSave} disabled={!canSave}>Save</Btn>
       </div>
     </Overlay>
   );

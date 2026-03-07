@@ -19,7 +19,6 @@ import { ProjectModal }   from "./modals/ProjectModal";
 import { SupplierModal, PartModal, OrderModal } from "./modals/SupplierModals";
 import { BomModal }       from "./modals/BomModal";
 import { MemberModal }    from "./modals/MemberModal";
-import { BackupModal }    from "./modals/BackupModal";
 import { GuidePanel, APP_VERSION } from "./modals/GuidePanel";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
@@ -34,10 +33,10 @@ const AppShell = () => {
   const {
     currentUser, sessionReady, mustSetPassword, loading, tab,
     taskModal, projectModal, supplierModal, orderModal, partModal,
-    bomModal, memberModal, showBackup, showSummary,
+    bomModal, memberModal, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
     confirmDeleteProject, setConfirmDeleteProject, deleteProject,
-    setShowSummary, setShowBackup, isAdmin, logout,
+    setShowSummary, isAdmin, logout,
   } = useApp();
 
   const { isMobile } = useBreakpoint();
@@ -137,7 +136,6 @@ const AppShell = () => {
             <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
               <button onClick={() => setShowGuide(true)} style={{ padding: space["2"]+" "+space["3"], background: "transparent", border: `1px solid ${bg.muted}`, borderRadius: radius.md, color: clr.textGhost, fontSize: font.base, cursor: "pointer" }} aria-label="Open guide">?</button>
               <button onClick={() => setShowSummary(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.cyan}18`, border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.base, cursor: "pointer" }}>📊</button>
-              {isAdmin && <button onClick={() => setShowBackup(true)} style={{ padding: space["2"]+" "+space["3"], background: `${clr.green}18`, border: "1px solid #48bb7850", borderRadius: radius.md, color: clr.green, fontSize: font.base, cursor: "pointer" }}>💾</button>}
               <button onClick={logout} style={{ padding: space["2"]+" "+space["3"], background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: "#555", fontSize: font.base, cursor: "pointer" }}>⎋</button>
             </div>
           )}
@@ -157,7 +155,6 @@ const AppShell = () => {
       {partModal      && <PartModal />}
       {bomModal       && <BomModal />}
       {memberModal    && <MemberModal />}
-      {showBackup     && <BackupModal />}
       {showGuide      && <GuidePanel onClose={() => setShowGuide(false)} />}
       {showSummary    && <WeeklySummaryModal />}
       {confirmRemove  && (

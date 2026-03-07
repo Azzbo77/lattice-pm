@@ -144,12 +144,9 @@ const WORKFLOW: WorkflowStep[] = [
     title: "Back up your data",
     why: "Lattice PM stores everything in your browser. If you clear browser data, it's gone — so back up regularly.",
     steps: [
-      "Click the 💾 button in the top bar (Admin only) to open Backup & Restore.",
-      "Click Export Backup to download a full JSON snapshot — all users, projects, tasks, suppliers, parts, orders and BOM.",
-      "To restore, drag and drop a backup file onto the restore area, or click to browse. A preview shows exactly what will be imported before you confirm.",
       "The storage meter shows how much of your browser's localStorage quota is in use.",
     ],
-    tip: "Export a backup before making large changes. It's your only safety net until the backend migration to PocketBase.",
+    tip: "Use PocketBase admin UI (port 8090 → Settings → Backups) to back up your data.",
     next: null,
   },
 ];

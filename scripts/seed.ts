@@ -246,7 +246,7 @@ async function seed() {
   console.log(`  Target: ${PB_URL}\n`);
 
   console.log("→ Authenticating as PocketBase superadmin...");
-  await pb.admins.authWithPassword(EMAIL, PASSWORD);
+  await pb.collection("_superusers_").authWithPassword(EMAIL, PASSWORD);
   console.log("  ✓ Authenticated");
 
   await setupUsersCollection();

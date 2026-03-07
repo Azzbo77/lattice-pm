@@ -51,7 +51,7 @@ const TaskRow = ({ task }: { task: any }) => {
         </div>
         <div style={{ fontSize: "0.68rem", color: clr.textFaint, marginTop: "1px", display: "flex", alignItems: "center", gap: space["3"] }}>
           {proj && <span style={{ color: proj.color }}>{proj.name}</span>}
-          {assignee && currentUser?.role !== "worker" && <span>· {assignee.name}</span>}
+          {assignee && currentUser?.role !== "shopfloor" && <span>· {assignee.name}</span>}
           {task.updatedAt && <UpdatedBadge iso={task.updatedAt} compact />}
         </div>
       </div>
@@ -60,7 +60,7 @@ const TaskRow = ({ task }: { task: any }) => {
       </div>
       <select
         value={task.status}
-        onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+        onChange={async (e) => updateTaskStatus(task.id, e.target.value)}
         style={{ ...miniSel(statusColor[task.status]), flexShrink: 0 }}
       >
         <option value="todo">To Do</option>
@@ -149,7 +149,7 @@ export const DashboardPage = () => {
   const now  = todayStr();
   const in7  = addDays(now, 7);
 
-  const myTasks        = currentUser.role === "worker" ? tasks.filter((t) => t.assigneeId === currentUser.id) : tasks;
+  const myTasks        = currentUser.role === "shopfloor" ? tasks.filter((t) => t.assigneeId === currentUser.id) : tasks;
   const overdueTasks   = myTasks.filter((t) => t.endDate < now && t.status !== "done");
   const dueSoonTasks   = myTasks.filter((t) => t.endDate >= now && t.endDate <= in7 && t.status !== "done");
   const inProgressTasks= myTasks.filter((t) => t.status === "in-progress");
@@ -233,7 +233,7 @@ export const DashboardPage = () => {
               ))}
             </div>
           )}
-          {currentUser.role === "worker" && inProgressTasks.length > 0 && (
+          {currentUser.role === "shopfloor" && inProgressTasks.length > 0 && (
             <div>
               <SectionHeader title="⚡ In Progress" action="View all →" onAction={() => setTab("tasks")} />
               {inProgressTasks.slice(0, 5).map((t) => <TaskRow key={t.id} task={t} />)}

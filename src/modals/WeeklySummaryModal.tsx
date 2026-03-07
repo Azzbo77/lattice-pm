@@ -103,7 +103,7 @@ export const WeeklySummaryModal = () => {
   const dateLabel = `${fmt(start)} – ${fmt(end)}`;
 
   // ── Shared derived data ───────────────────────────────────────────────────
-  const myTasks   = role === ROLES.WORKER
+  const myTasks   = role === ROLES.SHOPFLOOR
     ? tasks.filter((t) => t.assigneeId === currentUser.id)
     : tasks;
 
@@ -130,13 +130,13 @@ export const WeeklySummaryModal = () => {
     return [
       <span style={{ color: clr.textPrimary }}>{t.title}</span>,
       proj ? <span style={{ color: proj.color, fontSize: "0.7rem" }}>{proj.name}</span> : "—",
-      role !== ROLES.WORKER ? (assignee?.name || "—") : undefined,
+      role !== ROLES.SHOPFLOOR ? (assignee?.name || "—") : undefined,
       <Badge text={fmt(t.endDate)} color={t.endDate < now ? "red" : "amber"} />,
       <Badge text={t.priority} color={t.priority === "high" ? "red" : t.priority === "medium" ? "amber" : "grey"} />,
     ].filter(Boolean);
   };
 
-  const taskCols = role !== ROLES.WORKER
+  const taskCols = role !== ROLES.SHOPFLOOR
     ? ["Task", "Project", "Assignee", "Due", "Priority"]
     : ["Task", "Project", "Due", "Priority"];
 
@@ -289,20 +289,20 @@ export const WeeklySummaryModal = () => {
       const cells = [
         t.title,
         proj?.name || "—",
-        role !== ROLES.WORKER ? (assignee?.name || "—") : null,
+        role !== ROLES.SHOPFLOOR ? (assignee?.name || "—") : null,
         `<span class="badge ${late ? "red" : "amber"}">${fmt(t.endDate)}</span>`,
         `<span class="badge ${t.priority === "high" ? "red" : t.priority === "medium" ? "amber" : "grey"}">${t.priority}</span>`,
       ].filter(Boolean);
       return cells;
     };
 
-    const htaskCols = role !== ROLES.WORKER
+    const htaskCols = role !== ROLES.SHOPFLOOR
       ? ["Task","Project","Assignee","Due","Priority"]
       : ["Task","Project","Due","Priority"];
 
     let html = "";
 
-    if (role === ROLES.WORKER) {
+    if (role === ROLES.SHOPFLOOR) {
       html += h2("⚠ Overdue") + table(htaskCols, overdue.map(taskHTMLRow));
       html += h2(`📅 Due This Week (${dateLabel})`) + table(htaskCols, thisWeek.map(taskHTMLRow));
       html += h2("🔴 Blocked") + table(htaskCols, blocked.map(taskHTMLRow));
@@ -361,7 +361,7 @@ export const WeeklySummaryModal = () => {
   };
 
   const exportHTML = () => {
-    const title = role === ROLES.WORKER
+    const title = role === ROLES.SHOPFLOOR
       ? `My Weekly Summary — ${currentUser.name}`
       : role === ROLES.MANAGER
       ? `Weekly Project Summary`
@@ -392,7 +392,7 @@ export const WeeklySummaryModal = () => {
     addSection("⚠ OVERDUE TASKS", overdue.map((t) => {
       const p = projects.find((x) => x.id === t.projectId);
       const a = users.find((x) => x.id === t.assigneeId);
-      return `${t.title} [${p?.name || "?"}] due ${fmt(t.endDate)}${role !== ROLES.WORKER ? ` · ${a?.name}` : ""}`;
+      return `${t.title} [${p?.name || "?"}] due ${fmt(t.endDate)}${role !== ROLES.SHOPFLOOR ? ` · ${a?.name}` : ""}`;
     }));
 
     addSection(`📅 DUE THIS WEEK (${dateLabel})`, thisWeek.map((t) => {
@@ -402,7 +402,7 @@ export const WeeklySummaryModal = () => {
 
     addSection("🔴 BLOCKED", blocked.map((t) => t.title));
 
-    if (role !== ROLES.WORKER) {
+    if (role !== ROLES.SHOPFLOOR) {
       addSection("📦 OVERDUE DELIVERIES", overdueOrders.map((o) => `${o.supplierName}: ${o.description} (due ${fmt(o.dueDate)})`));
       addSection("🚚 ARRIVING SOON", arrivingSoon.map((o) => `${o.supplierName}: ${o.description} (expected ${fmt(o.dueDate)})`));
     }
@@ -422,7 +422,7 @@ export const WeeklySummaryModal = () => {
     });
   };
 
-  const roleLabel = { admin: "Admin Report", manager: "Manager Report", worker: "Personal Summary" }[role];
+  const roleLabel = ({ admin: "Admin Report", manager: "Manager Report", office: "Office Report", shopfloor: "Personal Summary" } as Record<string, string>)[role];
 
   return (
     <div
@@ -469,7 +469,7 @@ export const WeeklySummaryModal = () => {
             [thisWeek.length,      "Due This Week", clr.yellow] as const,
             [blocked.length,       "Blocked",    blocked.length > 0       ? clr.red : clr.textMuted] as const,
             [doneRecent.length,    "Done Recently", clr.green] as const,
-            ...(role !== ROLES.WORKER ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? clr.red : clr.green] as const] : []),
+            ...(role !== ROLES.SHOPFLOOR ? [[overdueOrders.length, "Late Deliveries", overdueOrders.length > 0 ? clr.red : clr.green] as const] : []),
           ] as const).map(([val, label, color]) => (
             <div key={label} style={{ background: bg.raised, border: "1px solid #1e1e35", borderRadius: radius.lg, padding: "0.4rem 0.85rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
               <span style={{ fontSize: space["6"], fontWeight: 700, color }}>{val}</span>
@@ -480,7 +480,7 @@ export const WeeklySummaryModal = () => {
 
         {/* Report body */}
         <div ref={previewRef} style={{ padding: "0.75rem 1.5rem 1.5rem" }}>
-          {role === ROLES.WORKER  && <WorkerPreview />}
+          {role === ROLES.SHOPFLOOR  && <WorkerPreview />}
           {role === ROLES.MANAGER && <ManagerPreview />}
           {role === ROLES.ADMIN   && <AdminPreview />}
         </div>

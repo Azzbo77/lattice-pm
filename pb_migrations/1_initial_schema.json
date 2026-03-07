@@ -1,0 +1,432 @@
+[
+  {
+    "id": "lattice_projects",
+    "name": "projects",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "name",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": 200
+        }
+      },
+      {
+        "name": "color",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 4,
+          "max": 9
+        }
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 2000
+        }
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+    "deleteRule": "@request.auth.role = 'admin'"
+  },
+  {
+    "id": "lattice_tasks",
+    "name": "tasks",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "title",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": 500
+        }
+      },
+      {
+        "name": "projectId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "lattice_projects",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "assigneeId",
+        "type": "relation",
+        "required": false,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "status",
+        "type": "select",
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "todo",
+            "in-progress",
+            "done",
+            "blocked"
+          ]
+        }
+      },
+      {
+        "name": "priority",
+        "type": "select",
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      {
+        "name": "startDate",
+        "type": "text",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "endDate",
+        "type": "text",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 5000
+        }
+      },
+      {
+        "name": "dependsOn",
+        "type": "relation",
+        "required": false,
+        "options": {
+          "collectionId": "lattice_tasks",
+          "cascadeDelete": false,
+          "maxSelect": 999
+        }
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office' || @request.auth.id = assigneeId",
+    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'"
+  },
+  {
+    "id": "lattice_suppliers",
+    "name": "suppliers",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "name",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": 200
+        }
+      },
+      {
+        "name": "contact",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 200
+        }
+      },
+      {
+        "name": "phone",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 50
+        }
+      },
+      {
+        "name": "email",
+        "type": "email",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "archived",
+        "type": "bool",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "deleteRule": "@request.auth.role = 'admin'"
+  },
+  {
+    "id": "lattice_parts",
+    "name": "parts",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "supplierId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "lattice_suppliers",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "partNumber",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": 100
+        }
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 1000
+        }
+      },
+      {
+        "name": "unit",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 50
+        }
+      },
+      {
+        "name": "unitQty",
+        "type": "number",
+        "required": false,
+        "options": {
+          "min": 0
+        }
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
+  },
+  {
+    "id": "lattice_orders",
+    "name": "orders",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "supplierId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "lattice_suppliers",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 1000
+        }
+      },
+      {
+        "name": "partIds",
+        "type": "relation",
+        "required": false,
+        "options": {
+          "collectionId": "lattice_parts",
+          "cascadeDelete": false,
+          "maxSelect": 999
+        }
+      },
+      {
+        "name": "orderedDate",
+        "type": "text",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "leadTimeDays",
+        "type": "number",
+        "required": false,
+        "options": {
+          "min": 0
+        }
+      },
+      {
+        "name": "arrived",
+        "type": "bool",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "arrivedDate",
+        "type": "text",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
+  },
+  {
+    "id": "lattice_bom",
+    "name": "bom",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "supplierId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "lattice_suppliers",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "partId",
+        "type": "relation",
+        "required": true,
+        "options": {
+          "collectionId": "lattice_parts",
+          "cascadeDelete": true,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "projectId",
+        "type": "relation",
+        "required": false,
+        "options": {
+          "collectionId": "lattice_projects",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "taskId",
+        "type": "relation",
+        "required": false,
+        "options": {
+          "collectionId": "lattice_tasks",
+          "cascadeDelete": false,
+          "maxSelect": 1
+        }
+      },
+      {
+        "name": "qtyOrdered",
+        "type": "number",
+        "required": false,
+        "options": {
+          "min": 0
+        }
+      },
+      {
+        "name": "status",
+        "type": "select",
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "pending",
+            "used",
+            "not-used",
+            "under-review"
+          ]
+        }
+      },
+      {
+        "name": "notes",
+        "type": "text",
+        "required": false,
+        "options": {
+          "max": 2000
+        }
+      },
+      {
+        "name": "updatedBy",
+        "type": "text",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
+  }
+]

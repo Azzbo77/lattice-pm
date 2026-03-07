@@ -4,16 +4,18 @@ export { bg, clr, font, space, radius, shadow } from "./theme";
 
 // ── Role constants ────────────────────────────────────────────────────────────
 export const ROLES = {
-  ADMIN:   "admin"   as Role,
-  MANAGER: "manager" as Role,
-  WORKER:  "worker"  as Role,
+  ADMIN:     "admin"     as Role,
+  MANAGER:   "manager"   as Role,
+  OFFICE:    "office"    as Role,
+  SHOPFLOOR: "shopfloor" as Role,
 } as const;
 
 // ── Colour maps ───────────────────────────────────────────────────────────────
-export const roleColor: Record<Role, string> = {
-  admin:   "#ff6b35",
-  manager: "#00d4ff",
-  worker:  "#48bb78",
+export const roleColor: Record<string, string> = {
+  admin:     "#ff6b35",
+  manager:   "#00d4ff",
+  office:    "#f6c90e",
+  shopfloor: "#48bb78",
 };
 
 export const statusColor: Record<string, string> = {
@@ -51,12 +53,7 @@ export const bomStatusMeta: Record<BomStatus, BomMeta> = {
 };
 
 // ── Seed data ─────────────────────────────────────────────────────────────────
-export const SEED_USERS: User[] = [
-  { id: "u1", name: "Alex Morgan",    email: "alex@company.com",   role: "admin",   password: "admin123",   mustChangePassword: false },
-  { id: "u2", name: "Jamie Chen",     email: "jamie@company.com",  role: "manager", password: "manager123", mustChangePassword: false },
-  { id: "u3", name: "Sam Rivera",     email: "sam@company.com",    role: "worker",  password: "worker123",  mustChangePassword: false },
-  { id: "u4", name: "Taylor Brooks",  email: "taylor@company.com", role: "worker",  password: "worker456",  mustChangePassword: false },
-];
+export const SEED_USERS: User[] = [];
 
 export const DEMO_PROJECTS: Project[] = [
   { id: "p1", name: "Server Room Build",  color: "#00d4ff", description: "Phase 1 infrastructure" },

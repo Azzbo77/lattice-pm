@@ -32,12 +32,7 @@ A modular React project management tool for engineering and operations teams.
 
 ## Demo Accounts
 
-| Name | Email | Password | Role |
-|------|-------|----------|------|
-| Alex Morgan | alex@company.com | admin123 | Admin |
-| Jamie Chen | jamie@company.com | manager123 | Manager |
-| Sam Rivera | sam@company.com | worker123 | Worker |
-| Taylor Brooks | taylor@company.com | worker456 | Worker |
+_Demo accounts are created by the seed script — see scripts/seed.ts._
 
 ---
 
@@ -115,6 +110,25 @@ src/
 ---
 
 ## Changelog
+
+### v4.1 — PocketBase Integration
+- **`src/lib/pb.ts`** — PocketBase client singleton; reads `REACT_APP_PB_URL`; `autoCancellation(false)` prevents request conflicts during rapid state updates
+- **`src/lib/db.ts`** — full typed data layer (345 lines): mapper functions for all 6 collections, CRUD functions for every entity, `subscribeToCollection` wrapper returning unsubscribe functions
+- **`src/context/AppContext.tsx`** — fully rewritten: all handlers async, `useStorage`/localStorage removed, initial `loadAll()` via `Promise.all`, 7 realtime subscriptions (one per collection), `loading` state exposed, session rehydration via `pb.authStore`
+- **`src/pages/AuthScreens.tsx`** — `login` made async with submitting state; "Signing in…" label during request
+- **`scripts/seed.ts`** — creates a single admin account (`admin@lattice.dev`); skips if already exists; prints login credentials on completion
+- **All modal/page call sites** — handler calls wrapped in `async () =>` where needed; `BackupModal.handleFile` made async
+- **`App.tsx`** — loading spinner shown while initial data fetch completes
+- **`.gitignore`** — `pb_data/` and `.env.*` files excluded
+- **`.env.development` / `.env.production`** — see DEPLOYMENT.md for values
+- **Note:** `useStorage`, `useSession`, and `password.ts` are now unused — they will be removed in v4.2 cleanup
+
+### v4.0 — PocketBase Schema & Deployment Docs
+- **`pb_migrations/1_initial_schema.json`** — full schema for all 6 collections: projects, tasks, suppliers, parts, orders, bom; includes field types, relation constraints (cascade deletes where appropriate), and row-level security rules per role
+- **`DEPLOYMENT.md`** — complete setup guide for Windows dev and Pi prod: PocketBase download, first-run, admin account, migrations, nginx config with SSE support for realtime, deploy workflow, troubleshooting
+- **Row-level security:** shopfloor can only update their own assigned tasks; office can manage tasks; managers can manage tasks, suppliers, parts, orders and BOM; admins have full access including team management
+- **Self-referencing relation:** `tasks.dependsOn` references the tasks collection itself (maxSelect: 999)
+- **Cascade deletes:** parts cascade from suppliers; orders cascade from suppliers; bom entries cascade from suppliers and parts
 
 ### v3.7 — PWA Support
 - **`public/manifest.json`** — app identity, icons, `standalone` display mode, shortcuts to Dashboard and Tasks
@@ -255,7 +269,7 @@ src/
 
 ---
 
-### Phase 4 — Backend Migration *(future)*
+### Phase 4 — Backend Migration *(complete)*
 
 - **Auth** — hashed passwords (bcrypt-js), session tokens, optional Supabase Auth
 - **Backend** — REST or tRPC API; PostgreSQL via Supabase or PlanetScale

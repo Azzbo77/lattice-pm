@@ -56,7 +56,7 @@ export const MemberModal = () => {
   const [f, setF] = useState({
     name:                "",
     email:               "",
-    role:                ROLES.WORKER,
+    role:                ROLES.SHOPFLOOR,
     password:            "",
     confirmPassword:     "",
     mustChangePassword:  false,
@@ -71,7 +71,7 @@ export const MemberModal = () => {
     setF({
       name:                modalMember.name    || "",
       email:               modalMember.email   || "",
-      role:                modalMember.role    || ROLES.WORKER,
+      role:                modalMember.role    || ROLES.SHOPFLOOR,
       password:            "",
       confirmPassword:     "",
       mustChangePassword:  modalIsNew ? true : (modalMember.mustChangePassword || false),
@@ -93,7 +93,7 @@ export const MemberModal = () => {
     setF((p) => ({ ...p, password: pw, confirmPassword: pw }));
   };
 
-  const save = () => {
+  const save = async () => {
     if (!f.name.trim())              return setErr("Name is required.");
     if (!f.email.trim())             return setErr("Email is required.");
     if (isNew && !f.password)        return setErr("A temporary password is required for new members.");
@@ -121,9 +121,10 @@ export const MemberModal = () => {
         <div>
           <Lbl c="Role" />
           <select style={inp} value={f.role as string} onChange={u("role")} disabled={isSelf}>
-            <option value={ROLES.WORKER} style={{ background:bg.card,color:clr.green }}>Worker — view &amp; update own tasks</option>
-            <option value={ROLES.MANAGER} style={{ background:bg.card,color:clr.cyan }}>Manager — manage tasks &amp; suppliers</option>
-            <option value={ROLES.ADMIN} style={{ background:bg.card,color:clr.orange }}>Admin — full access</option>
+            <option value={ROLES.SHOPFLOOR} style={{ background:bg.card,color:clr.green }}>Shopfloor — view &amp; update own tasks</option>
+            <option value={ROLES.OFFICE} style={{ background:bg.card,color:clr.yellow }}>Office — manage tasks, view all</option>
+            <option value={ROLES.MANAGER} style={{ background:bg.card,color:clr.cyan }}>Manager — full operations access</option>
+            <option value={ROLES.ADMIN} style={{ background:bg.card,color:clr.orange }}>Admin — full access including team</option>
           </select>
           {isSelf && <div style={{ fontSize: "0.68rem", color: clr.textFaint, marginTop: radius.sm }}>You cannot change your own role.</div>}
         </div>

@@ -48,19 +48,19 @@ SupplierSummary.displayName = "SupplierSummary";
 interface PartRowProps {
   part: Part;
   supplierId: string;
-  canManage: boolean;
+  canSuppliers: boolean;
   onEdit: (supplierId: string, part: Part) => void;
   onDelete: (supplierId: string, partId: string) => void;
 }
 
-const PartRow = React.memo(({ part, supplierId, canManage, onEdit, onDelete }: PartRowProps) => (
+const PartRow = React.memo(({ part, supplierId, canSuppliers, onEdit, onDelete }: PartRowProps) => (
   <div style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", alignItems: "center", padding: "0 0.5rem", justifyItems: "center" }}>
     <TD style={{ justifyContent: "flex-start" }}><span style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan }}>{part.partNumber}</span></TD>
     <TD style={{ justifyContent: "flex-start" }}>{part.description}</TD>
     <TD center>{part.unitQty}</TD>
     <TD center>{part.unit}</TD>
     <TD center style={{ gap: radius.sm }}>
-      {canManage && (
+      {canSuppliers && (
         <>
           <button onClick={() => onEdit(supplierId, { ...part, _existing: true })} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit part ${part.partNumber}`}>Edit</button>
           <button onClick={() => onDelete(supplierId, part.id)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Delete part ${part.partNumber}`}>✕</button>
@@ -76,11 +76,11 @@ interface OrderRowProps {
   order: Order;
   supplierParts: Part[];
   now: string;
-  canManage: boolean;
+  canSuppliers: boolean;
   onToggleArrived: (orderId: string) => void;
 }
 
-const OrderRow = React.memo(({ order, supplierParts, now, canManage, onToggleArrived }: OrderRowProps) => {
+const OrderRow = React.memo(({ order, supplierParts, now, canSuppliers, onToggleArrived }: OrderRowProps) => {
   const arrival = addDays(order.orderedDate, order.leadTimeDays);
   const late = !order.arrived && arrival < now;
 
@@ -108,7 +108,7 @@ const OrderRow = React.memo(({ order, supplierParts, now, canManage, onToggleArr
       </TD>
       <TD center><UpdatedBadge iso={order.updatedAt} byName={order.updatedBy} compact /></TD>
       <TD center>
-        {canManage && (
+        {canSuppliers && (
           <button onClick={() => onToggleArrived(order.id)} style={{ padding: "3px 7px", background: order.arrived ? "#fc818115" : "#48bb7815", border: `1px solid ${order.arrived ? "#fc818150" : "#48bb7850"}`, borderRadius: radius.sm, color: order.arrived ? clr.red : clr.green, fontSize: "0.7rem", cursor: "pointer" }} aria-label={order.arrived ? `Mark order ${order.description} as not arrived` : `Mark order ${order.description} as arrived`}>
             {order.arrived ? "Unmark" : "Mark Arrived"}
           </button>
@@ -122,7 +122,7 @@ OrderRow.displayName = "OrderRow";
 // ── Individual supplier card ───────────────────────────────────────────────────
 const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
   const {
-    canManage, setSupplierModal, setPartModal, setOrderModal,
+    canSuppliers, setSupplierModal, setPartModal, setOrderModal,
     deletePart, toggleArrived, deleteSupplier, toggleArchiveSupplier,
   } = useApp();
   const now = todayStr();
@@ -171,7 +171,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
           </div>
 
           {/* Action buttons — stop propagation so clicks don't toggle accordion */}
-          {canManage && (
+          {canSuppliers && (
             <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: space["2"], flexWrap: "wrap" }}>
               {!supplier.archived && (
                 <>
@@ -183,7 +183,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
               <Btn
                 color={supplier.archived ? clr.green : clr.textMuted}
                 small
-                onClick={() => toggleArchiveSupplier(supplier.id)}
+                onClick={async () => toggleArchiveSupplier(supplier.id)}
                 aria-label={supplier.archived ? `Restore supplier ${supplier.name}` : `Archive supplier ${supplier.name}`}
               >
                 {supplier.archived ? "Restore" : "Archive"}
@@ -223,7 +223,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
                             key={pt.id}
                             part={pt}
                             supplierId={supplier.id}
-                            canManage={canManage}
+                            canSuppliers={canSuppliers}
                             onEdit={(id, part) => setPartModal({ supplierId: id, part: { ...part, _existing: true } })}
                             onDelete={deletePart}
                           />
@@ -237,7 +237,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
             {(supplier.parts || []).length === 0 && (
               <div style={{ padding: "0.6rem 1.25rem", borderBottom: "1px solid #141428", fontSize: font.md, color: clr.textGhost }}>
                 No parts catalogued yet.
-                {canManage && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.green, fontSize: font.md, cursor: "pointer" }} aria-label={`Add part to ${supplier.name}`}>+ Add one</button>}
+                {canSuppliers && <button onClick={() => setPartModal({ supplierId: supplier.id, part: {} })} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.green, fontSize: font.md, cursor: "pointer" }} aria-label={`Add part to ${supplier.name}`}>+ Add one</button>}
               </div>
             )}
 
@@ -269,7 +269,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
                             order={order}
                             supplierParts={supplier.parts || []}
                             now={now}
-                            canManage={canManage}
+                            canSuppliers={canSuppliers}
                             onToggleArrived={(orderId) => toggleArrived(supplier.id, orderId)}
                           />
                         ))}
@@ -282,7 +282,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
             {(supplier.orders || []).length === 0 && (
               <div style={{ padding: "0.6rem 1.25rem", fontSize: font.md, color: clr.textGhost }}>
                 No orders yet.
-                {canManage && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.cyan, fontSize: font.md, cursor: "pointer" }} aria-label={`Add order to ${supplier.name}`}>+ Place one</button>}
+                {canSuppliers && <button onClick={() => setOrderModal(supplier.id)} style={{ marginLeft: space["3"], background: "none", border: "none", color: clr.cyan, fontSize: font.md, cursor: "pointer" }} aria-label={`Add order to ${supplier.name}`}>+ Place one</button>}
               </div>
             )}
           </div>
@@ -292,7 +292,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
       {confirmDelete && (
         <ConfirmModal
           message={`Permanently delete "${supplier.name}"? All parts, orders and BOM entries for this supplier will also be removed.`}
-          onConfirm={() => { deleteSupplier(supplier.id); setConfirmDelete(false); }}
+          onConfirm={async () => { deleteSupplier(supplier.id); setConfirmDelete(false); }}
           onClose={() => setConfirmDelete(false)}
         />
       )}
@@ -303,7 +303,7 @@ SupplierCard.displayName = "SupplierCard";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export const SuppliersPage = () => {
-  const { suppliers, canManage, setSupplierModal } = useApp();
+  const { suppliers, canSuppliers, setSupplierModal } = useApp();
   const [filter, setFilter] = useState<Filter>("active");
   const now = todayStr();
 
@@ -326,11 +326,11 @@ export const SuppliersPage = () => {
             <option value="overdue">Overdue orders ({counts.overdue})</option>
           </select>
         </div>
-        {canManage && <Btn color={clr.orange} onClick={() => setSupplierModal({})}>+ Add Supplier</Btn>}
+        {canSuppliers && <Btn color={clr.orange} onClick={() => setSupplierModal({})}>+ Add Supplier</Btn>}
       </div>
 
       {/* Empty states */}
-      {filtered.length === 0 && filter === "active"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No active suppliers. {canManage && "Add one above."}</div>}
+      {filtered.length === 0 && filter === "active"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No active suppliers. {canSuppliers && "Add one above."}</div>}
       {filtered.length === 0 && filter === "archived"  && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No archived suppliers.</div>}
       {filtered.length === 0 && filter === "overdue"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.green }}>✓ No overdue orders.</div>}
 

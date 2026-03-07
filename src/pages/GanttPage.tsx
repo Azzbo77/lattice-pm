@@ -153,7 +153,7 @@ export const GanttPage = () => {
 
   const now = todayStr();
 
-  const myTasks = currentUser?.role === "worker"
+  const myTasks = currentUser?.role === "shopfloor"
     ? tasks.filter((t) => t.assigneeId === currentUser.id)
     : tasks;
 
@@ -184,7 +184,7 @@ export const GanttPage = () => {
 
   if (!currentUser) return null;
 
-  const onEdit = currentUser.role !== "worker" ? (task: any) => setTaskModal(task) : undefined;
+  const onEdit = currentUser.role !== "shopfloor" ? (task: any) => setTaskModal(task) : undefined;
 
   // ── Empty state ──
   if (myTasks.length === 0)
@@ -192,7 +192,7 @@ export const GanttPage = () => {
       <div style={{ padding: "3rem", textAlign: "center", color: clr.textFaint }}>
         <div style={{ fontSize: "2.5rem", marginBottom: space["5"] }}>📅</div>
         <div style={{ marginBottom: space["6"] }}>No tasks yet.</div>
-        {currentUser.role !== "worker" && (
+        {currentUser.role !== "shopfloor" && (
           <button onClick={() => setTab("tasks")} style={{ padding: "0.5rem 1.25rem", background: "#00d4ff18", border: "1px solid #00d4ff50", borderRadius: radius.md, color: clr.cyan, fontSize: font.lg, cursor: "pointer" }} aria-label="Go to tasks page to create tasks">
             Go to Tasks →
           </button>
@@ -314,7 +314,7 @@ export const GanttPage = () => {
           {activeTasks.length === 0 && (
             <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint, fontSize: font.lg }}>
               No tasks for this project yet.
-              {currentUser.role !== "worker" && (
+              {currentUser.role !== "shopfloor" && (
                 <button onClick={() => { setPf(activeId); setTab("tasks"); }} style={{ display: "block", margin: "0.75rem auto 0", padding: "0.4rem 1rem", background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textMuted, fontSize: font.md, cursor: "pointer" }} aria-label="Go to tasks page to add tasks for this project">Add tasks →</button>
               )}
             </div>

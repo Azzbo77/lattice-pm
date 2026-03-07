@@ -32,7 +32,7 @@ const TAB_LABELS: Record<TabId, string> = { dashboard:"Dashboard", gantt:"Timeli
 // ── Inner app ─────────────────────────────────────────────────────────────────
 const AppShell = () => {
   const {
-    currentUser, sessionReady, mustSetPassword, tab,
+    currentUser, sessionReady, mustSetPassword, loading, tab,
     taskModal, projectModal, supplierModal, orderModal, partModal,
     bomModal, memberModal, showBackup, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
@@ -48,6 +48,14 @@ const AppShell = () => {
   if (!sessionReady)   return <div style={{ minHeight: "100vh", background: "#06060f" }} />;
   if (!currentUser)    return <LoginScreen />;
   if (mustSetPassword) return <MustSetPasswordScreen />;
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#06060f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center", color: "#555" }}>
+        <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>◈</div>
+        <div style={{ fontSize: "0.75rem" }}>Loading…</div>
+      </div>
+    </div>
+  );
 
   const PAGE_MAP: Record<TabId, JSX.Element> = {
     dashboard: <DashboardPage />,
@@ -155,14 +163,14 @@ const AppShell = () => {
       {confirmRemove  && (
         <ConfirmModal
           message={`Remove ${confirmRemove.name} from the team?`}
-          onConfirm={() => removeMember(confirmRemove.userId)}
+          onConfirm={async () => removeMember(confirmRemove.userId)}
           onClose={() => setConfirmRemove(null)}
         />
       )}
       {confirmDeleteProject && (
         <ConfirmModal
           message={`Delete "${confirmDeleteProject.name}"? All tasks in this project will also be deleted.`}
-          onConfirm={() => deleteProject(confirmDeleteProject.id)}
+          onConfirm={async () => deleteProject(confirmDeleteProject.id)}
           onClose={() => setConfirmDeleteProject(null)}
         />
       )}

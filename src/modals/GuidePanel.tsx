@@ -17,7 +17,7 @@ const WORKFLOW: WorkflowStep[] = [
     steps: [
       "Go to the Team tab and click Add Member.",
       "Enter their name, email, role and a temporary password.",
-      "Roles matter: Admin has full access. Manager can manage tasks, suppliers and BOM but not users. Worker can only see and update their own assigned tasks.",
+      "Roles matter: Admin has full access including team management. Manager has full operations access. Office can manage tasks and view all data. Shopfloor can only see and update their own assigned tasks.",
       "Add yourself as Admin first, then add everyone else.",
       "They'll be prompted to set their own password on first login.",
     ],

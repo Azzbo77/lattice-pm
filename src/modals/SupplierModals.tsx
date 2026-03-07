@@ -37,7 +37,7 @@ export const SupplierModal = () => {
       </div>
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setSupplierModal(null)}>Cancel</Btn>
-        <Btn color={clr.orange} onClick={() => saveSupplier({ ...f, id: supplier.id || `s${Date.now()}`, parts: (supplier.parts as any) || [], orders: (supplier.orders as any) || [] })}>Save</Btn>
+        <Btn color={clr.orange} onClick={async () => saveSupplier({ ...f, id: supplier.id || `s${Date.now()}`, parts: (supplier.parts as any) || [], orders: (supplier.orders as any) || [] })}>Save</Btn>
       </div>
     </Overlay>
   );
@@ -67,7 +67,7 @@ export const PartModal = () => {
 
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 
-  const save = () => {
+  const save = async () => {
     if (!f.partNumber.trim()) return setErr("Part number is required.");
     if (!f.description.trim()) return setErr("Description is required.");
     savePart(supplierId, { ...f, id: part.id || `pt${Date.now()}`, unitQty: parseInt(f.unitQty) || 1 });
@@ -147,7 +147,7 @@ export const OrderModal = () => {
       </div>
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setOrderModal(null)}>Cancel</Btn>
-        <Btn color={clr.green} onClick={() => addOrder(supplierId || "", { ...f, id: `o${Date.now()}`, leadTimeDays: parseInt(f.leadTimeDays as string) || 14, arrived: false, arrivedDate: null })}>Add Order</Btn>
+        <Btn color={clr.green} onClick={async () => addOrder(supplierId || "", { ...f, id: `o${Date.now()}`, leadTimeDays: parseInt(f.leadTimeDays as string) || 14, arrived: false, arrivedDate: null })}>Add Order</Btn>
       </div>
     </Overlay>
   );

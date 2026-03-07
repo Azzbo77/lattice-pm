@@ -27,7 +27,7 @@ export const ProjectModal = () => {
 
   const u = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
 
-  const save = () => {
+  const save = async () => {
     if (!f.name.trim()) return setErr("Project name is required.");
     saveProject({ ...f, id: project.id || `p${Date.now()}`, name: f.name.trim() });
   };

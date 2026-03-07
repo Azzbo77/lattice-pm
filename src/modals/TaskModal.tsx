@@ -255,7 +255,7 @@ export const TaskModal = () => {
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setTaskModal(null)}>Cancel</Btn>
         {canManage && (
-          <Btn color={clr.cyan} onClick={() => saveTask({
+          <Btn color={clr.cyan} onClick={async () => saveTask({
             ...f,
             id: (task.id as string) || `t${Date.now()}`,
             status:   f.status   as any,

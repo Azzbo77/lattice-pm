@@ -22,7 +22,7 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
   const results: SearchResult[] = [];
 
   // Tasks
-  const myTasks = currentUser.role === "worker"
+  const myTasks = currentUser.role === "shopfloor"
     ? tasks.filter((t) => t.assigneeId === currentUser.id)
     : tasks;
 
@@ -40,7 +40,7 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
   });
 
   // Projects (managers/admins only)
-  if (currentUser.role !== "worker") {
+  if (currentUser.role !== "shopfloor") {
     projects.forEach((p) => {
       if (!p.name.toLowerCase().includes(q) && !(p.description || "").toLowerCase().includes(q)) return;
       results.push({

@@ -15,6 +15,7 @@ interface BomRowProps {
   linkedProj: Project | undefined;
   alerts: string[];
   canManage: boolean;
+  canSuppliers?: boolean;
   onEdit: (entry: BomRowType) => void;
 }
 
@@ -76,7 +77,7 @@ export const BomPage = () => {
   const {
     bomRows, filteredBom, bomFilter, setBomFilter,
     taskFilter, setTaskFilter,
-    setBomModal, projects, tasks, suppliers, canManage,
+    setBomModal, projects, tasks, suppliers, canSuppliers,
   } = useApp();
   const now = todayStr();
 
@@ -206,7 +207,7 @@ export const BomPage = () => {
             linkedTask={linkedTask}
             linkedProj={linkedProj}
             alerts={alerts}
-            canManage={canManage}
+            canManage={canSuppliers}
             onEdit={handleEditBom}
           />
         ))}

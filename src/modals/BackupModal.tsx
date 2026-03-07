@@ -9,10 +9,19 @@ export const BackupModal = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  const handleFile = (file: File | Blob | null) => {
+  const handleFile = async (file: File | Blob | null): Promise<void> => {
     if (!file) return;
     if (!(file instanceof File) || !file.name.endsWith(".json")) { alert("Please select a .json backup file."); return; }
-    importBackup(file);
+
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      await importBackup(payload);
+      alert("Backup restored successfully.");
+      setShowBackup(false);
+    } catch {
+      alert("Could not read backup file. Make sure it is valid JSON.");
+    }
   };
 
   const storageUsed = (() => {

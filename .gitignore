@@ -25,3 +25,11 @@ yarn-error.log*
 
 # Testing
 /coverage
+
+# PocketBase
+pb_data/
+
+# Environment — contains PocketBase URL
+.env.development
+.env.production
+.env.local

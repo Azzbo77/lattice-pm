@@ -131,7 +131,7 @@ export const TasksPage = () => {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space["6"], flexWrap: "wrap", gap: space["3"] }}>
-        <p style={{ color: clr.textFaint, fontSize: "0.8rem" }}>{currentUser?.role === "worker" ? "Your assigned work" : `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}</p>
+        <p style={{ color: clr.textFaint, fontSize: "0.8rem" }}>{currentUser?.role === "shopfloor" ? "Your assigned work" : `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}</p>
         <div style={{ display: "flex", gap: font.xxs, alignItems: "center", flexWrap: "wrap" }}>
           <select value={pf} onChange={(e) => setPf(e.target.value)} style={selStyle}>
             <option value="all">All Projects</option>

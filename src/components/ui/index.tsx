@@ -100,7 +100,12 @@ export const TD = ({ children, style, center }: { children: ReactNode; style?: R
 );
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
-const roleColor: Record<Role, string> = { admin: clr.orange, manager: clr.cyan, worker: clr.green };
+const roleColor: Record<string, string> = {
+  admin:     clr.orange,
+  manager:   clr.cyan,
+  office:    "#f6c90e",
+  shopfloor: clr.green,
+};
 
 export const Avatar = ({ name, role, size = 32 }: { name: string; role: Role; size?: number }) => {
   const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();

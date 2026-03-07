@@ -1,6 +1,6 @@
 // ── Core domain types ─────────────────────────────────────────────────────────
 
-export type Role = "admin" | "manager" | "worker";
+export type Role = "admin" | "manager" | "office" | "shopfloor";
 export type TaskStatus = "todo" | "in-progress" | "done" | "blocked";
 export type TaskPriority = "low" | "medium" | "high";
 export type BomStatus = "used" | "not-used" | "under-review" | "pending";

@@ -156,7 +156,7 @@ export const BomModal = () => {
 
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>
         <Btn color="ghost" onClick={() => setBomModal(null)}>Cancel</Btn>
-        <Btn color={clr.cyan} onClick={() => saveBomEntry({
+        <Btn color={clr.cyan} onClick={async () => saveBomEntry({
           ...entry, ...f,
           qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0,
           status: f.status as any,

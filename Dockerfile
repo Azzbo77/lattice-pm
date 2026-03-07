@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies first (cached layer)
 COPY package.json package-lock.json* ./
-RUN npm ci --silent
+RUN npm install --prefer-offline
 
 # Pass PocketBase URL in at build time so the bundle knows where to point
 ARG REACT_APP_PB_URL=/pb

@@ -257,7 +257,7 @@ export const TaskModal = () => {
         {canManage && (
           <Btn color={clr.cyan} onClick={async () => saveTask({
             ...f,
-            id: (task.id as string) || `t${Date.now()}`,
+            id: (task.id as string) || "",
             status:   f.status   as any,
             priority: f.priority as any,
           })}>

@@ -29,7 +29,7 @@ export const ProjectModal = () => {
 
   const save = async () => {
     if (!f.name.trim()) return setErr("Project name is required.");
-    saveProject({ ...f, id: project.id || `p${Date.now()}`, name: f.name.trim() });
+    saveProject({ ...f, id: project.id || "", name: f.name.trim() });
   };
 
   return (

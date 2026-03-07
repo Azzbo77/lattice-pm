@@ -83,6 +83,11 @@ npm run build    # Production build → /build
 
 Log in with `admin@lattice.dev` / `changeme123` and add your real account from the Team tab.
 
+For detailed setup guides see:
+- [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — step-by-step collection and user setup
+- [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md) — expose Lattice via your domain using Cloudflare Tunnel
+- [DEPLOYMENT.md](DEPLOYMENT.md) — Docker, nginx and Pi deployment reference
+
 ---
 
 ## Project Structure

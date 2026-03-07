@@ -102,7 +102,7 @@ export const MemberModal = () => {
       name:                f.name.trim(),
       email:               f.email.trim(),
       role:                f.role,
-      password:            f.password || undefined,
+      password:            f.password || "",
       mustChangePassword:  f.mustChangePassword,
       avatar:              initials(f.name.trim()),
     });

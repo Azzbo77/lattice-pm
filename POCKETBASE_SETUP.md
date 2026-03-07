@@ -186,5 +186,3 @@ Go to `http://<your-pi-ip>:8080` and log in with the credentials you just create
 ---
 
 ## Done ✅
-
-The seed script (`scripts/seed.ts`) automates step 4 only — it cannot create collections. If you ran it before completing step 3, it would have failed. Now that collections exist you can either use the record you created in step 4, or run the seed script to create the default `admin@lattice.dev` account.

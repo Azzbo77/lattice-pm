@@ -39,7 +39,7 @@ Teams using Lattice can track tasks, manage suppliers and bill of materials, mon
 
 ## Seeded Admin Account
 
-_A bootstrap admin account is created by the seed script — see `scripts/seed.ts`._
+_Create your first admin account manually via the PocketBase admin UI — see [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)._
 
 ---
 

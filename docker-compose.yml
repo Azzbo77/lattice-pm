@@ -9,8 +9,8 @@ services:
     image: ghcr.io/muchobien/pocketbase:0.23.4
     restart: unless-stopped
     volumes:
-      - pb_data:/pb/pb_data
-      - ./pb_migrations:/pb/pb_migrations:ro
+      - pb_data:/pb_data
+      - ./pb_migrations:/pb_migrations:ro
     healthcheck:
       # Uses sh + /dev/tcp which is built into busybox/Alpine sh — no wget needed.
       # Falls back to wget if /dev/tcp is unavailable (some minimal images strip it).

@@ -5,8 +5,8 @@
 services:
 
   pocketbase:
-    # Do not expose PocketBase port publicly in production —
-    # the app container reaches it via the internal Docker network.
+    ports:
+      - "8090:8090"
     restart: always
 
   app:
@@ -14,7 +14,7 @@ services:
       args:
         REACT_APP_PB_URL: /pb
     ports:
-      - "80:80"
+      - "8080:80"
     restart: always
     environment:
       - NODE_ENV=production

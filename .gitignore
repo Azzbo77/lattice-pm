@@ -7,11 +7,7 @@ node_modules/
 /build
 
 # Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
 
 # Logs
 npm-debug.log*
@@ -28,8 +24,3 @@ yarn-error.log*
 
 # PocketBase
 pb_data/
-
-# Environment — contains PocketBase URL
-.env.development
-.env.production
-.env.local

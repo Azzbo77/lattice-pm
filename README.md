@@ -63,10 +63,10 @@ cd lattice-pm
 npm install
 ```
 
-Create `.env.development` in the project root:
+Copy `.env.local.example` to `.env.local`:
 
-```
-REACT_APP_PB_URL=http://127.0.0.1:8090
+```bash
+cp .env.local.example .env.local
 ```
 
 Download and run PocketBase separately (see [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)), then:
@@ -166,7 +166,7 @@ npm run build    # Production build → /build
 - POCKETBASE_SETUP.md rewritten to reflect actual working setup process including superuser install URL, API rules for `_pb_users_auth_`, and delete rule required for team member removal
 
 ### v4.1 — PocketBase Integration
-- `src/lib/pb.ts` — PocketBase client singleton; reads `REACT_APP_PB_URL`
+- `src/lib/pb.ts` — PocketBase client singleton; reads `VITE_PB_URL`
 - `src/lib/db.ts` — typed data layer: mapper functions for all 6 collections, CRUD for every entity, `subscribeToCollection` wrapper
 - `AppContext.tsx` — fully rewritten: async handlers, localStorage removed, `Promise.all` initial load, 7 realtime subscriptions, `loading` state, session via `pb.authStore`
 - All modal/page call sites updated to `async/await`

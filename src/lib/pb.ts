@@ -4,7 +4,7 @@
 
 import PocketBase from "pocketbase";
 
-const url = process.env.REACT_APP_PB_URL ?? "http://127.0.0.1:8090";
+const url = import.meta.env.VITE_PB_URL ?? "http://127.0.0.1:8090";
 
 export const pb = new PocketBase(url);
 

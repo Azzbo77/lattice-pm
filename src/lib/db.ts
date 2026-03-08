@@ -359,3 +359,49 @@ export const subscribeToCollection = (
     }
   };
 };
+
+// ── Announcements ─────────────────────────────────────────────────────────────
+
+import type { Announcement } from "../types";
+
+const toAnnouncement = (r: any): Announcement => ({
+  id:          r.id,
+  title:       r.title,
+  body:        r.body ?? "",
+  category:    r.category ?? "general",
+  pinned:      r.pinned ?? false,
+  authorId:    r.authorId ?? "",
+  authorName:  r.authorName ?? "",
+  expires:     r.expires || null,
+  createdAt:   r.created ?? "",
+  updatedAt:   r.updated ?? "",
+  updatedBy:   r.updatedBy ?? "",
+});
+
+export const dbGetAnnouncements = async (): Promise<Announcement[]> => {
+  const records = await pb.collection("announcements").getFullList({ sort: "-created" });
+  return records.map(toAnnouncement);
+};
+
+export const dbSaveAnnouncement = async (
+  a: Partial<Announcement>
+): Promise<Announcement> => {
+  const payload = {
+    title:      a.title ?? "",
+    body:       a.body ?? "",
+    category:   a.category ?? "general",
+    pinned:     a.pinned ?? false,
+    authorId:   a.authorId ?? "",
+    authorName: a.authorName ?? "",
+    expires:    a.expires || null,
+    updatedBy:  a.updatedBy ?? "",
+  };
+  const record = a.id
+    ? await pb.collection("announcements").update(a.id, payload)
+    : await pb.collection("announcements").create(payload);
+  return toAnnouncement(record);
+};
+
+export const dbDeleteAnnouncement = async (id: string): Promise<void> => {
+  await pb.collection("announcements").delete(id);
+};

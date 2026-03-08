@@ -1,6 +1,9 @@
 # ── Production overrides (Pi) ─────────────────────────────────────────────────
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 # App runs on port 80. Put a reverse proxy in front if you need HTTPS.
+#
+# VITE_PB_URL is baked into the JS bundle at build time — do NOT set it as a
+# runtime environment variable. It is passed as a Docker build ARG instead.
 
 services:
 
@@ -12,9 +15,7 @@ services:
   app:
     build:
       args:
-        REACT_APP_PB_URL: /pb
+        VITE_PB_URL: /pb
     ports:
       - "8080:80"
     restart: always
-    environment:
-      - NODE_ENV=production

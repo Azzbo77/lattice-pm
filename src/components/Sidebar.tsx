@@ -14,7 +14,8 @@ const TABS = [
   { id: "projects",  icon: "🗂️", label: "Projects"  },
   { id: "suppliers", icon: "📦", label: "Suppliers"  },
   { id: "bom",       icon: "🔩", label: "BOM"        },
-  { id: "team",      icon: "👥", label: "Team"       },
+  { id: "team",        icon: "👥", label: "Team"        },
+  { id: "noticeboard", icon: "📋", label: "Noticeboard" },
 ];
 
 // ── Mobile bottom tab bar ─────────────────────────────────────────────────────

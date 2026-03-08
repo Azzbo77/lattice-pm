@@ -13,6 +13,7 @@ import { ProjectsPage }   from "./pages/ProjectsPage";
 import { SuppliersPage }  from "./pages/SuppliersPage";
 import { BomPage }        from "./pages/BomPage";
 import { TeamPage }       from "./pages/TeamPage";
+import { Noticeboard }    from "./pages/Noticeboard";
 
 import { TaskModal }      from "./modals/TaskModal";
 import { ProjectModal }   from "./modals/ProjectModal";
@@ -24,9 +25,9 @@ import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
 import { bg, clr, font, radius, space } from "./constants/theme";
 
-type TabId = "dashboard" | "gantt" | "tasks" | "projects" | "suppliers" | "bom" | "team";
-const TAB_ICONS:  Record<TabId, string> = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥" };
-const TAB_LABELS: Record<TabId, string> = { dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team" };
+type TabId = "dashboard" | "gantt" | "tasks" | "projects" | "suppliers" | "bom" | "team" | "noticeboard";
+const TAB_ICONS:  Record<TabId, string> = { dashboard:"🏠", gantt:"📅", tasks:"✅", projects:"🗂️", suppliers:"📦", bom:"🔩", team:"👥", noticeboard:"📋" };
+const TAB_LABELS: Record<TabId, string> = { dashboard:"Dashboard", gantt:"Timeline", tasks:"Tasks", projects:"Projects", suppliers:"Suppliers", bom:"BOM", team:"Team", noticeboard:"Noticeboard" };
 
 // ── Inner app ─────────────────────────────────────────────────────────────────
 const AppShell = () => {
@@ -64,7 +65,8 @@ const AppShell = () => {
     projects:  <ProjectsPage />,
     suppliers: <SuppliersPage />,
     bom:       <BomPage />,
-    team:      <TeamPage />,
+    team:        <TeamPage />,
+    noticeboard: <Noticeboard />,
   };
 
   return (

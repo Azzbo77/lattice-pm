@@ -9,12 +9,13 @@ import {
   dbGetTasks, dbSaveTask, dbDeleteTask,
   dbGetSuppliers, dbSaveSupplier, dbDeleteSupplier, dbSavePart, dbDeletePart, dbSaveOrder, dbDeleteOrder,
   dbGetBom, dbSaveBomEntry, dbDeleteBomEntry,
+  dbGetAnnouncements, dbSaveAnnouncement, dbDeleteAnnouncement,
   subscribeToCollection,
 } from "../lib/db";
 import { todayStr, addDays } from "../utils/dateHelpers";
 import { ROLES } from "../constants/seeds";
 import type {
-  User, Project, Task, Supplier, Part, Order, BomEntry, BomRow, Notification,
+  User, Project, Task, Supplier, Part, Order, BomEntry, BomRow, Notification, Announcement,
 } from "../types";
 
 // ── Context type ──────────────────────────────────────────────────────────────
@@ -24,8 +25,9 @@ export interface AppContextType {
   projects:  Project[];
   tasks:     Task[];
   suppliers: Supplier[];
-  bom:       BomEntry[];
-  loading:   boolean;
+  bom:           BomEntry[];
+  announcements: Announcement[];
+  loading:       boolean;
   // Session
   currentUser:     User | null;
   sessionReady:    boolean;
@@ -46,7 +48,8 @@ export interface AppContextType {
   showSummary:          boolean;
   confirmRemove:        { userId: string; name: string } | null;
   confirmDeleteBom:     string | null;
-  confirmDeleteProject: Project | null;
+  confirmDeleteProject:        Project | null;
+  confirmDeleteAnnouncement:   string | null;
   // Derived
   isAdmin:      boolean;
   canManage:    boolean;
@@ -75,6 +78,8 @@ export interface AppContextType {
   toggleArrived:        (supplierId: string, orderId: string) => Promise<void>;
   saveBomEntry:         (entry: BomEntry) => Promise<void>;
   deleteBomEntry:       (id: string) => Promise<void>;
+  saveAnnouncement:     (a: Partial<Announcement>) => Promise<void>;
+  deleteAnnouncement:   (id: string) => Promise<void>;
   saveMember:           (m: User) => Promise<void>;
   removeMember:         (id: string) => Promise<void>;
   setUsers:             React.Dispatch<React.SetStateAction<User[]>>;
@@ -94,6 +99,7 @@ export interface AppContextType {
   setConfirmRemove:        (m: { userId: string; name: string } | null) => void;
   setConfirmDeleteBom:     (id: string | null) => void;
   setConfirmDeleteProject: (m: Project | null) => void;
+  setConfirmDeleteAnnouncement: (id: string | null) => void;
 }
 
 export const AppContext = createContext<AppContextType | null>(null);
@@ -112,7 +118,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [projects,  setProjects]  = useState<Project[]>([]);
   const [tasks,     setTasks]     = useState<Task[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [bom,       setBom]       = useState<BomEntry[]>([]);
+  const [bom,           setBom]           = useState<BomEntry[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading,   setLoading]   = useState(true);
 
   // ── Session state ────────────────────────────────────────────────────────
@@ -137,6 +144,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [showSummary,          setShowSummary]          = useState(false);
   const [confirmRemove,        setConfirmRemove]        = useState<{ userId: string; name: string } | null>(null);
   const [confirmDeleteBom,     setConfirmDeleteBom]     = useState<string | null>(null);
+  const [confirmDeleteAnnouncement, setConfirmDeleteAnnouncement] = useState<string | null>(null);
   const [confirmDeleteProject, setConfirmDeleteProject] = useState<Project | null>(null);
 
   // ── Dismissed notifications ──────────────────────────────────────────────
@@ -189,7 +197,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       subscribeToCollection("suppliers", () => dbGetSuppliers().then(setSuppliers)),
       subscribeToCollection("parts",     () => dbGetSuppliers().then(setSuppliers)),
       subscribeToCollection("orders",    () => dbGetSuppliers().then(setSuppliers)),
-      subscribeToCollection("bom",       () => dbGetBom().then(setBom)),
+      subscribeToCollection("bom",          () => dbGetBom().then(setBom)),
+      subscribeToCollection("announcements", () => dbGetAnnouncements().then(setAnnouncements)),
       subscribeToCollection("users",     () => dbGetUsers().then(setUsers)),
     ];
 
@@ -437,14 +446,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setConfirmRemove(null);
   }, []);
 
+  // ── Announcement handlers ────────────────────────────────────────────────
+  const saveAnnouncement = useCallback(async (a: Partial<Announcement>) => {
+    const saved = await dbSaveAnnouncement({ ...a, updatedBy: currentUser?.name ?? "" });
+    setAnnouncements(prev => prev.find(x => x.id === saved.id)
+      ? prev.map(x => x.id === saved.id ? saved : x)
+      : [saved, ...prev]);
+  }, [currentUser]);
+
+  const deleteAnnouncement = useCallback(async (id: string) => {
+    await dbDeleteAnnouncement(id);
+    setAnnouncements(prev => prev.filter(a => a.id !== id));
+    setConfirmDeleteAnnouncement(null);
+  }, []);
+
   // ── Context value ─────────────────────────────────────────────────────────
   const value: AppContextType = {
-    users, projects, tasks, suppliers, bom, loading,
+    users, projects, tasks, suppliers, bom, announcements, loading,
     currentUser, sessionReady, mustSetPassword,
     tab, pf, bomFilter, taskFilter,
     taskModal, projectModal, supplierModal, orderModal, partModal,
     bomModal, memberModal, showSummary,
-    confirmRemove, confirmDeleteProject, confirmDeleteBom,
+    confirmRemove, confirmDeleteProject, confirmDeleteBom, confirmDeleteAnnouncement,
     isAdmin, canManage, canSuppliers,
     filteredTasks, bomRows, filteredBom, notifications,
     dismissNotification, dismissAllNotifications,
@@ -455,6 +478,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     savePart, deletePart,
     addOrder, toggleArrived,
     saveBomEntry, deleteBomEntry,
+    saveAnnouncement, deleteAnnouncement, setConfirmDeleteAnnouncement,
     saveMember, removeMember, setUsers,
     setTab, setPf, setBomFilter, setTaskFilter,
     setTaskModal, setProjectModal, setSupplierModal,

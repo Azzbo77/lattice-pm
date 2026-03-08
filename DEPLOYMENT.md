@@ -14,7 +14,9 @@ PocketBase  → localhost:8090           PocketBase     → localhost:8090
                                        nginx /pb/     → localhost:8090
 ```
 
-The React app talks to PocketBase via `REACT_APP_PB_URL`.
+The React app talks to PocketBase via `VITE_PB_URL`.
+
+> **Important:** `VITE_PB_URL` is baked into the JS bundle **at build time**, not injected at runtime. In Docker, it is passed as a build `ARG`. Never set it as a runtime environment variable — it won't have any effect.
 In dev this points directly at `localhost:8090`.
 In prod, nginx proxies `/pb/` so the app and API share one origin — no CORS.
 
@@ -52,14 +54,14 @@ This creates all 7 collections with the correct fields and API rules in one step
 
 Create these two files in the project root (they are gitignored):
 
-**.env.development**
+**.env.local**
 ```
-REACT_APP_PB_URL=http://127.0.0.1:8090
+VITE_PB_URL=http://127.0.0.1:8090
 ```
 
-**.env.production**
+**.env.production.local**
 ```
-REACT_APP_PB_URL=/pb
+VITE_PB_URL=/pb
 ```
 
 ### 4 — Install PocketBase SDK
@@ -228,7 +230,7 @@ Make sure `pb_migrations/` is in the same folder as the binary before first star
 If PocketBase already ran without it, delete `pb_data/` and restart.
 
 **CORS errors in dev**
-Check `.env.development` points to `http://127.0.0.1:8090` (not `localhost` — they differ on some systems).
+Check `.env.local` points to `http://127.0.0.1:8090` (not `localhost` — they differ on some systems).
 In PocketBase admin → Settings → Application → allowed origins, add `http://localhost:3000`.
 
 ---

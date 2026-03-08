@@ -34,7 +34,7 @@ All collections, fields and API rules are bundled in `pb_migrations/1_initial_sc
 
 1. Go to **Settings → Import collections**
 2. Click **Load from JSON file** and select `pb_migrations/1_initial_schema.json` from the repo
-3. Review the preview — you should see 7 collections: `users`, `projects`, `tasks`, `suppliers`, `parts`, `orders`, `bom`
+3. Review the preview — you should see 8 collections: `users`, `projects`, `tasks`, `suppliers`, `parts`, `orders`, `bom`, `announcements`
 4. Click **Confirm and import**
 
 > ⚠ The `users` collection includes the `role` field (Select: `admin`, `manager`, `office`, `shopfloor`), `mustChangePassword` (Bool), and all API rules including the Delete rule required for team member removal. All of this is applied automatically by the import.

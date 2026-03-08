@@ -6,6 +6,7 @@ export type TaskPriority = "low" | "medium" | "high";
 export type BomStatus = "used" | "not-used" | "under-review" | "pending";
 
 export interface Stamp {
+  createdAt?: string;   // ISO 8601
   updatedAt?: string;   // ISO 8601
   updatedBy?: string;   // user display name
 }
@@ -103,3 +104,17 @@ export interface SearchResult {
   action: () => void;
 }
 
+
+export type AnnouncementCategory = "general";
+
+export interface Announcement extends Stamp {
+  id: string;
+  title: string;
+  body: string;
+  category: AnnouncementCategory;
+  pinned: boolean;
+  authorId: string;
+  authorName: string;
+  expires: string | null;      // ISO date or null = no expiry
+  createdAt: string;            // Required — database always provides this
+}

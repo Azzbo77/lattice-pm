@@ -9,11 +9,11 @@ type Config = {
 };
 
 export const register = (config?: Config): void => {
-  if (process.env.NODE_ENV !== "production") return;
+  if (import.meta.env.MODE !== "production") return;
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
+    const swUrl = `/sw.js`;
 
     navigator.serviceWorker
       .register(swUrl)

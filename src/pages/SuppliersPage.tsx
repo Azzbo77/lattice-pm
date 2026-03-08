@@ -162,7 +162,14 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: space["5"], flexWrap: "wrap" }}>
-              <span style={{ fontSize: font.base, color: clr.textFaint }}>{supplier.contact} · {supplier.phone}</span>
+              <span style={{ fontSize: font.base, color: clr.textFaint }}>
+                {supplier.contact}{supplier.contact && (supplier.phone || supplier.email) ? " · " : ""}
+                {supplier.email
+                  ? <a href={`mailto:${supplier.email}`} style={{ color: clr.cyan, textDecoration: "none" }}>{supplier.email}</a>
+                  : null}
+                {supplier.email && supplier.phone ? " · " : ""}
+                {supplier.phone}
+              </span>
               <UpdatedBadge iso={supplier.updatedAt} byName={supplier.updatedBy} compact />
             </div>
             {!open && (

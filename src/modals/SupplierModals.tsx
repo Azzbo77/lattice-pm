@@ -9,7 +9,7 @@ import { bg, clr, font, radius, space } from "../constants/theme";
 export const SupplierModal = () => {
   const { supplierModal, setSupplierModal, saveSupplier } = useApp();
 
-  const [f, setF] = useState({ name: "", contact: "", phone: "" });
+  const [f, setF] = useState({ name: "", contact: "", phone: "", email: "" });
 
   useEffect(() => {
     if (!supplierModal) return;
@@ -18,6 +18,7 @@ export const SupplierModal = () => {
       name: modalSupplier.name || "",
       contact: modalSupplier.contact || "",
       phone: modalSupplier.phone || "",
+      email: modalSupplier.email || "",
     });
   }, [supplierModal]);
 
@@ -32,7 +33,8 @@ export const SupplierModal = () => {
       </h3>
       <div style={{ display: "grid", gap: space["5"] }}>
         <div><Lbl c="Company Name" /><input style={inp} value={f.name as string} onChange={u("name")} /></div>
-        <div><Lbl c="Email" /><input style={inp} value={f.contact as string} onChange={u("contact")} /></div>
+        <div><Lbl c="Contact Name" /><input style={inp} value={f.contact as string} onChange={u("contact")} /></div>
+        <div><Lbl c="Email" /><input style={inp} type="email" value={f.email as string} onChange={u("email")} /></div>
         <div><Lbl c="Phone" /><input style={inp} value={f.phone as string} onChange={u("phone")} /></div>
       </div>
       <div style={{ display: "flex", gap: font.xxs, justifyContent: "flex-end", marginTop: space["7"] }}>

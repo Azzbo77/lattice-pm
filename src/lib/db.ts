@@ -50,6 +50,7 @@ const toSupplier = (r: any): Supplier => ({
   name:     r.name,
   contact:  r.contact ?? "",
   phone:    r.phone ?? "",
+  email:    r.email ?? "",
   archived: r.archived ?? false,
   updatedAt: r.updated,
   updatedBy: r.updatedBy ?? "",
@@ -242,6 +243,7 @@ export const dbSaveSupplier = async (s: Partial<Supplier>): Promise<Supplier> =>
     name:      s.name,
     contact:   s.contact ?? "",
     phone:     s.phone ?? "",
+    email:     s.email ?? "",
     archived:  s.archived ?? false,
     updatedBy: s.updatedBy ?? "",
   };

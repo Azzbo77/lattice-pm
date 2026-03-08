@@ -285,15 +285,15 @@ npm run build    # Production build → /dist
 Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme centralisation, performance, accessibility, PWA, onboarding guide, PocketBase backend, role system, Docker deployment, realtime subscriptions, BOM entry creation, cascade deletes, bug fixes, Vite migration, Noticeboard with @mentions.
 
 ### Quick Wins *(low effort, high value)*
-- **Pagination / infinite scroll** — Tasks, BOM and Orders lists will degrade at scale; PocketBase has built-in pagination support
-- **Split AppContext** — `AppContext.tsx` is large; break into `AuthContext`, `TasksContext`, `SuppliersContext` for easier maintenance and testing
+- ✅ ~~**Pagination / infinite scroll**~~ — Tasks, BOM and Suppliers paginated (25/20/10 per page); `usePagination` hook + `Pager` component
+- ✅ ~~**Split AppContext**~~ — split into `AuthContext`, `DataContext`, `UIContext`, `NotificationsContext`; `AppContext` is now a thin composition layer
 - **Vitest + React Testing Library** — add tests for `db.ts` CRUD functions and at least one page component
 - **PocketBase API docs** — PocketBase auto-generates OpenAPI docs; add usage examples to DEPLOYMENT.md so others can build integrations
 - **Demo video** — a short Loom walkthrough pinned to the README would help adoption significantly
 
 ### Phase 5 — Production Hardening
 1. **Reporting & exports** — PDF/HTML dashboards, burn-down charts, supplier performance metrics
-2. **Mobile polish** — improved touch support and layout for shopfloor use on tablets/phones
+2. ✅ ~~**Mobile polish**~~ — card layouts on Tasks and BOM, responsive Dashboard, Suppliers sub-table scaling
 3. **Dependency auto-scheduling** — critical-path calculation with basic scheduling hints on the Gantt
 4. **Inventory lite** — stock levels, minimum reorder quantity alerts
 5. **Calendar & digest** — iCal export and email digests via PocketBase hooks or a simple cron job

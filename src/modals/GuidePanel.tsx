@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
-export const APP_VERSION = "v3.6";
+export const APP_VERSION = "v4.4";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WORKFLOW — linear first-time setup path
-// Each step has a "why this order matters" context line
 // ─────────────────────────────────────────────────────────────────────────────
 const WORKFLOW: WorkflowStep[] = [
   {
@@ -21,7 +20,7 @@ const WORKFLOW: WorkflowStep[] = [
       "Add yourself as Admin first, then add everyone else.",
       "They'll be prompted to set their own password on first login.",
     ],
-    tip: "Even if you're working solo, create at least one Worker account to test role-based views.",
+    tip: "Even if you're working solo, create at least one Shopfloor account to test role-based views.",
     next: "Now you have people — next you need something to work on.",
   },
   {
@@ -46,10 +45,10 @@ const WORKFLOW: WorkflowStep[] = [
     title: "Add a supplier and their parts",
     why: "Parts must live under a supplier before they can appear in the BOM. Set this up before building your materials list.",
     steps: [
-      "Go to Suppliers and click Add Supplier. Enter the company name, contact name, email and phone.",
-      "Expand the supplier card and click Add Part. Give it a part number, description, the unit type (e.g. metres, units, kg) and how many units come per order.",
+      "Go to Suppliers and click Add Supplier. Enter the company name, contact name and phone.",
+      "Expand the supplier card and click + Part. Give it a part number, description, the unit type (e.g. metres, units, kg) and how many units come per order.",
       "Add all the parts you expect to order from this supplier.",
-      "Once a part is ordered, click Add Order on the supplier card — set the date ordered and lead time in days. The app will calculate estimated arrival and flag it if overdue.",
+      "Once a part is ordered, click + Order on the supplier card — set the date ordered and lead time in days. The app will calculate estimated arrival and flag it if overdue.",
       "When stock arrives, click Confirm Arrival on the order row.",
     ],
     tip: "Part numbers are shown in monospace throughout the app — keep them consistent with your actual purchasing system.",
@@ -62,10 +61,10 @@ const WORKFLOW: WorkflowStep[] = [
     title: "Build the Bill of Materials",
     why: "The BOM connects your parts to your project, tracking what's been ordered, what's in use, and what's delayed.",
     steps: [
-      "On the Suppliers page, click Edit on any part row — this opens the BOM entry modal.",
-      "Set the quantity ordered, the usage status (start with Pending), and link it to your project.",
+      "Go to the BOM tab and click Add Entry.",
+      "Select the supplier, then the part, set the quantity ordered and usage status (start with Pending), and link it to your project.",
       "You can also link it to a specific task — useful for seeing which parts are blocking which work.",
-      "Back on the BOM tab, use the status filter pills to see Pending / Used / Not Used / Under Review.",
+      "Use the status filter pills to see Pending / Used / Not Used / Under Review.",
       "Use the task/project dropdown to filter the BOM to a specific project or task.",
       "Alert indicators appear automatically when a linked task is overdue or a delivery is late.",
     ],
@@ -82,7 +81,7 @@ const WORKFLOW: WorkflowStep[] = [
       "Go to Tasks and click New Task.",
       "Set the title, project, assignee, start date, end date, status (start with To Do) and priority.",
       "Use Depends On to set prerequisites — a task won't show as ready until its dependencies are done. ⛔ blocked badges appear automatically.",
-      "Workers only see their own assigned tasks. Managers and Admins see everything.",
+      "Shopfloor users only see their own assigned tasks. Managers and Admins see everything.",
       "Filter the task list by project, status, assignee, or priority using the filter bar.",
       "Export the current filtered view to CSV using the export button.",
     ],
@@ -104,10 +103,27 @@ const WORKFLOW: WorkflowStep[] = [
       "Tasks without dates won't appear — go back to Tasks and add dates if bars are missing.",
     ],
     tip: "Share your screen on the Timeline view for stand-ups — it's the clearest way to show project status at a glance.",
-    next: "Timeline looks good. Check the daily briefing on the Dashboard.",
+    next: "Timeline looks good. Post your first team announcement.",
   },
   {
     seq: 7,
+    icon: "📋",
+    tab: "Noticeboard",
+    title: "Post a team announcement",
+    why: "The Noticeboard keeps the whole team informed — pinned posts stay at the top, everything else flows chronologically.",
+    steps: [
+      "Go to the Noticeboard tab and click Post.",
+      "Write your message — it supports basic markdown: **bold**, *italic*, [links](url), and - bullet lists. Use the Preview toggle to check how it'll look.",
+      "Pin important announcements to keep them visible at the top.",
+      "Set an expiry date on time-limited notices — they'll disappear automatically without any housekeeping.",
+      "Type @ in the message body to tag a team member. They'll see a 📣 notification in their bell.",
+      "Tagged names appear highlighted in cyan in the posted announcement.",
+    ],
+    tip: "Pin a welcome post when you go live — it's the first thing new team members will see.",
+    next: "Team is informed. Check the daily briefing on the Dashboard.",
+  },
+  {
+    seq: 8,
     icon: "🏠",
     tab: "Dashboard",
     title: "Read the daily briefing",
@@ -120,17 +136,17 @@ const WORKFLOW: WorkflowStep[] = [
       "Recent Activity shows the last 10 changes made by anyone on the team.",
     ],
     tip: "Start every day here. Everything that needs action is surfaced automatically.",
-    next: "You're up and running. Two more things worth setting up now.",
+    next: "You're up and running. One more thing worth checking now.",
   },
   {
-    seq: 8,
+    seq: 9,
     icon: "📊",
     tab: "Topbar → 📊",
     title: "Generate a weekly summary",
     why: "The Weekly Summary saves you writing status updates manually — it produces a role-filtered report in one click.",
     steps: [
       "Click the 📊 button in the top bar to open the summary.",
-      "Worker view shows your personal task list. Manager view adds project snapshots and upcoming deliveries. Admin view adds full team workload and supplier chase list.",
+      "Shopfloor view shows your personal task list. Manager view adds project snapshots and upcoming deliveries. Admin view adds full team workload and supplier chase list.",
       "Use Copy Text to paste into an email or message, or Export HTML to save a standalone file.",
       "The summary automatically filters to what's relevant for the logged-in user's role.",
     ],
@@ -138,23 +154,25 @@ const WORKFLOW: WorkflowStep[] = [
     next: "Last step — protect your data.",
   },
   {
-    seq: 9,
+    seq: 10,
     icon: "💾",
-    tab: "Topbar → 💾",
+    tab: "PocketBase → Settings → Backups",
     title: "Back up your data",
-    why: "Lattice PM stores everything in your browser. If you clear browser data, it's gone — so back up regularly.",
+    why: "All data lives on your PocketBase server. Back up regularly so you can recover from hardware failure or accidental deletion.",
     steps: [
-      "The storage meter shows how much of your browser's localStorage quota is in use.",
+      "Open the PocketBase admin UI (your server address on port 8090, e.g. http://192.168.1.120:8090/_/).",
+      "Go to Settings → Backups.",
+      "Click Create backup to generate a snapshot now.",
+      "Download the backup file and store it somewhere safe — an external drive or cloud storage.",
+      "Consider scheduling regular backups: PocketBase supports automatic backup intervals in the same settings page.",
     ],
-    tip: "Use PocketBase admin UI (port 8090 → Settings → Backups) to back up your data.",
+    tip: "Take a backup before any major changes — new schema imports, bulk deletes, or software updates.",
     next: null,
   },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REFERENCE — browse by topic (same content, non-linear)
-// ─────────────────────────────────────────────────────────────────────────────
-const REFERENCE = WORKFLOW.map(w => ({ ...w })); // same data, different presentation
+// Reference is the same content, non-linear
+const REFERENCE = WORKFLOW.map(w => ({ ...w }));
 
 interface WorkflowStep {
   seq: number;
@@ -255,18 +273,18 @@ function NextBox({ text }: { text: string }) {
 interface GuidePanelProps { onClose: () => void; }
 
 export const GuidePanel = ({ onClose }: GuidePanelProps) => {
-  const [mode, setMode]           = useState<"workflow" | "reference">("workflow");
+  const [mode, setMode]                 = useState<"workflow" | "reference">("workflow");
   const [workflowStep, setWorkflowStep] = useState(0);
-  const [refStep, setRefStep]     = useState(0);
+  const [refStep, setRefStep]           = useState(0);
 
   const isWorkflow = mode === "workflow";
   const step: WorkflowStep = isWorkflow ? WORKFLOW[workflowStep] : REFERENCE[refStep];
-  const total = isWorkflow ? WORKFLOW.length : REFERENCE.length;
-  const current = isWorkflow ? workflowStep : refStep;
+  const total      = isWorkflow ? WORKFLOW.length : REFERENCE.length;
+  const current    = isWorkflow ? workflowStep : refStep;
   const setCurrent = isWorkflow ? setWorkflowStep : setRefStep;
-  const isLast = current === total - 1;
-  const isFirst = current === 0;
-  const pct = Math.round((current / (total - 1)) * 100);
+  const isLast     = current === total - 1;
+  const isFirst    = current === 0;
+  const pct        = Math.round((current / (total - 1)) * 100);
 
   return (
     <>
@@ -367,7 +385,6 @@ export const GuidePanel = ({ onClose }: GuidePanelProps) => {
 
         {/* ── Step content ── */}
         <div style={{ flex: 1, overflowY: "auto", padding: space["6"] }}>
-          {/* Seq badge (workflow only) */}
           {isWorkflow && (
             <div style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -378,7 +395,6 @@ export const GuidePanel = ({ onClose }: GuidePanelProps) => {
             }}>{step.seq}</div>
           )}
 
-          {/* Title */}
           <div style={{ display: "flex", alignItems: "center", gap: space["4"], marginBottom: space["4"] }}>
             <span style={{ fontSize: "1.5rem" }}>{step.icon}</span>
             <h3 style={{
@@ -414,7 +430,6 @@ export const GuidePanel = ({ onClose }: GuidePanelProps) => {
             }}
           >← Back</button>
 
-          {/* Workflow: dot indicators */}
           {isWorkflow && (
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
               {WORKFLOW.map((_, i) => (
@@ -430,7 +445,6 @@ export const GuidePanel = ({ onClose }: GuidePanelProps) => {
             </div>
           )}
 
-          {/* Reference: step count */}
           {!isWorkflow && (
             <span style={{ fontSize: font.xs, color: clr.textGhost }}>
               {current + 1} / {total}

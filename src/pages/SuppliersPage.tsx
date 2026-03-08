@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { Btn, TH, TD, UpdatedBadge, ConfirmModal, selStyle } from "../components/ui";
 import { addDays, fmt, todayStr } from "../utils/dateHelpers";
 import type { Supplier, Part, Order } from "../types";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
 // ── Filter helpers ────────────────────────────────────────────────────────────
@@ -121,6 +122,7 @@ OrderRow.displayName = "OrderRow";
 
 // ── Individual supplier card ───────────────────────────────────────────────────
 const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
+  const { isMobile } = useBreakpoint();
   const {
     canSuppliers, setSupplierModal, setPartModal, setOrderModal,
     deletePart, toggleArrived, deleteSupplier, toggleArchiveSupplier,
@@ -145,7 +147,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
         {/* ── Header (always visible) ── */}
         <div
           onClick={() => setOpen((o) => !o)}
-          style={{ padding: "0.85rem 1.25rem", background: bg.subtle, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: space["3"], cursor: "pointer", userSelect: "none" }}
+          style={{ padding: "0.85rem 1.25rem", background: bg.subtle, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: space["3"], cursor: "pointer", userSelect: "none" }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: space["3"], marginBottom: radius.sm }}>
@@ -214,7 +216,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
                 {openParts && (
                   <div style={{ padding: "0.75rem 1.25rem" }}>
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
-                      <div style={{ overflowX: "auto" }}><div style={{ minWidth: "480px" }}>
+                      <div style={{ overflowX: "auto" }}><div style={{ minWidth: isMobile ? "340px" : "480px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "minmax(80px, 1fr) minmax(160px, 2fr) minmax(50px, 0.6fr) minmax(60px, 0.6fr) minmax(90px, auto)", background: bg.subtle, padding: "0 0.5rem", justifyItems: "center", alignItems: "center" }}>
                           {["Part No.", "Description", "Qty", "Unit", ""].map((h, i) => <TH key={i} center={i >= 2}>{h}</TH>)}
                         </div>
@@ -259,7 +261,7 @@ const SupplierCard = React.memo(({ supplier }: { supplier: Supplier }) => {
                 {openOrders && (
                   <div style={{ padding: "0.75rem 1.25rem" }}>
                     <div style={{ background: bg.deep, borderRadius: radius.lg, overflow: "hidden" }}>
-                      <div style={{ overflowX: "auto" }}><div style={{ minWidth: "640px" }}>
+                      <div style={{ overflowX: "auto" }}><div style={{ minWidth: isMobile ? "420px" : "640px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "minmax(140px, 2fr) minmax(90px, 1fr) minmax(60px, 0.8fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(100px, 0.8fr) minmax(100px, auto)", background: bg.subtle, padding: "0 0.5rem", justifyItems: "center", alignItems: "center" }}>
                           {["Description", "Ordered", "Lead", "Est. Arrival", "Status", "Updated", ""].map((h, i) => <TH key={i} center={i >= 1}>{h}</TH>)}
                         </div>

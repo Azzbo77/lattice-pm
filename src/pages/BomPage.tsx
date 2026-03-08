@@ -6,6 +6,7 @@ import { todayStr, addDays } from "../utils/dateHelpers";
 import { TH, TD, UpdatedBadge, selStyle } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 import { bg, clr, font, radius, space } from "../constants/theme";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import type { BomRow as BomRowType, Project, Task } from "../types";
 
 // ── BomRow component ──────────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onE
 BomRow.displayName = "BomRow";
 
 export const BomPage = () => {
+  const { isMobile } = useBreakpoint();
   const {
     bomRows, filteredBom, bomFilter, setBomFilter,
     taskFilter, setTaskFilter,
@@ -199,31 +201,75 @@ export const BomPage = () => {
         })}
       </div>
 
-      {/* Table */}
-      <div style={{ background: bg.card, border: "1px solid #1e1e35", borderRadius: radius.xl, overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: "960px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle, padding: "0 0.5rem" }}>
-          {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
-            <TH key={i} center={i === 3 || i === 4 || i === 5 || i === 8 || i === 9}>{h}</TH>
+      {/* Table — desktop */}
+      {!isMobile && (
+        <div style={{ background: bg.card, border: "1px solid #1e1e35", borderRadius: radius.xl, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+          <div style={{ minWidth: "960px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr 0.8fr 0.6fr 0.6fr 0.9fr 1fr 1.6fr 0.8fr auto", background: bg.subtle, padding: "0 0.5rem" }}>
+            {["Part No.","Description","Supplier","Qty","Total","Status","Task","Notes / CI","Updated",""].map((h, i) => (
+              <TH key={i} center={i === 3 || i === 4 || i === 5 || i === 8 || i === 9}>{h}</TH>
+            ))}
+          </div>
+          {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No BOM entries match this filter.</div>}
+          {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => (
+            <BomRow key={row.id} row={row} linkedTask={linkedTask} linkedProj={linkedProj} alerts={alerts} canManage={canSuppliers} onEdit={handleEditBom} onDelete={handleDeleteBom} />
           ))}
+          </div></div></div>
+      )}
+
+      {/* Cards — mobile */}
+      {isMobile && (
+        <div>
+          {filteredBom.length === 0 && (
+            <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint, background: bg.card, borderRadius: radius.xl, border: "1px solid #1e1e35" }}>
+              No BOM entries match this filter.
+            </div>
+          )}
+          {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => {
+            const meta  = bomStatusMeta[row.status];
+            const total = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
+            const hasAlert = alerts.length > 0;
+            return (
+              <div key={row.id} style={{
+                background: bg.card, border: `1px solid ${hasAlert ? "#fc818140" : "#1e1e35"}`,
+                borderLeft: `3px solid ${hasAlert ? "#fc8181" : "#1e1e35"}`,
+                borderRadius: radius.xl, padding: space["5"], marginBottom: space["4"],
+              }}>
+                {/* Part + status */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: space["3"] }}>
+                  <div>
+                    <div style={{ fontFamily: "monospace", fontSize: font.md, color: clr.cyan, marginBottom: "2px" }}>{row.part?.partNumber}</div>
+                    <div style={{ fontSize: font.md, color: clr.textPrimary }}>{row.part?.description}</div>
+                  </div>
+                  <span style={{ fontSize: font.xs, padding: "2px 8px", borderRadius: radius.pill, background: meta?.bg ?? "#252540", color: meta?.color ?? clr.textMuted, border: `1px solid ${meta?.color ?? clr.textMuted}30`, whiteSpace: "nowrap", marginLeft: space["3"] }}>
+                    {meta?.label ?? row.status}
+                  </span>
+                </div>
+                {/* Meta row */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: space["3"], marginBottom: space["3"] }}>
+                  <span style={{ fontSize: font.sm, color: clr.textFaint }}>{row.supplier?.name}</span>
+                  <span style={{ fontSize: font.sm, color: clr.textGhost }}>·</span>
+                  <span style={{ fontSize: font.sm, color: clr.textMuted }}>Qty: {row.qtyOrdered} · Total: {total}</span>
+                  {linkedProj && <span style={{ fontSize: font.sm, color: clr.textMuted }}>{linkedProj.name}</span>}
+                  {linkedTask && <span style={{ fontSize: font.sm, color: linkedTask.status === "done" ? clr.green : linkedTask.status === "blocked" ? clr.red : clr.textMuted }}>{linkedTask.title}</span>}
+                </div>
+                {/* Notes */}
+                {row.notes && <div style={{ fontSize: font.sm, color: clr.textDim, marginBottom: space["3"] }}>{row.notes}</div>}
+                {/* Alerts */}
+                {hasAlert && <div style={{ fontSize: font.sm, color: clr.red, marginBottom: space["3"] }}>⚠ {alerts.join(" · ")}</div>}
+                {/* Actions */}
+                {canSuppliers && (
+                  <div style={{ display: "flex", gap: space["3"], borderTop: "1px solid #1e1e35", paddingTop: space["3"] }}>
+                    <button onClick={() => handleEditBom(row)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "#00d4ff15", border: "1px solid #00d4ff30", borderRadius: radius.md, color: clr.cyan, fontSize: font.sm, cursor: "pointer" }}>Edit</button>
+                    <button onClick={() => handleDeleteBom(row.id)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: font.sm, cursor: "pointer" }}>Delete</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-
-        {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No BOM entries match this filter.</div>}
-
-        {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => (
-          <BomRow
-            key={row.id}
-            row={row}
-            linkedTask={linkedTask}
-            linkedProj={linkedProj}
-            alerts={alerts}
-            canManage={canSuppliers}
-            onEdit={handleEditBom}
-            onDelete={handleDeleteBom}
-          />
-        ))}
-      </div></div></div>
+      )}
     </div>
   );
 };

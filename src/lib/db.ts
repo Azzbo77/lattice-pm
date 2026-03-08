@@ -202,7 +202,7 @@ export const dbSaveTask = async (task: Partial<Task>): Promise<Task> => {
   const payload = {
     title:       task.title,
     projectId:   task.projectId,
-    assigneeId:  task.assigneeId ?? "",
+    assigneeId:  task.assigneeId || null,
     status:      task.status,
     priority:    task.priority,
     startDate:   task.startDate ?? "",

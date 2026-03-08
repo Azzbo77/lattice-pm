@@ -73,6 +73,7 @@ export interface AppContextType {
   addOrder:             (supplierId: string, order: Order) => Promise<void>;
   toggleArrived:        (supplierId: string, orderId: string) => Promise<void>;
   saveBomEntry:         (entry: BomEntry) => Promise<void>;
+  deleteBomEntry:       (id: string) => Promise<void>;
   saveMember:           (m: User) => Promise<void>;
   removeMember:         (id: string) => Promise<void>;
   setUsers:             React.Dispatch<React.SetStateAction<User[]>>;
@@ -394,6 +395,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [suppliers, currentUser]);
 
   // ── BOM handlers ──────────────────────────────────────────────────────────
+  const deleteBomEntry = useCallback(async (id: string) => {
+    await dbDeleteBomEntry(id);
+    setBom(prev => prev.filter(b => b.id !== id));
+  }, []);
+
   const saveBomEntry = useCallback(async (entry: BomEntry) => {
     const saved = await dbSaveBomEntry({ ...entry, updatedBy: currentUser?.name ?? "" });
     setBom(prev => prev.find(x => x.id === saved.id)
@@ -413,8 +419,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [currentUser]);
 
   const removeMember = useCallback(async (id: string) => {
-    await dbDeleteUser(id);
-    setUsers(prev => prev.filter(u => u.id !== id));
+    try {
+      await dbDeleteUser(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+    } catch (e: any) {
+      if (e?.status === 403) {
+        alert('Permission denied. Set the Delete rule on _pb_users_auth_ in PocketBase admin UI to:\n@request.auth.role = \"admin\"');
+      } else if (e?.status === 404) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } else {
+        alert("Failed to delete user: " + (e?.message ?? "Unknown error"));
+      }
+    }
     setConfirmRemove(null);
   }, []);
 
@@ -435,7 +451,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     saveSupplier, deleteSupplier, toggleArchiveSupplier,
     savePart, deletePart,
     addOrder, toggleArrived,
-    saveBomEntry,
+    saveBomEntry, deleteBomEntry,
     saveMember, removeMember, setUsers,
     setTab, setPf, setBomFilter, setTaskFilter,
     setTaskModal, setProjectModal, setSupplierModal,

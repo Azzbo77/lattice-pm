@@ -16,10 +16,11 @@ interface BomRowProps {
   alerts: string[];
   canManage: boolean;
   canSuppliers?: boolean;
-  onEdit: (entry: BomRowType) => void;
+  onEdit:   (entry: BomRowType) => void;
+  onDelete: (id: string) => void;
 }
 
-const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onEdit }: BomRowProps) => {
+const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onEdit, onDelete }: BomRowProps) => {
   const meta = bomStatusMeta[row.status];
   const total = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
   const hasAlert = alerts.length > 0;
@@ -65,7 +66,10 @@ const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onE
       </TD>
       <TD center>
         {canManage && (
-          <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>
+          <div style={{ display: "flex", gap: "4px" }}>
+            <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>
+            <button onClick={() => { if (window.confirm("Delete this BOM entry?")) onDelete(row.id); }} style={{ padding: "3px 7px", background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }} aria-label="Delete BOM entry">✕</button>
+          </div>
         )}
       </TD>
     </div>
@@ -77,7 +81,7 @@ export const BomPage = () => {
   const {
     bomRows, filteredBom, bomFilter, setBomFilter,
     taskFilter, setTaskFilter,
-    setBomModal, projects, tasks, suppliers, canSuppliers,
+    setBomModal, projects, tasks, suppliers, canSuppliers, deleteBomEntry,
   } = useApp();
   const now = todayStr();
 
@@ -109,6 +113,10 @@ export const BomPage = () => {
     })),
     [filteredBom, tasks, projects, getAlerts]
   );
+
+  const handleDeleteBom = (id: string) => {
+    deleteBomEntry(id);
+  };
 
   const handleEditBom = (row: BomRowType) => {
     setBomModal({ entry: row, partId: row.partId, supplierId: row.supplierId });
@@ -212,6 +220,7 @@ export const BomPage = () => {
             alerts={alerts}
             canManage={canSuppliers}
             onEdit={handleEditBom}
+            onDelete={handleDeleteBom}
           />
         ))}
       </div></div></div>

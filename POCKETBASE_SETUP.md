@@ -151,6 +151,48 @@ For reference only — these are created by the import above. No manual setup ne
 | `notes` | Text |
 | `updatedBy` | Text |
 
+### `announcements`
+| Field | Type |
+|-------|------|
+| `title` | Text ✅ |
+| `body` | Text ✅ |
+| `pinned` | Bool |
+| `expires` | Text (YYYY-MM-DD) |
+| `updatedBy` | Text |
+
+**API rules** (all four — List, View, Create, Update, Delete):
+```
+@request.auth.id != ""
+```
+Any authenticated user can read, post, edit and delete announcements. Restrict to admins/managers if preferred.
+
+---
+
+## Manual Collection Setup (if not using JSON import)
+
+If the JSON import fails or you need to recreate a collection by hand, use these settings:
+
+### API Rules (apply to all collections unless noted)
+| Rule | Value |
+|------|-------|
+| List / View | `@request.auth.id != ""` |
+| Create | `@request.auth.id != ""` |
+| Update | `@request.auth.id != ""` |
+| Delete | `@request.auth.id != ""` |
+
+> **Exception — users Delete rule:** set to `@request.auth.role = "admin"` so only admins can remove team members.
+
+### Auth collection (`users`) extra settings
+- Go to **Collections → users → ⚙ Settings**
+- Under **Auth options**, ensure **Email / Password** auth is enabled
+- The `role` field must be a **Select** type with options: `admin`, `manager`, `office`, `shopfloor`
+- The `mustChangePassword` field must be a **Bool** type, default `false`
+
+### Relation fields
+When creating Relation fields manually, set:
+- **Max select:** 1 (single) unless marked multi
+- **On parent delete:** set to **Cascade** for child collections (parts → suppliers, orders → suppliers, bom → suppliers/parts) to avoid orphaned records
+
 ---
 
 ## Done ✅

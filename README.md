@@ -96,7 +96,11 @@ npm run build    # Production build → /dist
 │
 ├── public/
 │   ├── sw.js                  # Service worker — caching strategies
-│   └── manifest.json          # PWA manifest
+│   ├── manifest.json          # PWA manifest
+│   ├── apple-touch-icon.png   # PWA icons
+│   ├── icon-192.png
+│   ├── icon-512.png
+│   └── screenshots/           # PWA store screenshots
 │
 ├── index.html                 # App entry point (Vite — lives at project root)
 │
@@ -110,15 +114,24 @@ npm run build    # Production build → /dist
     │   └── db.ts              # Typed data layer — all CRUD + realtime subscriptions
     │
     ├── context/
-    │   └── AppContext.tsx     # Single source of truth — async state + all handlers
+    │   ├── AppContext.tsx          # Thin composition layer — merges all sub-contexts,
+    │   │                          #   exposes single useApp() hook (no logic lives here)
+    │   ├── AuthContext.tsx         # Session state, login/logout, password reset, role flags
+    │   ├── DataContext.tsx         # All data state, CRUD handlers, realtime subscriptions,
+    │   │                          #   derived bomRows/filteredBom
+    │   ├── UIContext.tsx           # Tab, filters, all modal state, all confirm dialogs
+    │   └── NotificationsContext.tsx# Task overdue/due-soon + @mention notifications
     │
     ├── hooks/
+    │   ├── useBreakpoint.ts   # Responsive breakpoint detection
     │   ├── useSearch.ts       # Global search engine
-    │   └── useBreakpoint.ts   # Responsive breakpoint detection
+    │   ├── useSession.ts      # Session persistence helpers
+    │   └── useStorage.ts      # Local storage abstraction
     │
     ├── utils/
     │   ├── csvExport.ts
-    │   └── dateHelpers.ts
+    │   ├── dateHelpers.ts
+    │   └── password.ts        # Password strength + bcrypt helpers
     │
     ├── constants/
     │   ├── theme.ts           # Design tokens — colours, spacing, typography, radii
@@ -126,9 +139,9 @@ npm run build    # Production build → /dist
     │
     ├── components/
     │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, ConfirmModal, etc.
-    │   ├── Sidebar.tsx
+    │   ├── Sidebar.tsx        # Desktop nav + mobile bottom tab bar (primary 5 + More sheet)
     │   ├── SearchBar.tsx
-    │   └── NotificationBell.tsx
+    │   └── NotificationBell.tsx # Task alerts + @mention notifications, grouped by type
     │
     ├── modals/
     │   ├── TaskModal.tsx
@@ -146,7 +159,7 @@ npm run build    # Production build → /dist
         ├── TasksPage.tsx
         ├── ProjectsPage.tsx
         ├── SuppliersPage.tsx
-        ├── BomPage.tsx
+        ├── BomPage.tsx        # Mobile card layout on small screens
         ├── TeamPage.tsx
         └── Noticeboard.tsx    # Announcements feed with markdown, pins, expiry, @mentions
 ```
@@ -155,11 +168,16 @@ npm run build    # Production build → /dist
 
 ## Changelog
 
+### v4.6 — AppContext Refactor & Logout Fix
+- `AppContext.tsx` split into four focused contexts: `AuthContext` (session/login), `DataContext` (all CRUD + realtime), `UIContext` (tab/filter/modal state), `NotificationsContext` (task + mention alerts) — `AppContext` is now a thin composition layer; all existing `useApp()` calls unchanged
+- Fixed logout bug: switching users on the same session no longer briefly shows the previous user's data — all data state is explicitly cleared and `loading` reset to `true` on logout
+- `APP_VERSION` bumped to `v4.6` in UI
+
 ### v4.5 — Mobile Polish & Onboarding
 - Mobile tab bar reordered — Noticeboard promoted to primary 5 tabs (Dashboard, Tasks, Noticeboard, Timeline, Suppliers); BOM, Projects and Team moved to "More" sheet so shopfloor users on phones see the most relevant tabs immediately
 - BOM page: full card layout on mobile replacing the wide horizontal-scroll table — shows part number, description, supplier, qty, status, linked task/project, notes and alert indicators in a readable stacked format
 - Suppliers page: sub-table min-widths reduced on mobile so parts and orders tables require less horizontal scrolling
-- Onboarding Guide updated to v4.4 — Noticeboard step added (step 7 of 10) covering posting, markdown, pinning, expiry and @mentions; backup step rewritten to describe PocketBase Settings → Backups instead of the removed localStorage backup; "Worker" renamed to "Shopfloor" throughout to match actual role names
+- Onboarding Guide updated to v4.5 — Noticeboard step added (step 7 of 10) covering posting, markdown, pinning, expiry and @mentions; backup step rewritten to describe PocketBase Settings → Backups instead of the removed localStorage backup; "Worker" renamed to "Shopfloor" throughout to match actual role names
 - `APP_VERSION` bumped to `v4.5` in UI
 
 ### v4.4 — Noticeboard & @Mentions

@@ -63,12 +63,14 @@ export const BomModal = () => {
   const handleSave = () => {
     if (!canSave) return;
     saveBomEntry({
-      ...entry, ...f,
+      ...entry,
+      id:         entry?.id ?? "",
       supplierId,
       partId,
+      ...f,
       qtyOrdered: parseInt(f.qtyOrdered as unknown as string) || 0,
-      status: f.status as any,
-      project: f.projectId ? (projects.find((p) => p.id === f.projectId)?.name || f.project) : f.project,
+      status:     f.status as any,
+      project:    f.projectId ? (projects.find((p) => p.id === f.projectId)?.name || f.project) : f.project,
     });
   };
 

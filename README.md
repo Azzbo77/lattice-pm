@@ -124,7 +124,8 @@ npm run build    # Production build → /dist
     │
     ├── hooks/
     │   ├── useBreakpoint.ts   # Responsive breakpoint detection
-    │   ├── useSearch.ts       # Global search engine
+    │   ├── usePagination.ts   # Generic pagination — page/totalPages/pageItems, resets on filter change
+    │   ├── useSearch.ts       # Global search engine (tasks, projects, suppliers, parts, BOM, team)
     │   ├── useSession.ts      # Session persistence helpers
     │   └── useStorage.ts      # Local storage abstraction
     │
@@ -138,7 +139,7 @@ npm run build    # Production build → /dist
     │   └── seeds.ts           # ROLES, colour maps, BOM status meta
     │
     ├── components/
-    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, ConfirmModal, etc.
+    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, ConfirmModal, Pager, etc.
     │   ├── Sidebar.tsx        # Desktop nav + mobile bottom tab bar (primary 5 + More sheet)
     │   ├── SearchBar.tsx
     │   └── NotificationBell.tsx # Task alerts + @mention notifications, grouped by type
@@ -156,10 +157,10 @@ npm run build    # Production build → /dist
         ├── AuthScreens.tsx
         ├── DashboardPage.tsx
         ├── GanttPage.tsx
-        ├── TasksPage.tsx
+        ├── TasksPage.tsx      # Mobile card layout + desktop table; paginated (25/page)
         ├── ProjectsPage.tsx
-        ├── SuppliersPage.tsx
-        ├── BomPage.tsx        # Mobile card layout on small screens
+        ├── SuppliersPage.tsx  # Mobile-aware sub-tables; paginated (10/page); supplier email field
+        ├── BomPage.tsx        # Mobile card layout + desktop table; paginated (20/page)
         ├── TeamPage.tsx
         └── Noticeboard.tsx    # Announcements feed with markdown, pins, expiry, @mentions
 ```
@@ -167,6 +168,21 @@ npm run build    # Production build → /dist
 ---
 
 ## Changelog
+
+### v4.8 — Mobile Polish
+- `TasksPage` — full mobile card layout added alongside desktop table; cards show title, project badge, priority, blocked/deps indicators, assignee, due date, status select, and edit/delete actions; no horizontal scroll on mobile
+- `DashboardPage` — task rows in Overdue, Due This Week and In Progress sections now wrap correctly on narrow screens instead of overflowing
+- `ProjectsPage` and `GanttPage` — already mobile-aware, no changes needed
+- `useSearch` — supplier search now matches on `email` field; result subtitle shows email if present
+- `APP_VERSION` bumped to `v4.8` in UI
+
+### v4.7 — Pagination
+- `usePagination` hook added — generic, resets to page 1 whenever the source list changes (filter/search applied)
+- `Pager` component added to shared UI — renders nothing when only one page; shows record range, prev/next, numbered page buttons with ellipsis; styled to match dark theme
+- `TasksPage` paginated — 25 per page, desktop and mobile layouts both paginated
+- `BomPage` paginated — 20 per page, desktop table and mobile cards both paginated
+- `SuppliersPage` paginated — 10 per page (supplier cards expand with parts/orders so fewer per page)
+- `seeds.ts` — `email: ""` added to sample supplier objects to match updated `Supplier` type
 
 ### v4.6 — AppContext Refactor & Logout Fix
 - `AppContext.tsx` split into four focused contexts: `AuthContext` (session/login), `DataContext` (all CRUD + realtime), `UIContext` (tab/filter/modal state), `NotificationsContext` (task + mention alerts) — `AppContext` is now a thin composition layer; all existing `useApp()` calls unchanged

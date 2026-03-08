@@ -53,7 +53,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 App runs at `http://localhost:8080`, PocketBase admin at `http://localhost:8090/_/`.
 
-Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to configure collections and create your first user.
+Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to create your superuser, import the bundled schema (`pb_migrations/1_initial_schema.json`), and create your first Lattice user.
 
 ### Without Docker
 
@@ -88,8 +88,8 @@ npm run build    # Production build → /build
 
 ```
 ├── pb_migrations/
-│   └── 1_initial_schema.json  # PocketBase collection schemas (reference only —
-│                              #   apply rules manually via the admin UI)
+│   └── 1_initial_schema.json  # All 7 collections, fields and API rules —
+│                              #   import via Settings → Import collections
 │
 ├── public/
 │   ├── sw.js                  # Service worker — caching strategies
@@ -173,7 +173,7 @@ npm run build    # Production build → /build
 - Loading spinner shown while initial data fetch completes
 
 ### v4.0 — PocketBase Schema & Deployment Docs
-- `pb_migrations/1_initial_schema.json` — schema for all 6 collections with field types, relation constraints and row-level security rules
+- `pb_migrations/1_initial_schema.json` — schema for all 7 collections with field types, relation constraints and API rules; import via Settings → Import collections
 - `DEPLOYMENT.md` — full setup guide: PocketBase, nginx with SSE support, Docker Compose, Pi deployment
 - Self-referencing `tasks.dependsOn` relation; cascade deletes from suppliers to parts/orders/bom
 

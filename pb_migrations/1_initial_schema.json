@@ -1,432 +1,1087 @@
-[
-  {
-    "id": "lattice_projects",
-    "name": "projects",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "name",
-        "type": "text",
-        "required": true,
-        "options": {
-          "min": 1,
-          "max": 200
-        }
-      },
-      {
-        "name": "color",
-        "type": "text",
-        "required": true,
-        "options": {
-          "min": 4,
-          "max": 9
-        }
-      },
-      {
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 2000
-        }
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
-    "deleteRule": "@request.auth.role = 'admin'"
-  },
-  {
-    "id": "lattice_tasks",
-    "name": "tasks",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "title",
-        "type": "text",
-        "required": true,
-        "options": {
-          "min": 1,
-          "max": 500
-        }
-      },
-      {
-        "name": "projectId",
-        "type": "relation",
-        "required": true,
-        "options": {
-          "collectionId": "lattice_projects",
-          "cascadeDelete": true,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "assigneeId",
-        "type": "relation",
-        "required": false,
-        "options": {
-          "collectionId": "_pb_users_auth_",
-          "cascadeDelete": false,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "status",
-        "type": "select",
-        "required": true,
-        "options": {
+{
+  "collections": [
+    {
+      "id": "_pb_users_auth_",
+      "listRule": "id = @request.auth.id",
+      "viewRule": "id = @request.auth.id",
+      "createRule": "",
+      "updateRule": "id = @request.auth.id",
+      "deleteRule": "@request.auth.role = \"admin\"",
+      "name": "users",
+      "type": "auth",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "cost": 0,
+          "hidden": true,
+          "id": "password901924565",
+          "max": 0,
+          "min": 8,
+          "name": "password",
+          "pattern": "",
+          "presentable": false,
+          "required": true,
+          "system": true,
+          "type": "password"
+        },
+        {
+          "autogeneratePattern": "[a-zA-Z0-9]{50}",
+          "hidden": true,
+          "id": "text2504183744",
+          "max": 60,
+          "min": 30,
+          "name": "tokenKey",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "exceptDomains": null,
+          "hidden": false,
+          "id": "email3885137012",
+          "name": "email",
+          "onlyDomains": null,
+          "presentable": false,
+          "required": true,
+          "system": true,
+          "type": "email"
+        },
+        {
+          "hidden": false,
+          "id": "bool1547992806",
+          "name": "emailVisibility",
+          "presentable": false,
+          "required": false,
+          "system": true,
+          "type": "bool"
+        },
+        {
+          "hidden": false,
+          "id": "bool256245529",
+          "name": "verified",
+          "presentable": false,
+          "required": false,
+          "system": true,
+          "type": "bool"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1579384326",
+          "max": 0,
+          "min": 0,
+          "name": "name",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "file376926767",
           "maxSelect": 1,
+          "maxSize": 0,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "name": "avatar",
+          "presentable": false,
+          "protected": false,
+          "required": false,
+          "system": false,
+          "thumbs": null,
+          "type": "file"
+        },
+        {
+          "hidden": false,
+          "id": "select1466534506",
+          "maxSelect": 1,
+          "name": "role",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "select",
           "values": [
-            "todo",
-            "in-progress",
-            "done",
-            "blocked"
+            "admin",
+            "manager",
+            "office",
+            "shopfloor"
           ]
+        },
+        {
+          "hidden": false,
+          "id": "bool3452646501",
+          "name": "mustChangePassword",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "bool"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)",
+        "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
+      ],
+      "system": false,
+      "authRule": "",
+      "manageRule": null,
+      "authAlert": {
+        "enabled": true,
+        "emailTemplate": {
+          "subject": "Login from a new location",
+          "body": "<p>Hello,</p>\n<p>We noticed a login to your {APP_NAME} account from a new location.</p>\n<p>If this was you, you may disregard this email.</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>"
         }
       },
-      {
-        "name": "priority",
-        "type": "select",
-        "required": true,
-        "options": {
+      "oauth2": {
+        "mappedFields": {
+          "id": "",
+          "name": "name",
+          "username": "",
+          "avatarURL": "avatar"
+        },
+        "enabled": false
+      },
+      "passwordAuth": {
+        "enabled": true,
+        "identityFields": [
+          "email"
+        ]
+      },
+      "mfa": {
+        "enabled": false,
+        "duration": 1800,
+        "rule": ""
+      },
+      "otp": {
+        "enabled": false,
+        "duration": 180,
+        "length": 8,
+        "emailTemplate": {
+          "subject": "OTP for {APP_NAME}",
+          "body": "<p>Hello,</p>\n<p>Your one-time password is: <strong>{OTP}</strong></p>\n<p><i>If you didn't ask for the one-time password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>"
+        }
+      },
+      "authToken": {
+        "duration": 604800
+      },
+      "passwordResetToken": {
+        "duration": 1800
+      },
+      "emailChangeToken": {
+        "duration": 1800
+      },
+      "verificationToken": {
+        "duration": 259200
+      },
+      "fileToken": {
+        "duration": 180
+      },
+      "verificationTemplate": {
+        "subject": "Verify your {APP_NAME} email",
+        "body": "<p>Hello,</p>\n<p>Thank you for joining us at {APP_NAME}.</p>\n<p>Click on the button below to verify your email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Verify</a>\n</p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>"
+      },
+      "resetPasswordTemplate": {
+        "subject": "Reset your {APP_NAME} password",
+        "body": "<p>Hello,</p>\n<p>Click on the button below to reset your password.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Reset password</a>\n</p>\n<p><i>If you didn't ask to reset your password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>"
+      },
+      "confirmEmailChangeTemplate": {
+        "subject": "Confirm your {APP_NAME} new email address",
+        "body": "<p>Hello,</p>\n<p>Click on the button below to confirm your new email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Confirm new email</a>\n</p>\n<p><i>If you didn't ask to change your email address, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>"
+      }
+    },
+    {
+      "id": "pbc_1783805600",
+      "listRule": "@request.auth.id != ''",
+      "viewRule": "@request.auth.id != ''",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "deleteRule": "@request.auth.role = 'admin'",
+      "name": "bom",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_3355664324",
+          "hidden": false,
+          "id": "relation3741688275",
           "maxSelect": 1,
-          "values": [
-            "low",
-            "medium",
-            "high"
-          ]
-        }
-      },
-      {
-        "name": "startDate",
-        "type": "text",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "endDate",
-        "type": "text",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 5000
-        }
-      },
-      {
-        "name": "dependsOn",
-        "type": "relation",
-        "required": false,
-        "options": {
-          "collectionId": "lattice_tasks",
+          "minSelect": 0,
+          "name": "supplierId",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "relation"
+        },
+        {
           "cascadeDelete": false,
-          "maxSelect": 999
-        }
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office' || @request.auth.id = assigneeId",
-    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'"
-  },
-  {
-    "id": "lattice_suppliers",
-    "name": "suppliers",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "name",
-        "type": "text",
-        "required": true,
-        "options": {
-          "min": 1,
-          "max": 200
-        }
-      },
-      {
-        "name": "contact",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 200
-        }
-      },
-      {
-        "name": "phone",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 50
-        }
-      },
-      {
-        "name": "email",
-        "type": "email",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "archived",
-        "type": "bool",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "deleteRule": "@request.auth.role = 'admin'"
-  },
-  {
-    "id": "lattice_parts",
-    "name": "parts",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "supplierId",
-        "type": "relation",
-        "required": true,
-        "options": {
-          "collectionId": "lattice_suppliers",
-          "cascadeDelete": true,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "partNumber",
-        "type": "text",
-        "required": true,
-        "options": {
-          "min": 1,
-          "max": 100
-        }
-      },
-      {
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 1000
-        }
-      },
-      {
-        "name": "unit",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 50
-        }
-      },
-      {
-        "name": "unitQty",
-        "type": "number",
-        "required": false,
-        "options": {
-          "min": 0
-        }
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
-  },
-  {
-    "id": "lattice_orders",
-    "name": "orders",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "supplierId",
-        "type": "relation",
-        "required": true,
-        "options": {
-          "collectionId": "lattice_suppliers",
-          "cascadeDelete": true,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "description",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 1000
-        }
-      },
-      {
-        "name": "partIds",
-        "type": "relation",
-        "required": false,
-        "options": {
-          "collectionId": "lattice_parts",
-          "cascadeDelete": false,
-          "maxSelect": 999
-        }
-      },
-      {
-        "name": "orderedDate",
-        "type": "text",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "leadTimeDays",
-        "type": "number",
-        "required": false,
-        "options": {
-          "min": 0
-        }
-      },
-      {
-        "name": "arrived",
-        "type": "bool",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "arrivedDate",
-        "type": "text",
-        "required": false,
-        "options": {}
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
-  },
-  {
-    "id": "lattice_bom",
-    "name": "bom",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "name": "supplierId",
-        "type": "relation",
-        "required": true,
-        "options": {
-          "collectionId": "lattice_suppliers",
-          "cascadeDelete": true,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "partId",
-        "type": "relation",
-        "required": true,
-        "options": {
-          "collectionId": "lattice_parts",
-          "cascadeDelete": true,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "projectId",
-        "type": "relation",
-        "required": false,
-        "options": {
-          "collectionId": "lattice_projects",
-          "cascadeDelete": false,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "taskId",
-        "type": "relation",
-        "required": false,
-        "options": {
-          "collectionId": "lattice_tasks",
-          "cascadeDelete": false,
-          "maxSelect": 1
-        }
-      },
-      {
-        "name": "qtyOrdered",
-        "type": "number",
-        "required": false,
-        "options": {
-          "min": 0
-        }
-      },
-      {
-        "name": "status",
-        "type": "select",
-        "required": true,
-        "options": {
+          "collectionId": "pbc_2718308629",
+          "hidden": false,
+          "id": "relation3877112585",
           "maxSelect": 1,
+          "minSelect": 0,
+          "name": "partId",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_484305853",
+          "hidden": false,
+          "id": "relation1821597943",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "projectId",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_2602490748",
+          "hidden": false,
+          "id": "relation3545221687",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "taskId",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "hidden": false,
+          "id": "number1972529097",
+          "max": null,
+          "min": null,
+          "name": "qtyOrdered",
+          "onlyInt": false,
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "number"
+        },
+        {
+          "hidden": false,
+          "id": "select2063623452",
+          "maxSelect": 1,
+          "name": "status",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "select",
           "values": [
             "pending",
             "used",
             "not-used",
             "under-review"
           ]
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text18589324",
+          "max": 0,
+          "min": 0,
+          "name": "notes",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
         }
-      },
-      {
-        "name": "notes",
-        "type": "text",
-        "required": false,
-        "options": {
-          "max": 2000
+      ],
+      "indexes": [],
+      "system": false
+    },
+    {
+      "id": "pbc_3527180448",
+      "listRule": "@request.auth.id != ''",
+      "viewRule": "@request.auth.id != ''",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "deleteRule": "@request.auth.role = 'admin'",
+      "name": "orders",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_3355664324",
+          "hidden": false,
+          "id": "relation3741688275",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "supplierId",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1843675174",
+          "max": 0,
+          "min": 0,
+          "name": "description",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_2718308629",
+          "hidden": false,
+          "id": "relation1647669156",
+          "maxSelect": 999,
+          "minSelect": 0,
+          "name": "partIds",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text2802266622",
+          "max": 0,
+          "min": 0,
+          "name": "orderedDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "number147652237",
+          "max": null,
+          "min": null,
+          "name": "leadTimeDays",
+          "onlyInt": false,
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "number"
+        },
+        {
+          "hidden": false,
+          "id": "bool827462018",
+          "name": "arrived",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "bool"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text2303397983",
+          "max": 0,
+          "min": 0,
+          "name": "arrivedDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
         }
-      },
-      {
-        "name": "updatedBy",
-        "type": "text",
-        "required": false,
-        "options": {}
-      }
-    ],
-    "listRule": "@request.auth.id != ''",
-    "viewRule": "@request.auth.id != ''",
-    "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
-    "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'"
-  }
-]
+      ],
+      "indexes": [],
+      "system": false
+    },
+    {
+      "id": "pbc_2718308629",
+      "listRule": "@request.auth.id != ''",
+      "viewRule": "@request.auth.id != ''",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "deleteRule": "@request.auth.role = 'admin'",
+      "name": "parts",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_3355664324",
+          "hidden": false,
+          "id": "relation3741688275",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "supplierId",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text2289541405",
+          "max": 0,
+          "min": 0,
+          "name": "partNumber",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1843675174",
+          "max": 0,
+          "min": 0,
+          "name": "description",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3703245907",
+          "max": 0,
+          "min": 0,
+          "name": "unit",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "number1850301890",
+          "max": null,
+          "min": null,
+          "name": "unitQty",
+          "onlyInt": false,
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "number"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        }
+      ],
+      "indexes": [],
+      "system": false
+    },
+    {
+      "id": "pbc_484305853",
+      "listRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "viewRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "deleteRule": "@request.auth.role = 'admin'",
+      "name": "projects",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1579384326",
+          "max": 0,
+          "min": 0,
+          "name": "name",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1716930793",
+          "max": 0,
+          "min": 0,
+          "name": "color",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1843675174",
+          "max": 0,
+          "min": 0,
+          "name": "description",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        }
+      ],
+      "indexes": [],
+      "system": false
+    },
+    {
+      "id": "pbc_3355664324",
+      "listRule": "@request.auth.id != ''",
+      "viewRule": "@request.auth.id != ''",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager'",
+      "deleteRule": "@request.auth.role = 'admin'",
+      "name": "suppliers",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1579384326",
+          "max": 0,
+          "min": 0,
+          "name": "name",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1281549880",
+          "max": 0,
+          "min": 0,
+          "name": "contact",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1146066909",
+          "max": 0,
+          "min": 0,
+          "name": "phone",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "exceptDomains": null,
+          "hidden": false,
+          "id": "email3885137012",
+          "name": "email",
+          "onlyDomains": null,
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "email"
+        },
+        {
+          "hidden": false,
+          "id": "bool1639016958",
+          "name": "archived",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "bool"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        }
+      ],
+      "indexes": [],
+      "system": false
+    },
+    {
+      "id": "pbc_2602490748",
+      "listRule": "@request.auth.id != ''",
+      "viewRule": "@request.auth.id != ''",
+      "createRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "updateRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office' || @request.auth.id = assigneeId",
+      "deleteRule": "@request.auth.role = 'admin' || @request.auth.role = 'manager' || @request.auth.role = 'office'",
+      "name": "tasks",
+      "type": "base",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text724990059",
+          "max": 0,
+          "min": 0,
+          "name": "title",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": true,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_484305853",
+          "hidden": false,
+          "id": "relation1821597943",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "projectId",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "_pb_users_auth_",
+          "hidden": false,
+          "id": "relation839110228",
+          "maxSelect": 1,
+          "minSelect": 0,
+          "name": "assigneeId",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "hidden": false,
+          "id": "select2063623452",
+          "maxSelect": 1,
+          "name": "status",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "select",
+          "values": [
+            "todo",
+            "in-progress",
+            "done",
+            "blocked"
+          ]
+        },
+        {
+          "hidden": false,
+          "id": "select1655102503",
+          "maxSelect": 1,
+          "name": "priority",
+          "presentable": false,
+          "required": true,
+          "system": false,
+          "type": "select",
+          "values": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1269603864",
+          "max": 0,
+          "min": 0,
+          "name": "startDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text826688707",
+          "max": 0,
+          "min": 0,
+          "name": "endDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text1843675174",
+          "max": 0,
+          "min": 0,
+          "name": "description",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "cascadeDelete": false,
+          "collectionId": "pbc_2602490748",
+          "hidden": false,
+          "id": "relation3536209151",
+          "maxSelect": 999,
+          "minSelect": 0,
+          "name": "dependsOn",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "relation"
+        },
+        {
+          "autogeneratePattern": "",
+          "hidden": false,
+          "id": "text3906892144",
+          "max": 0,
+          "min": 0,
+          "name": "updatedBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "hidden": false,
+          "id": "autodate2990389176",
+          "name": "created",
+          "onCreate": true,
+          "onUpdate": false,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        },
+        {
+          "hidden": false,
+          "id": "autodate3332085495",
+          "name": "updated",
+          "onCreate": true,
+          "onUpdate": true,
+          "presentable": false,
+          "system": false,
+          "type": "autodate"
+        }
+      ],
+      "indexes": [],
+      "system": false
+    }
+  ]
+}

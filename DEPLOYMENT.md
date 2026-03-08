@@ -42,11 +42,11 @@ cd C:\pocketbase-dev
 .\pocketbase.exe serve --http="127.0.0.1:8090"
 ```
 
-Open http://127.0.0.1:8090/_/ and create your admin account.
-PocketBase will apply `pb_migrations/1_initial_schema.json` automatically on first start —
-all 6 collections (projects, tasks, suppliers, parts, orders, bom) will appear in the admin UI.
+Open http://127.0.0.1:8090/_/ and create your superuser account. Then import the bundled schema:
 
-> **Important:** See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for the full collection and API rules setup, including the required `role` and `mustChangePassword` fields and delete rules needed for team member removal.
+**Settings → Import collections → Load from JSON file** → select `pb_migrations/1_initial_schema.json`
+
+This creates all 7 collections with the correct fields and API rules in one step. See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for the full walkthrough.
 
 ### 3 — Environment files
 
@@ -68,14 +68,9 @@ REACT_APP_PB_URL=/pb
 npm install pocketbase
 ```
 
-### 5 — Seed demo data
+### 5 — Create first Lattice user
 
-```powershell
-npx ts-node scripts/seed.ts \
-  --url http://127.0.0.1:8090 \
-  --email your@admin.email \
-  --password yourAdminPassword
-```
+In the PocketBase admin UI go to **Collections → users → New record** and create your admin user with `role = admin`. See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for details.
 
 ### 6 — Start dev
 
@@ -185,14 +180,9 @@ npm run build
 scp -r build/* user@PI_IP:/var/www/lattice-pm/
 ```
 
-### 5 — Seed the Pi instance
+### 5 — Create first Lattice user
 
-```powershell
-npx ts-node scripts/seed.ts \
-  --url http://PI_IP:8090 \
-  --email your@admin.email \
-  --password yourAdminPassword
-```
+Follow [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — import the schema then create your admin user via the PocketBase admin UI.
 
 ---
 
@@ -265,7 +255,7 @@ docker compose up --build
 - App: http://localhost:3000
 - PocketBase admin UI: http://localhost:8090/_/
 
-On first run, open the PocketBase admin UI and create your admin account. Then run the seed script (see the manual setup section) or create the collections and users manually.
+On first run, follow [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — create your superuser, import `pb_migrations/1_initial_schema.json` via Settings → Import collections, then create your first Lattice user.
 
 ---
 

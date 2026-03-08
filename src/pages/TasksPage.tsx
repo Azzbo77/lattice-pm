@@ -3,9 +3,10 @@ import React from "react";
 import { useApp } from "../context/AppContext";
 import { statusColor, prioColor } from "../constants/seeds";
 import { todayStr, fmt } from "../utils/dateHelpers";
-import { Btn, TH, TD, UpdatedBadge, selStyle, miniSel } from "../components/ui";
+import { Btn, TH, TD, UpdatedBadge, selStyle, miniSel, Pager } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 import { bg, clr, font, radius, space } from "../constants/theme";
+import { usePagination } from "../hooks/usePagination";
 import type { Task, User, Project } from "../types";
 
 // Memoized task row component — prevents re-renders when parent updates
@@ -86,6 +87,8 @@ export const TasksPage = () => {
   const { filteredTasks, tasks, projects, users, currentUser, canManage, pf, setPf, setTaskModal, deleteTask, updateTaskStatus } = useApp();
   const now = todayStr();
 
+  const { page, totalPages, pageItems, next, prev, goTo } = usePagination(filteredTasks, 25);
+
   // Returns true if any dependency is not done (blocking this task)
   const isBlocked = useCallback((task: Task): boolean =>
     (task.dependsOn || []).some((depId) => {
@@ -103,7 +106,7 @@ export const TasksPage = () => {
 
   // Memoize task data to avoid TaskRow re-renders
   const taskRowsData = useMemo(() =>
-    filteredTasks.map((task) => ({
+    pageItems.map((task) => ({
       task,
       project: projects.find((p) => p.id === task.projectId),
       assignee: users.find((u) => u.id === task.assigneeId),
@@ -111,7 +114,7 @@ export const TasksPage = () => {
       isBlockedFlag: isBlocked(task),
       blockedByStr: blockedBy(task),
     })),
-    [filteredTasks, projects, users, now, isBlocked, blockedBy]
+    [pageItems, projects, users, now, isBlocked, blockedBy]
   );
 
 
@@ -166,7 +169,10 @@ export const TasksPage = () => {
             canManage={canManage}
           />
         ))}
-      </div></div></div>
+        </div>
+        </div>
+      </div>
+      <Pager page={page} totalPages={totalPages} total={filteredTasks.length} pageSize={25} onPrev={prev} onNext={next} onGoTo={goTo} />
     </div>
   );
 };

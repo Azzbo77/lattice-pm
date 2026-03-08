@@ -76,7 +76,7 @@ export const DEMO_TASKS: Task[] = [
 
 export const DEMO_SUPPLIERS: Supplier[] = [
   {
-    id: "s1", name: "TechCore Supplies", contact: "orders@techcore.com", phone: "03 9000 1111",
+    id: "s1", name: "TechCore Supplies", contact: "orders@techcore.com", phone: "03 9000 1111", email: "",
     parts: [
       { id: "pt1", partNumber: "TC-SRV-001", description: "1U Rack Server 32GB",    unitQty: 1, unit: "unit" },
       { id: "pt2", partNumber: "TC-CAB-010", description: "Cat6A Patch Cable 1m",   unitQty: 50, unit: "m"   },
@@ -88,7 +88,7 @@ export const DEMO_SUPPLIERS: Supplier[] = [
     ],
   },
   {
-    id: "s2", name: "NetGear Pro",        contact: "sales@netgearpro.com", phone: "02 8000 2222",
+    id: "s2", name: "NetGear Pro",        contact: "sales@netgearpro.com", phone: "02 8000 2222", email: "",
     parts: [
       { id: "pt4", partNumber: "NG-SW-48G",  description: "48-Port Gigabit Switch",  unitQty: 1, unit: "unit" },
       { id: "pt5", partNumber: "NG-SFP-10G", description: "10G SFP+ Transceiver",   unitQty: 4, unit: "pack" },

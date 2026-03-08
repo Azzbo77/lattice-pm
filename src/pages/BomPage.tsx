@@ -3,10 +3,11 @@ import React from "react";
 import { useApp } from "../context/AppContext";
 import { bomStatusMeta } from "../constants/seeds";
 import { todayStr, addDays } from "../utils/dateHelpers";
-import { TH, TD, UpdatedBadge, selStyle } from "../components/ui";
+import { TH, TD, UpdatedBadge, selStyle, Pager } from "../components/ui";
 import { exportCSV } from "../utils/csvExport";
 import { bg, clr, font, radius, space } from "../constants/theme";
 import { useBreakpoint } from "../hooks/useBreakpoint";
+import { usePagination } from "../hooks/usePagination";
 import type { BomRow as BomRowType, Project, Task } from "../types";
 
 // ── BomRow component ──────────────────────────────────────────────────────────
@@ -86,6 +87,7 @@ export const BomPage = () => {
     setBomModal, projects, tasks, suppliers, canSuppliers, setConfirmDeleteBom,
   } = useApp();
   const now = todayStr();
+  const { page, totalPages, pageItems: pagedBom, next, prev, goTo } = usePagination(filteredBom, 20);
 
   // Helper — is this BOM row alertable?
   const getAlerts = useCallback((row: typeof bomRows[0]): string[] => {
@@ -107,13 +109,13 @@ export const BomPage = () => {
 
   // Memoize BomRow data to prevent unnecessary re-renders
   const bomRowsData = useMemo(() =>
-    filteredBom.map((row) => ({
+    pagedBom.map((row) => ({
       row,
       linkedTask: tasks.find((t) => t.id === row.taskId),
       linkedProj: projects.find((p) => p.id === row.projectId),
       alerts: getAlerts(row),
     })),
-    [filteredBom, tasks, projects, getAlerts]
+    [pagedBom, tasks, projects, getAlerts]
   );
 
   const handleDeleteBom = (id: string) => {
@@ -215,7 +217,10 @@ export const BomPage = () => {
           {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => (
             <BomRow key={row.id} row={row} linkedTask={linkedTask} linkedProj={linkedProj} alerts={alerts} canManage={canSuppliers} onEdit={handleEditBom} onDelete={handleDeleteBom} />
           ))}
-          </div></div></div>
+          </div>
+        </div>
+        <Pager page={page} totalPages={totalPages} total={filteredBom.length} pageSize={20} onPrev={prev} onNext={next} onGoTo={goTo} />
+      </div>
       )}
 
       {/* Cards — mobile */}
@@ -268,6 +273,7 @@ export const BomPage = () => {
               </div>
             );
           })}
+          <Pager page={page} totalPages={totalPages} total={filteredBom.length} pageSize={20} onPrev={prev} onNext={next} onGoTo={goTo} />
         </div>
       )}
     </div>

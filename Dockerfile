@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: Serve with nginx ─────────────────────────────────────────────────
-FROM nginx:1.25-alpine
+FROM nginx:stable-alpine
 
 # Copy built app (Vite outputs to /dist)
 COPY --from=builder /app/dist /usr/share/nginx/html

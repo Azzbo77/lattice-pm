@@ -161,3 +161,60 @@ export const ConfirmModal = ({ message, onConfirm, onClose }: { message: string;
     </div>
   </Overlay>
 );
+
+// ── Pager ─────────────────────────────────────────────────────────────────────
+export const Pager = ({
+  page, totalPages, total, pageSize, onPrev, onNext, onGoTo,
+}: {
+  page:       number;
+  totalPages: number;
+  total:      number;
+  pageSize:   number;
+  onPrev:     () => void;
+  onNext:     () => void;
+  onGoTo:     (n: number) => void;
+}) => {
+  if (totalPages <= 1) return null;
+
+  const start = (page - 1) * pageSize + 1;
+  const end   = Math.min(page * pageSize, total);
+
+  // Build page number buttons — always show first, last, current ±1
+  const pages: (number | "…")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "…") {
+      pages.push("…");
+    }
+  }
+
+  const btnBase: React.CSSProperties = {
+    padding: "3px 9px", borderRadius: "6px", fontSize: "0.72rem",
+    cursor: "pointer", border: "1px solid #1e1e35", background: "transparent",
+    color: "#8888aa",
+  };
+  const activeBtn: React.CSSProperties = {
+    ...btnBase, background: "#14143a", color: "#c8c8e8", borderColor: "#3a3a5c",
+  };
+  const disabledBtn: React.CSSProperties = {
+    ...btnBase, opacity: 0.3, cursor: "default",
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.6rem 1rem", borderTop: "1px solid #1e1e35", flexWrap: "wrap", gap: "0.5rem" }}>
+      <span style={{ fontSize: "0.72rem", color: "#8888aa" }}>
+        {start}–{end} of {total}
+      </span>
+      <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+        <button onClick={onPrev} disabled={page === 1} style={page === 1 ? disabledBtn : btnBase}>‹ Prev</button>
+        {pages.map((p, i) =>
+          p === "…"
+            ? <span key={`ellipsis-${i}`} style={{ color: "#8888aa", fontSize: "0.72rem", padding: "0 2px" }}>…</span>
+            : <button key={p} onClick={() => onGoTo(p as number)} style={p === page ? activeBtn : btnBase}>{p}</button>
+        )}
+        <button onClick={onNext} disabled={page === totalPages} style={page === totalPages ? disabledBtn : btnBase}>Next ›</button>
+      </div>
+    </div>
+  );
+};

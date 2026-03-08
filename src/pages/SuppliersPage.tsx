@@ -1,10 +1,11 @@
 import { useState } from "react";
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { Btn, TH, TD, UpdatedBadge, ConfirmModal, selStyle } from "../components/ui";
+import { Btn, TH, TD, UpdatedBadge, ConfirmModal, selStyle, Pager } from "../components/ui";
 import { addDays, fmt, todayStr } from "../utils/dateHelpers";
 import type { Supplier, Part, Order } from "../types";
 import { useBreakpoint } from "../hooks/useBreakpoint";
+import { usePagination } from "../hooks/usePagination";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
 // ── Filter helpers ────────────────────────────────────────────────────────────
@@ -317,6 +318,7 @@ export const SuppliersPage = () => {
   const now = todayStr();
 
   const filtered  = applyFilter(suppliers, filter, now);
+  const { page, totalPages, pageItems: pagedSuppliers, next, prev, goTo } = usePagination(filtered, 10);
   const counts = {
     active:   suppliers.filter((s) => !s.archived).length,
     archived: suppliers.filter((s) =>  s.archived).length,
@@ -344,9 +346,10 @@ export const SuppliersPage = () => {
       {filtered.length === 0 && filter === "overdue"   && <div style={{ padding: "2rem", textAlign: "center", color: clr.green }}>✓ No overdue orders.</div>}
 
       {/* Cards */}
-      {filtered.map((supplier) => (
+      {pagedSuppliers.map((supplier) => (
         <SupplierCard key={supplier.id} supplier={supplier} />
       ))}
+      <Pager page={page} totalPages={totalPages} total={filtered.length} pageSize={10} onPrev={prev} onNext={next} onGoTo={goTo} />
     </div>
   );
 };

@@ -55,8 +55,8 @@ export const useSearch = (query: string, deps: SearchDeps | null): SearchResult[
 
     // Suppliers
     suppliers.forEach((s) => {
-      if (s.name.toLowerCase().includes(q) || s.contact.toLowerCase().includes(q)) {
-        results.push({ type: "supplier", icon: "📦", label: s.name, sub: s.contact, color: clr.orange, action: () => setTab("suppliers") });
+      if (s.name.toLowerCase().includes(q) || s.contact.toLowerCase().includes(q) || (s.email || "").toLowerCase().includes(q)) {
+        results.push({ type: "supplier", icon: "📦", label: s.name, sub: s.email || s.contact, color: clr.orange, action: () => setTab("suppliers") });
       }
       // Parts
       (s.parts || []).forEach((pt) => {

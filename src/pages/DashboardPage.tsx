@@ -40,9 +40,9 @@ const TaskRow = ({ task }: { task: any }) => {
     .map((id: string) => tasks.find((t: any) => t.id === id))
     .filter((d: any): d is any => !!d && d.status !== "done");
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: space["5"], padding: "0.6rem 0.75rem", background: bg.card, borderRadius: radius.lg, marginBottom: radius.sm, border: `1px solid ${recent ? "#00d4ff20" : bg.overlay}` }}>
+    <div style={{ display: "flex", alignItems: "center", gap: space["5"], padding: "0.6rem 0.75rem", background: bg.card, borderRadius: radius.lg, marginBottom: radius.sm, border: `1px solid ${recent ? "#00d4ff20" : bg.overlay}`, flexWrap: "wrap" }}>
       <div style={{ width: radius.lg, height: radius.lg, borderRadius: "50%", background: overdue ? clr.red : clr.yellow, flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: "120px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: radius.sm }}>
           <span style={{ fontSize: font.lg, color: clr.textPrimary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
           {blockedDeps.length > 0 && (

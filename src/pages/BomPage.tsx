@@ -68,7 +68,7 @@ const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onE
         {canManage && (
           <div style={{ display: "flex", gap: "4px" }}>
             <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>
-            <button onClick={() => { if (window.confirm("Delete this BOM entry?")) onDelete(row.id); }} style={{ padding: "3px 7px", background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }} aria-label="Delete BOM entry">✕</button>
+            <button onClick={() => onDelete(row.id)} style={{ padding: "3px 7px", background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }} aria-label="Delete BOM entry">✕</button>
           </div>
         )}
       </TD>
@@ -81,7 +81,7 @@ export const BomPage = () => {
   const {
     bomRows, filteredBom, bomFilter, setBomFilter,
     taskFilter, setTaskFilter,
-    setBomModal, projects, tasks, suppliers, canSuppliers, deleteBomEntry,
+    setBomModal, projects, tasks, suppliers, canSuppliers, setConfirmDeleteBom,
   } = useApp();
   const now = todayStr();
 
@@ -115,7 +115,7 @@ export const BomPage = () => {
   );
 
   const handleDeleteBom = (id: string) => {
-    deleteBomEntry(id);
+    setConfirmDeleteBom(id);
   };
 
   const handleEditBom = (row: BomRowType) => {

@@ -118,6 +118,7 @@ const DependencyArrows = ({ tasks, minD, span }: { tasks: import("../types").Tas
 
   return (
     <svg
+      viewBox={`0 0 100 ${Math.max(...arrows.map(a => Math.max(a.y1, a.y2))) + 40}`}
       style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}
       preserveAspectRatio="none"
     >
@@ -131,7 +132,7 @@ const DependencyArrows = ({ tasks, minD, span }: { tasks: import("../types").Tas
         return (
           <path
             key={i}
-            d={`M ${a.x1}% ${a.y1} C ${mid}% ${a.y1}, ${mid}% ${a.y2}, ${a.x2}% ${a.y2}`}
+            d={`M ${a.x1} ${a.y1} C ${mid} ${a.y1}, ${mid} ${a.y2}, ${a.x2} ${a.y2}`}
             stroke={color}
             strokeWidth="1.5"
             strokeDasharray={a.blocked ? "4 3" : "none"}

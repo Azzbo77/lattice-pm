@@ -36,6 +36,7 @@ const AppShell = () => {
     bomModal, memberModal, showSummary,
     confirmRemove,        setConfirmRemove,        removeMember,
     confirmDeleteProject, setConfirmDeleteProject, deleteProject,
+    confirmDeleteBom,     setConfirmDeleteBom,     deleteBomEntry,
     setShowSummary, isAdmin, logout,
   } = useApp();
 
@@ -162,6 +163,13 @@ const AppShell = () => {
           message={`Remove ${confirmRemove.name} from the team?`}
           onConfirm={async () => removeMember(confirmRemove.userId)}
           onClose={() => setConfirmRemove(null)}
+        />
+      )}
+      {confirmDeleteBom && (
+        <ConfirmModal
+          message="Delete this BOM entry?"
+          onConfirm={async () => { await deleteBomEntry(confirmDeleteBom); setConfirmDeleteBom(null); }}
+          onClose={() => setConfirmDeleteBom(null)}
         />
       )}
       {confirmDeleteProject && (

@@ -45,6 +45,7 @@ export interface AppContextType {
   memberModal:          User | null | Record<string, unknown>;
   showSummary:          boolean;
   confirmRemove:        { userId: string; name: string } | null;
+  confirmDeleteBom:     string | null;
   confirmDeleteProject: Project | null;
   // Derived
   isAdmin:      boolean;
@@ -91,6 +92,7 @@ export interface AppContextType {
   setMemberModal:          (m: User | null | Record<string, unknown>) => void;
   setShowSummary:          (v: boolean) => void;
   setConfirmRemove:        (m: { userId: string; name: string } | null) => void;
+  setConfirmDeleteBom:     (id: string | null) => void;
   setConfirmDeleteProject: (m: Project | null) => void;
 }
 
@@ -134,6 +136,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [memberModal,          setMemberModal]          = useState<User | null | Record<string, unknown>>(null);
   const [showSummary,          setShowSummary]          = useState(false);
   const [confirmRemove,        setConfirmRemove]        = useState<{ userId: string; name: string } | null>(null);
+  const [confirmDeleteBom,     setConfirmDeleteBom]     = useState<string | null>(null);
   const [confirmDeleteProject, setConfirmDeleteProject] = useState<Project | null>(null);
 
   // ── Dismissed notifications ──────────────────────────────────────────────
@@ -441,7 +444,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     tab, pf, bomFilter, taskFilter,
     taskModal, projectModal, supplierModal, orderModal, partModal,
     bomModal, memberModal, showSummary,
-    confirmRemove, confirmDeleteProject,
+    confirmRemove, confirmDeleteProject, confirmDeleteBom,
     isAdmin, canManage, canSuppliers,
     filteredTasks, bomRows, filteredBom, notifications,
     dismissNotification, dismissAllNotifications,
@@ -456,7 +459,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setTab, setPf, setBomFilter, setTaskFilter,
     setTaskModal, setProjectModal, setSupplierModal,
     setOrderModal, setPartModal, setBomModal, setMemberModal, setShowSummary,
-    setConfirmRemove, setConfirmDeleteProject,
+    setConfirmRemove, setConfirmDeleteProject, setConfirmDeleteBom,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

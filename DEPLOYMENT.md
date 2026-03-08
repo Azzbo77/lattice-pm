@@ -46,14 +46,7 @@ Open http://127.0.0.1:8090/_/ and create your admin account.
 PocketBase will apply `pb_migrations/1_initial_schema.json` automatically on first start —
 all 6 collections (projects, tasks, suppliers, parts, orders, bom) will appear in the admin UI.
 
-> **Important:** Also add a custom `role` field to the built-in **users** auth collection:
-> Collections → users → Edit → Add field:
-> - Name: `role`
-> - Type: Select
-> - Values: `admin`, `manager`, `office`, `shopfloor`
-> - Required: yes
->
-> And add `mustChangePassword` (Bool, not required).
+> **Important:** See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for the full collection and API rules setup, including the required `role` and `mustChangePassword` fields and delete rules needed for team member removal.
 
 ### 3 — Environment files
 

@@ -1,6 +1,6 @@
 # ◈ Lattice PM
 
-A self-hosted, browser-based project management tool built for small engineering and operations teams. Written in TypeScript and React, it runs as a web app and connects to a PocketBase backend — no cloud subscription required.
+A self-hosted, browser-based project management tool built for small engineering and operations teams. Written in TypeScript and React, it runs as a Docker container and connects to a PocketBase backend — no cloud subscription, no per-seat fees.
 
 Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.
 
@@ -15,10 +15,9 @@ Teams using Lattice can track tasks, manage suppliers and bill of materials, mon
 - **✅ Tasks** — Create, assign and track tasks with status, priority, dates, project tagging and dependency linking. Blocked indicators when prerequisites are incomplete. CSV export respects the active filter.
 - **🗂️ Projects** — Colour-coded projects with progress bars and per-project stats.
 - **📦 Suppliers & Orders** — Collapsible supplier cards with parts catalogue and order tracking. Archive/delete suppliers. Filter by Active / Archived / Overdue.
-- **🔩 BOM** — Bill of Materials linked to tasks and projects. Usage status, quantities and engineering notes. Alert indicators for delayed parts and overdue linked tasks. Filter by status or task/project.
+- **🔩 BOM** — Bill of Materials linked to tasks and projects. Add entries from the BOM tab, selecting supplier and part then linking to any project or task. Usage status, quantities and engineering notes. Alert indicators for delayed parts and overdue linked tasks. Filter by status or task/project.
 - **👥 Team** — Role-based access. Add, edit and remove members. Password show/hide, strength meter, auto-generate and force-reset.
 - **🔔 Notifications** — In-app alerts for overdue tasks, upcoming deadlines and tasks blocked by overdue dependencies.
-- **💾 Backup & Restore** — Full JSON export/import with drag-and-drop restore.
 - **🔍 Global Search** — Search across tasks, projects, suppliers, parts, orders, BOM notes and team members.
 - **📊 Weekly Summary** — Role-filtered report. Copy as plain text or export as a standalone HTML file.
 - **📱 PWA** — Installable on mobile and desktop, offline-capable, with a "new version available" update banner.
@@ -37,13 +36,26 @@ Teams using Lattice can track tasks, manage suppliers and bill of materials, mon
 
 ---
 
-## Seeded Admin Account
-
-_Create your first admin account manually via the PocketBase admin UI — see [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)._
-
----
-
 ## Getting Started
+
+### With Docker (recommended)
+
+```bash
+git clone https://github.com/Azzbo77/lattice-pm.git
+cd lattice-pm
+
+# Development
+docker compose up --build
+
+# Production (Pi or server)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+App runs at `http://localhost:8080`, PocketBase admin at `http://localhost:8090/_/`.
+
+Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to configure collections and create your first user.
+
+### Without Docker
 
 ```bash
 git clone https://github.com/Azzbo77/lattice-pm.git
@@ -57,36 +69,18 @@ Create `.env.development` in the project root:
 REACT_APP_PB_URL=http://127.0.0.1:8090
 ```
 
-Run PocketBase locally, create the collections (see [DEPLOYMENT.md](DEPLOYMENT.md)), then seed the initial admin account:
-
-```bash
-npx ts-node --project scripts/tsconfig.json scripts/seed.ts \
-  --url http://127.0.0.1:8090 \
-  --email your@pocketbase-admin.email \
-  --password yourPBadminpassword
-```
-
-**Or with Docker (recommended):**
-
-```bash
-docker compose up --build
-```
-
-App runs at http://localhost:3000, PocketBase admin at http://localhost:8090/_/.
-
-**Or without Docker:**
+Download and run PocketBase separately (see [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)), then:
 
 ```bash
 npm start        # Development — http://localhost:3000
 npm run build    # Production build → /build
 ```
 
-Log in with `admin@lattice.dev` / `changeme123` and add your real account from the Team tab.
+### Further reading
 
-For detailed setup guides see:
-- [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — step-by-step collection and user setup
-- [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md) — expose Lattice via your domain using Cloudflare Tunnel
+- [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — step-by-step collection, rules and first-user setup
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Docker, nginx and Pi deployment reference
+- [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md) — expose Lattice via your domain using Cloudflare Tunnel
 
 ---
 
@@ -94,11 +88,8 @@ For detailed setup guides see:
 
 ```
 ├── pb_migrations/
-│   └── 1_initial_schema.json  # PocketBase collection schemas + access rules
-│
-├── scripts/
-│   ├── seed.ts                # Creates initial admin account
-│   └── tsconfig.json          # ts-node config for scripts
+│   └── 1_initial_schema.json  # PocketBase collection schemas (reference only —
+│                              #   apply rules manually via the admin UI)
 │
 ├── public/
 │   ├── sw.js                  # Service worker — caching strategies
@@ -107,7 +98,7 @@ For detailed setup guides see:
 │
 └── src/
     ├── App.tsx                # Layout, tab routing, modal rendering
-    ├── index.tsx
+    ├── index.tsx              # App entry point + crypto.randomUUID polyfill
     ├── types.ts               # All domain interfaces and types
     │
     ├── lib/
@@ -115,7 +106,7 @@ For detailed setup guides see:
     │   └── db.ts              # Typed data layer — all CRUD + realtime subscriptions
     │
     ├── context/
-    │   └── AppContext.tsx     # Single source of truth — async state + handlers
+    │   └── AppContext.tsx     # Single source of truth — async state + all handlers
     │
     ├── hooks/
     │   ├── useSearch.ts       # Global search engine
@@ -130,7 +121,7 @@ For detailed setup guides see:
     │   └── seeds.ts           # ROLES, colour maps, BOM status meta
     │
     ├── components/
-    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, Avatar, etc.
+    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, ConfirmModal, etc.
     │   ├── Sidebar.tsx
     │   ├── SearchBar.tsx
     │   └── NotificationBell.tsx
@@ -139,9 +130,8 @@ For detailed setup guides see:
     │   ├── TaskModal.tsx
     │   ├── ProjectModal.tsx
     │   ├── SupplierModals.tsx
-    │   ├── BomModal.tsx
+    │   ├── BomModal.tsx       # Add + edit BOM entries; supplier/part selectors for new entries
     │   ├── MemberModal.tsx
-    │   ├── BackupModal.tsx
     │   ├── WeeklySummaryModal.tsx
     │   └── GuidePanel.tsx     # Onboarding guide + APP_VERSION constant
     │
@@ -160,13 +150,20 @@ For detailed setup guides see:
 
 ## Changelog
 
-### v4.2 — Backend & Access Control
-- Role system updated: `admin`, `manager`, `office`, `shopfloor` (replaces `worker`)
-- PocketBase migration rules aligned to new roles — explicit allow-lists per collection
-- `canSuppliers` permission: admin and manager only (Office removed from supplier/BOM editing)
-- Demo account quick-fill removed from login screen; seed script now creates a single bootstrap admin account
-- `useStorage`, `useSession` and `password.ts` removed from active use (PocketBase handles auth)
-- Seed script and docs cleaned of personal identifiers and stale role references
+### v4.2 — Backend, Access Control & Bug Fixes
+- PocketBase integration complete — all CRUD operations, realtime subscriptions, session via `pb.authStore`
+- Backup/restore removed — PocketBase handles backups natively via Settings → Backups
+- All collection names corrected to `_pb_users_auth_` throughout `db.ts`
+- Fake client-side IDs (`u${Date.now()}`) replaced with empty string — PocketBase now generates real IDs on create
+- `assigneeId` sends `null` instead of `""` so PocketBase relation fields accept it correctly
+- Cascade deletes: removing a project first deletes its tasks; removing a supplier first deletes its BOM entries, orders and parts
+- BOM tab: Add Entry button added (was missing); BomModal rewritten to handle both new and edit flows with supplier/part dropdowns
+- BOM rows: Delete button added with consistent ConfirmModal (matching rest of app)
+- `crypto.randomUUID` polyfilled in `index.tsx` for environments that don't support it natively
+- SVG Gantt dependency arrows fixed — `viewBox` added so coordinates render correctly without `%` in path `d` attributes
+- `useSession`, `useStorage`, `password.ts` removed (unused since PocketBase handles auth)
+- Docker: volume mount corrected to `/pb_data`; PocketBase upgraded to `0.23.4` to match SDK `0.26.x`
+- POCKETBASE_SETUP.md rewritten to reflect actual working setup process including superuser install URL, API rules for `_pb_users_auth_`, and delete rule required for team member removal
 
 ### v4.1 — PocketBase Integration
 - `src/lib/pb.ts` — PocketBase client singleton; reads `REACT_APP_PB_URL`
@@ -177,43 +174,42 @@ For detailed setup guides see:
 
 ### v4.0 — PocketBase Schema & Deployment Docs
 - `pb_migrations/1_initial_schema.json` — schema for all 6 collections with field types, relation constraints and row-level security rules
-- `DEPLOYMENT.md` — full setup guide for Windows dev and Pi production: PocketBase, nginx with SSE support, deploy workflow, troubleshooting
+- `DEPLOYMENT.md` — full setup guide: PocketBase, nginx with SSE support, Docker Compose, Pi deployment
 - Self-referencing `tasks.dependsOn` relation; cascade deletes from suppliers to parts/orders/bom
 
 ### v3.x — Polish & PWA
 | Version | What changed |
 |---------|-------------|
-| 3.7 | PWA: service worker with three caching strategies, installable icons, update banner, `serviceWorkerRegistration.ts` |
-| 3.6 | Onboarding guide panel (9-step workflow + quick-reference mode), `APP_VERSION` badge |
-| 3.5 | Session persistence — 8-hour TTL, `sessionReady` flag prevents login flash, auto-logout on expiry |
-| 3.4 | bcryptjs password hashing, CRACO Webpack 5 config, startup migration for legacy plain-text passwords |
-| 3.3 | WCAG AA accessibility — ARIA labels/roles/states, keyboard navigation, focus management, reduced motion |
-| 3.2 | React.memo on all heavy list components, `useMemo` audit across all pages |
-| 3.1 | Table column alignment audit — text left, data/badges/actions centred, applied consistently |
-| 3.0 | Theme centralisation — `theme.ts` design tokens, 960+ magic values replaced across 19 files |
+| 3.7 | PWA: service worker, installable icons, update banner |
+| 3.6 | Onboarding guide panel (9-step workflow + quick-reference mode) |
+| 3.5 | Session persistence — 8-hour TTL, `sessionReady` flag, auto-logout |
+| 3.4 | bcryptjs password hashing, CRACO Webpack 5 config |
+| 3.3 | WCAG AA accessibility — ARIA, keyboard navigation, focus management |
+| 3.2 | React.memo + `useMemo` performance pass |
+| 3.1 | Table column alignment audit |
+| 3.0 | Theme centralisation — `theme.ts` design tokens |
 
 ### v2.x — Core Workflow
 | Version | What changed |
 |---------|-------------|
-| 2.9 | BOM ↔ Task bridging — `projectId`/`taskId` links, alert indicators, task/project filter |
+| 2.9 | BOM ↔ Task bridging — `projectId`/`taskId` links, alert indicators |
 | 2.8 | Task dependencies — `dependsOn` multi-select, Gantt SVG arrows, blocked indicators |
-| 2.7 | Suppliers mini-epic — collapsible cards, archive/delete, page-level filters |
-| 2.6 | Full TypeScript migration — `types.ts`, all 29 files, strict mode |
-| 2.5 | Dashboard UI polish — dropdown contrast, colour-coded selects |
-| 2.4 | Mobile/responsive — bottom tab bar, sheet modals, horizontal-scroll tables |
-| 2.3 | Last-updated timestamps — `updatedAt`/`updatedBy`, UpdatedBadge, Recent Activity feed |
-| 2.2 | Weekly Summary generator — role-filtered, copy text + HTML export |
-| 2.1 | Project-focused Gantt — pill selector, show-all overlay, date axis, click-to-edit |
-| 2.0 | Full modular refactor — context, hooks, utils, pages, modals (26 files) |
+| 2.7 | Suppliers — collapsible cards, archive/delete, page-level filters |
+| 2.6 | Full TypeScript migration — strict mode across all files |
+| 2.5 | Dashboard UI polish |
+| 2.4 | Mobile/responsive — bottom tab bar, sheet modals |
+| 2.3 | Timestamps — `updatedAt`/`updatedBy`, Recent Activity feed |
+| 2.2 | Weekly Summary — role-filtered, copy text + HTML export |
+| 2.1 | Project-focused Gantt — pill selector, date axis, click-to-edit |
+| 2.0 | Full modular refactor — context, hooks, utils, pages, modals |
 
 ### v1.x — Foundation
 | Version | What changed |
 |---------|-------------|
-| 1.5 | Backup/restore with storage meter and drag-and-drop import |
-| 1.4 | Global search across all entities |
+| 1.4 | Global search |
 | 1.3 | CSV export for BOM and Tasks |
-| 1.2 | Dashboard home screen |
-| 1.1 | Project management, password UX improvements |
+| 1.2 | Dashboard |
+| 1.1 | Projects, password UX |
 | 1.0 | Initial release |
 
 ---
@@ -221,50 +217,50 @@ For detailed setup guides see:
 ## Roadmap
 
 ### Phases 1–4 *(complete)*
-Timestamps, Weekly Summary, mobile layout, TypeScript, theme centralisation, performance, accessibility, password hashing, session management, PWA, onboarding guide, PocketBase backend, role system.
+Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme centralisation, performance, accessibility, PWA, onboarding guide, PocketBase backend, role system, Docker deployment, realtime subscriptions, BOM entry creation, cascade deletes, bug fixes.
 
-### Phase 5 — Production Polish *(future)*
-- Reporting — exportable PDF/Excel reports, project burn-down charts, supplier performance dashboard
-- Security audit — input sanitisation, role enforcement review, session expiry
-- Dependency & Gantt enhancements — critical path highlighting, milestone markers, drag-to-reschedule bars
+### Quick Wins *(low effort, high value)*
+- **Pagination / infinite scroll** — Tasks, BOM and Orders lists will degrade at scale; PocketBase has built-in pagination support
+- **Split AppContext** — `AppContext.tsx` is large; break into `AuthContext`, `TasksContext`, `SuppliersContext` for easier maintenance and testing
+- **Vite migration** — mechanical swap from CRA; significantly faster dev builds and HMR
+- **Vitest + React Testing Library** — add tests for `db.ts` CRUD functions and at least one page component
+- **PocketBase API docs** — PocketBase auto-generates OpenAPI docs; add usage examples to DEPLOYMENT.md so others can build integrations
+- **Demo video** — a short Loom walkthrough pinned to the README would help adoption significantly
+
+### Phase 5 — Production Hardening
+1. **Reporting & exports** — PDF/HTML dashboards, burn-down charts, supplier performance metrics
+2. **Mobile polish** — improved touch support and layout for shopfloor use on tablets/phones
+3. **Dependency auto-scheduling** — critical-path calculation with basic scheduling hints on the Gantt
+4. **Inventory lite** — stock levels, minimum reorder quantity alerts
+5. **Calendar & digest** — iCal export and email digests via PocketBase hooks or a simple cron job
+6. **CSV/Trello/Jira import** — significant adoption driver; import existing projects without manual re-entry
+7. **Security hardening** — CSP headers via nginx, proper security header audit, optional 2FA via PocketBase extensions
+8. **Multi-project portfolio view** — cross-project Gantt and resource view
+9. **PocketBase exit ramp** — document migration path if the project outgrows PocketBase limits
 
 ---
 
 ## Screenshots
 
 ### Dashboard
-Daily briefing with stat cards, due-this-week tasks, delivery alerts, project progress and team workload at a glance.
-
 ![Dashboard](public/screenshots/dashboard.png)
 
 ### Timeline
-Project-focused Gantt with pill selector, status breakdown, dependency arrows and click-to-edit task bars.
-
 ![Timeline](public/screenshots/timeline.png)
 
 ### Tasks
-Create, assign and track tasks with status, priority, dates, project tagging, dependency linking and CSV export.
-
 ![Tasks](public/screenshots/tasks.png)
 
 ### Projects
-Colour-coded project cards with progress bars and per-project task breakdown.
-
 ![Projects](public/screenshots/projects.png)
 
 ### Suppliers
-Collapsible supplier cards with parts catalogue and order tracking.
-
 ![Suppliers](public/screenshots/suppliers.png)
 
 ### BOM
-Bill of Materials linked to tasks and projects, with usage status, alert indicators and CSV export.
-
 ![BOM](public/screenshots/bom.png)
 
 ### Team
-Role-based access control. Add, edit or remove team members with password reset options.
-
 ![Team](public/screenshots/team.png)
 
 ---
@@ -272,7 +268,7 @@ Role-based access control. Add, edit or remove team members with password reset 
 ## Built With
 
 - [React 18](https://react.dev/) + Create React App
-- [PocketBase](https://pocketbase.io/) — self-hosted backend, auth and realtime
+- [PocketBase 0.23](https://pocketbase.io/) — self-hosted backend, auth and realtime
 - TypeScript 4.9.5
 - Google Fonts — Playfair Display + IBM Plex Sans
 - [Docker](https://www.docker.com/) + nginx — containerised deployment

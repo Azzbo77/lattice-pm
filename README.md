@@ -155,6 +155,13 @@ npm run build    # Production build → /dist
 
 ## Changelog
 
+### v4.5 — Mobile Polish & Onboarding
+- Mobile tab bar reordered — Noticeboard promoted to primary 5 tabs (Dashboard, Tasks, Noticeboard, Timeline, Suppliers); BOM, Projects and Team moved to "More" sheet so shopfloor users on phones see the most relevant tabs immediately
+- BOM page: full card layout on mobile replacing the wide horizontal-scroll table — shows part number, description, supplier, qty, status, linked task/project, notes and alert indicators in a readable stacked format
+- Suppliers page: sub-table min-widths reduced on mobile so parts and orders tables require less horizontal scrolling
+- Onboarding Guide updated to v4.4 — Noticeboard step added (step 7 of 10) covering posting, markdown, pinning, expiry and @mentions; backup step rewritten to describe PocketBase Settings → Backups instead of the removed localStorage backup; "Worker" renamed to "Shopfloor" throughout to match actual role names
+- `APP_VERSION` bumped to `v4.5` in UI
+
 ### v4.4 — Noticeboard & @Mentions
 - New **Noticeboard** page — pinned announcements section + chronological feed
 - Markdown support in post body: `**bold**`, `*italic*`, `[links](url)`, `- bullet lists`, with live preview toggle

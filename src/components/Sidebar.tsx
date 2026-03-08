@@ -8,14 +8,16 @@ import { bg, clr, font, radius, space } from "../constants/theme";
 import { APP_VERSION } from "../modals/GuidePanel";
 
 const TABS = [
-  { id: "dashboard", icon: "🏠", label: "Dashboard" },
-  { id: "gantt",     icon: "📅", label: "Timeline"  },
-  { id: "tasks",     icon: "✅", label: "Tasks"      },
-  { id: "projects",  icon: "🗂️", label: "Projects"  },
-  { id: "suppliers", icon: "📦", label: "Suppliers"  },
-  { id: "bom",       icon: "🔩", label: "BOM"        },
-  { id: "team",        icon: "👥", label: "Team"        },
-  { id: "noticeboard", icon: "📋", label: "Noticeboard" },
+  // Primary 5 — visible in mobile bottom bar
+  { id: "dashboard",   icon: "🏠", label: "Dashboard"   },
+  { id: "tasks",       icon: "✅", label: "Tasks"        },
+  { id: "noticeboard", icon: "📋", label: "Noticeboard"  },
+  { id: "gantt",       icon: "📅", label: "Timeline"     },
+  { id: "suppliers",   icon: "📦", label: "Suppliers"    },
+  // Secondary — in "More" sheet
+  { id: "bom",         icon: "🔩", label: "BOM"          },
+  { id: "projects",    icon: "🗂️", label: "Projects"    },
+  { id: "team",        icon: "👥", label: "Team"         },
 ];
 
 // ── Mobile bottom tab bar ─────────────────────────────────────────────────────

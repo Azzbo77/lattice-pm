@@ -48,7 +48,7 @@ Open http://127.0.0.1:8090/_/ and create your superuser account. Then import the
 
 **Settings → Import collections → Load from JSON file** → select `pb_migrations/1_initial_schema.json`
 
-This creates all 7 collections with the correct fields and API rules in one step. See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for the full walkthrough.
+This creates all 8 collections with the correct fields and API rules in one step. See [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) for the full walkthrough.
 
 ### 3 — Environment files
 
@@ -179,7 +179,7 @@ sudo nginx -t && sudo systemctl restart nginx
 On Windows:
 ```powershell
 npm run build
-scp -r build/* user@PI_IP:/var/www/lattice-pm/
+scp -r dist/* user@PI_IP:/var/www/lattice-pm/
 ```
 
 ### 5 — Create first Lattice user
@@ -195,7 +195,7 @@ When you deploy a new build:
 ```powershell
 # Windows — build and push
 npm run build
-scp -r build/* user@PI_IP:/var/www/lattice-pm/
+scp -r dist/* user@PI_IP:/var/www/lattice-pm/
 ```
 
 PocketBase data is untouched. Users will see the "New version available → Refresh" banner automatically.

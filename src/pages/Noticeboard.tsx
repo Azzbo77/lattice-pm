@@ -47,6 +47,23 @@ function renderMarkdown(text: string): JSX.Element {
   return <>{elements}</>;
 }
 
+function highlightMentions(text: string): (JSX.Element | string)[] {
+  const parts: (JSX.Element | string)[] = [];
+  const re = /@([\w][\w ]+)/g;
+  let last = 0; let m: RegExpExecArray | null; let i = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    parts.push(
+      <span key={i++} style={{ color: clr.cyan, fontWeight: 600, background: "#00d4ff12", borderRadius: "3px", padding: "0 3px" }}>
+        @{m[1]}
+      </span>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts.length ? parts : [text];
+}
+
 function inlineMarkdown(text: string): (JSX.Element | string)[] {
   // Process links first, then bold, then italic
   const parts: (JSX.Element | string)[] = [];
@@ -66,8 +83,9 @@ function inlineMarkdown(text: string): (JSX.Element | string)[] {
     }
     last = m.index + m[0].length;
   }
-  if (last < text.length) parts.push(text.slice(last));
-  return parts;
+  if (last < text.length) parts.push(...highlightMentions(text.slice(last)));
+  // Also highlight mentions in plain string segments already added
+  return parts.map(p => typeof p === "string" ? highlightMentions(p) : p).flat();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -220,10 +238,12 @@ const PostForm = ({
   initial,
   onSave,
   onCancel,
+  userNames,
 }: {
   initial?: Partial<Announcement>;
   onSave: (data: typeof EMPTY_FORM) => void;
   onCancel: () => void;
+  userNames: string[];
 }) => {
   const [form, setForm] = useState({
     title:   initial?.title   ?? "",
@@ -231,7 +251,8 @@ const PostForm = ({
     pinned:  initial?.pinned  ?? false,
     expires: initial?.expires ?? "",
   });
-  const [preview, setPreview] = useState(false);
+  const [preview,     setPreview]     = useState(false);
+  const [mentionMenu, setMentionMenu] = useState<{ query: string; pos: number } | null>(null);
   const isEditing = !!initial?.id;
 
   const set = (k: keyof typeof form, v: string | boolean) =>
@@ -293,13 +314,80 @@ const PostForm = ({
             )}
           </div>
         ) : (
-          <textarea
-            value={form.body}
-            onChange={e => set("body", e.target.value)}
-            placeholder={"Write your message here…\n\nSupports **bold**, *italic*, [links](https://…), and - bullet lists"}
-            rows={6}
-            style={{ ...inputStyle, fontSize: font.md, resize: "vertical", minHeight: "120px", fontFamily: font.mono }}
-          />
+          <div style={{ position: "relative" }}>
+            <textarea
+              value={form.body}
+              onChange={e => {
+                const val = e.target.value;
+                set("body", val);
+                // Detect @mention trigger
+                const cursor = e.target.selectionStart ?? val.length;
+                const textBefore = val.slice(0, cursor);
+                const match = textBefore.match(/@(\w[\w ]{0,20})$/);
+                if (match) {
+                  setMentionMenu({ query: match[1], pos: cursor - match[0].length });
+                } else {
+                  setMentionMenu(null);
+                }
+              }}
+              onKeyDown={e => {
+                if (mentionMenu && (e.key === "Escape")) {
+                  setMentionMenu(null);
+                  e.preventDefault();
+                }
+              }}
+              placeholder={"Write your message here…\n\nType @ to mention a team member. Supports **bold**, *italic*, [links](https://…), - bullet lists"}
+              rows={6}
+              style={{ ...inputStyle, fontSize: font.md, resize: "vertical", minHeight: "120px", fontFamily: font.mono }}
+            />
+            {/* @mention autocomplete dropdown */}
+            {mentionMenu && (() => {
+              const q = mentionMenu.query.toLowerCase();
+              const matches = userNames.filter(n => n.toLowerCase().startsWith(q) || n.toLowerCase().includes(q));
+              if (matches.length === 0) return null;
+              return (
+                <div style={{
+                  position: "absolute", bottom: "calc(100% + 4px)", left: 0,
+                  background: "#0f0f1e", border: "1px solid #252540",
+                  borderRadius: radius.lg, boxShadow: "0 8px 24px rgba(0,0,0,0.7)",
+                  zIndex: 300, minWidth: "180px", maxHeight: "180px", overflowY: "auto",
+                }}>
+                  {matches.map(name => (
+                    <button
+                      key={name}
+                      onMouseDown={e => {
+                        e.preventDefault();
+                        // Replace the partial @mention with the full name
+                        const before = form.body.slice(0, mentionMenu.pos);
+                        const after  = form.body.slice(mentionMenu.pos + mentionMenu.query.length + 1);
+                        set("body", `${before}@${name} ${after}`);
+                        setMentionMenu(null);
+                      }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: space[3],
+                        width: "100%", padding: `${space[3]} ${space[5]}`,
+                        background: "transparent", border: "none",
+                        color: clr.textSecondary, fontSize: font.md,
+                        cursor: "pointer", textAlign: "left",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#1a1a35")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <span style={{
+                        width: "22px", height: "22px", borderRadius: "50%",
+                        background: "linear-gradient(135deg,#00d4ff30,#ff6b3530)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: font.xs, color: clr.textMuted, flexShrink: 0,
+                      }}>
+                        {name[0].toUpperCase()}
+                      </span>
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         )}
       </div>
 
@@ -410,7 +498,12 @@ const ConfirmDelete = ({ onConfirm, onCancel }: { onConfirm: () => void; onCance
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export const Noticeboard = () => {
-  const { announcements, currentUser, saveAnnouncement, deleteAnnouncement } = useApp();
+  const { announcements, currentUser, users, saveAnnouncement, deleteAnnouncement } = useApp();
+
+  const userNames = users
+    .filter(u => u.id !== currentUser?.id)
+    .map(u => u.name)
+    .sort();
 
   const [showForm,   setShowForm]   = useState(false);
   const [editTarget, setEditTarget] = useState<Announcement | null>(null);
@@ -493,6 +586,7 @@ export const Noticeboard = () => {
           initial={editTarget ?? undefined}
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditTarget(null); }}
+          userNames={userNames}
         />
       )}
 

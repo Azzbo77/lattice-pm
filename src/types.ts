@@ -91,8 +91,9 @@ export interface BomRow extends BomEntry {
 export interface Notification {
   id: string;
   text: string;
-  type: "overdue" | "soon";
+  type: "overdue" | "soon" | "mention";
   taskId?: string;
+  announcementId?: string;
 }
 
 export interface SearchResult {

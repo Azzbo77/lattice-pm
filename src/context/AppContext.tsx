@@ -245,7 +245,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ? tasks.filter(t => t.assigneeId === currentUser!.id)
       : tasks;
 
-    return myTasks.reduce<Notification[]>((acc, t) => {
+    const taskNotifs = myTasks.reduce<Notification[]>((acc, t) => {
       if (t.status === "done" || !t.endDate) return acc;
 
       if (t.endDate < today) {
@@ -255,8 +255,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return acc;
-    }, []).filter((n) => !dismissedIds.includes(n.id));
-  }, [tasks, currentUser, dismissedIds]);
+    }, []);
+
+    // ── Mention notifications — scan live announcements for @currentUser.name
+    const mentionNotifs: Notification[] = [];
+    if (currentUser?.name) {
+      const mention = `@${currentUser.name}`;
+      const today2 = todayStr();
+      announcements
+        .filter(a => !a.expires || a.expires >= today2)
+        .forEach(a => {
+          if (a.body.includes(mention) || a.title.includes(mention)) {
+            mentionNotifs.push({
+              id:             `mn-${a.id}`,
+              text:           `You were mentioned in "${a.title}"`,
+              type:           "mention",
+              announcementId: a.id,
+            });
+          }
+        });
+    }
+
+    return [...taskNotifs, ...mentionNotifs].filter((n) => !dismissedIds.includes(n.id));
+  }, [tasks, announcements, currentUser, dismissedIds]);
 
   const dismissNotification     = useCallback((id: string) => setDismissedIds(p => [...p, id]), []);
   const dismissAllNotifications = useCallback(() => setDismissedIds(notifications.map(n => n.id)), [notifications]);

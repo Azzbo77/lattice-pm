@@ -2,7 +2,7 @@
 
 A self-hosted, browser-based project management tool built for small engineering and operations teams. Written in TypeScript and React, it runs as a Docker container and connects to a PocketBase backend — no cloud subscription, no per-seat fees.
 
-Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.
+Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, post team announcements, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.
 
 **The problem it solves:** most project management tools are either too generic (no BOM, no supplier tracking) or too expensive and complex for a small team. Lattice is purpose-built for environments where tasks, parts, and delivery dates are all interconnected.
 
@@ -17,7 +17,8 @@ Teams using Lattice can track tasks, manage suppliers and bill of materials, mon
 - **📦 Suppliers & Orders** — Collapsible supplier cards with parts catalogue and order tracking. Archive/delete suppliers. Filter by Active / Archived / Overdue.
 - **🔩 BOM** — Bill of Materials linked to tasks and projects. Add entries from the BOM tab, selecting supplier and part then linking to any project or task. Usage status, quantities and engineering notes. Alert indicators for delayed parts and overdue linked tasks. Filter by status or task/project.
 - **👥 Team** — Role-based access. Add, edit and remove members. Password show/hide, strength meter, auto-generate and force-reset.
-- **🔔 Notifications** — In-app alerts for overdue tasks, upcoming deadlines and tasks blocked by overdue dependencies.
+- **📋 Noticeboard** — Team announcements with basic markdown (bold, italic, links, lists). Pin important posts to the top, set optional expiry dates, and tag teammates with `@Name` — tagged users are notified in the bell.
+- **🔔 Notifications** — In-app alerts for overdue tasks, upcoming deadlines, tasks blocked by overdue dependencies, and `@mention` notifications from the Noticeboard.
 - **🔍 Global Search** — Search across tasks, projects, suppliers, parts, orders, BOM notes and team members.
 - **📊 Weekly Summary** — Role-filtered report. Copy as plain text or export as a standalone HTML file.
 - **📱 PWA** — Installable on mobile and desktop, offline-capable, with a "new version available" update banner.
@@ -29,10 +30,12 @@ Teams using Lattice can track tasks, manage suppliers and bill of materials, mon
 
 | Role | Access |
 |------|--------|
-| **Admin** | Full access — manage users, projects, tasks, suppliers, BOM |
+| **Admin** | Full access — manage users, projects, tasks, suppliers, BOM, announcements |
 | **Manager** | Manage tasks, suppliers, parts, orders and BOM — cannot manage users |
 | **Office** | Manage tasks and view all data — no supplier or BOM editing |
 | **Shopfloor** | View and update own assigned tasks only |
+
+All roles can read and post announcements on the Noticeboard.
 
 ---
 
@@ -73,7 +76,7 @@ Download and run PocketBase separately (see [POCKETBASE_SETUP.md](POCKETBASE_SET
 
 ```bash
 npm start        # Development — http://localhost:3000
-npm run build    # Production build → /build
+npm run build    # Production build → /dist
 ```
 
 ### Further reading
@@ -88,13 +91,14 @@ npm run build    # Production build → /build
 
 ```
 ├── pb_migrations/
-│   └── 1_initial_schema.json  # All 7 collections, fields and API rules —
+│   └── 1_initial_schema.json  # All 8 collections, fields and API rules —
 │                              #   import via Settings → Import collections
 │
 ├── public/
 │   ├── sw.js                  # Service worker — caching strategies
-│   ├── manifest.json          # PWA manifest
-│   └── index.html
+│   └── manifest.json          # PWA manifest
+│
+├── index.html                 # App entry point (Vite — lives at project root)
 │
 └── src/
     ├── App.tsx                # Layout, tab routing, modal rendering
@@ -143,37 +147,57 @@ npm run build    # Production build → /build
         ├── ProjectsPage.tsx
         ├── SuppliersPage.tsx
         ├── BomPage.tsx
-        └── TeamPage.tsx
+        ├── TeamPage.tsx
+        └── Noticeboard.tsx    # Announcements feed with markdown, pins, expiry, @mentions
 ```
 
 ---
 
 ## Changelog
 
+### v4.4 — Noticeboard & @Mentions
+- New **Noticeboard** page — pinned announcements section + chronological feed
+- Markdown support in post body: `**bold**`, `*italic*`, `[links](url)`, `- bullet lists`, with live preview toggle
+- Pin posts to top with orange visual treatment; set optional expiry date (expired posts auto-hide)
+- `@mention` autocomplete — type `@` in the post body to get a dropdown of team members; selected names inserted inline
+- `@Name` renders highlighted in cyan in posted announcements
+- Tagged users receive a `📣 Mentions` notification in the bell, separate from task alerts; clicking navigates to the Noticeboard
+- All roles can read and post; edit/pin/delete controls visible on hover
+- Realtime subscription — new posts appear instantly across all open sessions
+- `announcements` collection added to PocketBase schema
+
+### v4.3 — Vite Migration
+- Migrated from Create React App + CRACO to **Vite 5**
+- Build output moved from `/build` to `/dist`
+- `index.html` moved to project root (Vite convention)
+- `REACT_APP_*` env vars renamed to `VITE_*`; `process.env` replaced with `import.meta.env`
+- `src/react-app-env.d.ts` replaced with `src/vite-env.d.ts`
+- `vite.config.ts` added; `craco.config.js` removed
+- Dockerfile and docker-compose files updated for new build output path and env var names
+- Significantly faster dev builds and HMR
+
 ### v4.2 — Backend, Access Control & Bug Fixes
 - PocketBase integration complete — all CRUD operations, realtime subscriptions, session via `pb.authStore`
 - Backup/restore removed — PocketBase handles backups natively via Settings → Backups
 - All collection names corrected to `_pb_users_auth_` throughout `db.ts`
-- Fake client-side IDs (`u${Date.now()}`) replaced with empty string — PocketBase now generates real IDs on create
+- Fake client-side IDs replaced with empty string — PocketBase now generates real IDs on create
 - `assigneeId` sends `null` instead of `""` so PocketBase relation fields accept it correctly
 - Cascade deletes: removing a project first deletes its tasks; removing a supplier first deletes its BOM entries, orders and parts
-- BOM tab: Add Entry button added (was missing); BomModal rewritten to handle both new and edit flows with supplier/part dropdowns
-- BOM rows: Delete button added with consistent ConfirmModal (matching rest of app)
+- BOM tab: Add Entry button added; BomModal rewritten to handle both new and edit flows
+- BOM rows: Delete button added with consistent ConfirmModal
 - `crypto.randomUUID` polyfilled in `index.tsx` for environments that don't support it natively
-- SVG Gantt dependency arrows fixed — `viewBox` added so coordinates render correctly without `%` in path `d` attributes
-- `useSession`, `useStorage`, `password.ts` removed (unused since PocketBase handles auth)
-- Docker: volume mount corrected to `/pb_data`; PocketBase upgraded to `0.23.4` to match SDK `0.26.x`
-- POCKETBASE_SETUP.md rewritten to reflect actual working setup process including superuser install URL, API rules for `_pb_users_auth_`, and delete rule required for team member removal
+- SVG Gantt dependency arrows fixed — `viewBox` added so coordinates render correctly
+- Docker: volume mount corrected to `/pb_data`; PocketBase upgraded to `0.23.4`
+- POCKETBASE_SETUP.md rewritten to reflect actual working setup process
 
 ### v4.1 — PocketBase Integration
 - `src/lib/pb.ts` — PocketBase client singleton; reads `VITE_PB_URL`
-- `src/lib/db.ts` — typed data layer: mapper functions for all 6 collections, CRUD for every entity, `subscribeToCollection` wrapper
-- `AppContext.tsx` — fully rewritten: async handlers, localStorage removed, `Promise.all` initial load, 7 realtime subscriptions, `loading` state, session via `pb.authStore`
+- `src/lib/db.ts` — typed data layer: mapper functions for all collections, CRUD for every entity, `subscribeToCollection` wrapper
+- `AppContext.tsx` — fully rewritten: async handlers, localStorage removed, `Promise.all` initial load, realtime subscriptions, `loading` state, session via `pb.authStore`
 - All modal/page call sites updated to `async/await`
-- Loading spinner shown while initial data fetch completes
 
 ### v4.0 — PocketBase Schema & Deployment Docs
-- `pb_migrations/1_initial_schema.json` — schema for all 7 collections with field types, relation constraints and API rules; import via Settings → Import collections
+- `pb_migrations/1_initial_schema.json` — schema for all collections with field types, relation constraints and API rules
 - `DEPLOYMENT.md` — full setup guide: PocketBase, nginx with SSE support, Docker Compose, Pi deployment
 - Self-referencing `tasks.dependsOn` relation; cascade deletes from suppliers to parts/orders/bom
 
@@ -217,12 +241,11 @@ npm run build    # Production build → /build
 ## Roadmap
 
 ### Phases 1–4 *(complete)*
-Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme centralisation, performance, accessibility, PWA, onboarding guide, PocketBase backend, role system, Docker deployment, realtime subscriptions, BOM entry creation, cascade deletes, bug fixes.
+Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme centralisation, performance, accessibility, PWA, onboarding guide, PocketBase backend, role system, Docker deployment, realtime subscriptions, BOM entry creation, cascade deletes, bug fixes, Vite migration, Noticeboard with @mentions.
 
 ### Quick Wins *(low effort, high value)*
 - **Pagination / infinite scroll** — Tasks, BOM and Orders lists will degrade at scale; PocketBase has built-in pagination support
 - **Split AppContext** — `AppContext.tsx` is large; break into `AuthContext`, `TasksContext`, `SuppliersContext` for easier maintenance and testing
-- **Vite migration** — mechanical swap from CRA; significantly faster dev builds and HMR
 - **Vitest + React Testing Library** — add tests for `db.ts` CRUD functions and at least one page component
 - **PocketBase API docs** — PocketBase auto-generates OpenAPI docs; add usage examples to DEPLOYMENT.md so others can build integrations
 - **Demo video** — a short Loom walkthrough pinned to the README would help adoption significantly
@@ -263,11 +286,14 @@ Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme central
 ### Team
 ![Team](public/screenshots/team.png)
 
+### Noticeboard
+![Noticeboard](public/screenshots/noticeboard.png)
+
 ---
 
 ## Built With
 
-- [React 18](https://react.dev/) + Create React App
+- [React 18](https://react.dev/) + [Vite 5](https://vitejs.dev/)
 - [PocketBase 0.23](https://pocketbase.io/) — self-hosted backend, auth and realtime
 - TypeScript 4.9.5
 - Google Fonts — Playfair Display + IBM Plex Sans

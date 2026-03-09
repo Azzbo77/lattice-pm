@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { bg, clr, font, radius, space } from "../constants/theme";
 
-export const APP_VERSION = "v4.8";
+export const APP_VERSION = "v4.9";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WORKFLOW — linear first-time setup path

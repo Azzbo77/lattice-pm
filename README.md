@@ -4,25 +4,23 @@ A self-hosted, browser-based project management tool built for small engineering
 
 Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, post team announcements, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.
 
-**The problem it solves:** most project management tools are either too generic (no BOM, no supplier tracking) or too expensive and complex for a small team. Lattice is purpose-built for environments where tasks, parts, and delivery dates are all interconnected.
-
 ---
 
 ## Features
 
 - **🏠 Dashboard** — Daily briefing: overdue tasks, delivery alerts, project progress and team workload. Clickable stat cards navigate to the relevant section.
-- **📅 Timeline (Gantt)** — Project-focused Gantt. Select any project to focus, toggle "show overlapping projects" to see other timelines dimmed behind it. Date axis auto-scales, click any bar to edit the task. SVG dependency arrows between linked tasks.
+- **📅 Timeline (Gantt)** — Project-focused Gantt with SVG dependency arrows. Select any project to focus, toggle overlapping projects, click any bar to edit.
 - **✅ Tasks** — Create, assign and track tasks with status, priority, dates, project tagging and dependency linking. Blocked indicators when prerequisites are incomplete. CSV export respects the active filter.
 - **🗂️ Projects** — Colour-coded projects with progress bars and per-project stats.
 - **📦 Suppliers & Orders** — Collapsible supplier cards with parts catalogue and order tracking. Archive/delete suppliers. Filter by Active / Archived / Overdue.
-- **🔩 BOM** — Bill of Materials linked to tasks and projects. Add entries from the BOM tab, selecting supplier and part then linking to any project or task. Usage status, quantities and engineering notes. Alert indicators for delayed parts and overdue linked tasks. Filter by status or task/project.
+- **🔩 BOM** — Bill of Materials linked to tasks and projects. Usage status, quantities, engineering notes, and alert indicators for delayed parts and overdue linked tasks.
 - **👥 Team** — Role-based access. Add, edit and remove members. Password show/hide, strength meter, auto-generate and force-reset.
-- **📋 Noticeboard** — Team announcements with basic markdown (bold, italic, links, lists). Pin important posts to the top, set optional expiry dates, and tag teammates with `@Name` — tagged users are notified in the bell.
-- **🔔 Notifications** — In-app alerts for overdue tasks, upcoming deadlines, tasks blocked by overdue dependencies, and `@mention` notifications from the Noticeboard.
+- **📋 Noticeboard** — Team announcements with markdown, pins, expiry dates and `@mention` notifications.
+- **🔔 Notifications** — In-app alerts for overdue tasks, upcoming deadlines, blocked dependencies and `@mentions`.
 - **🔍 Global Search** — Search across tasks, projects, suppliers, parts, orders, BOM notes and team members.
 - **📊 Weekly Summary** — Role-filtered report. Copy as plain text or export as a standalone HTML file.
-- **📱 PWA** — Installable on mobile and desktop, offline-capable, with a "new version available" update banner.
-- **❓ Onboarding Guide** — Slide-in guide covering all features in dependency order, with a quick-reference mode.
+- **📱 PWA** — Installable on mobile and desktop, offline-capable, with an update banner.
+- **❓ Onboarding Guide** — Slide-in guide covering all features in dependency order.
 
 ---
 
@@ -56,7 +54,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 App runs at `http://localhost:8080`, PocketBase admin at `http://localhost:8090/_/`.
 
-Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to create your superuser, import the bundled schema (`pb_migrations/1_initial_schema.json`), and create your first Lattice user.
+Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to import the bundled schema and create your first user.
 
 ### Without Docker
 
@@ -64,11 +62,6 @@ Follow **[POCKETBASE_SETUP.md](POCKETBASE_SETUP.md)** to create your superuser, 
 git clone https://github.com/Azzbo77/lattice-pm.git
 cd lattice-pm
 npm install
-```
-
-Copy `.env.local.example` to `.env.local`:
-
-```bash
 cp .env.local.example .env.local
 ```
 
@@ -81,9 +74,32 @@ npm run build    # Production build → /dist
 
 ### Further reading
 
-- [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — step-by-step collection, rules and first-user setup
+- [POCKETBASE_SETUP.md](POCKETBASE_SETUP.md) — collection setup, API rules and first-user guide
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Docker, nginx and Pi deployment reference
 - [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md) — expose Lattice via your domain using Cloudflare Tunnel
+
+---
+
+## Testing
+
+Tests use **Vitest** and **React Testing Library**. Vitest is configured in `vitest.config.ts` and is separate from the Vite build config so it does not affect production builds.
+
+```bash
+npm test                # Run all tests once
+npm run test:watch      # Watch mode — reruns on file save
+npm run test:coverage   # Coverage report → /coverage/index.html
+```
+
+### What's covered
+
+| Suite | Covers |
+|-------|--------|
+| `dateHelpers.test.ts` | All 7 date/time utility functions |
+| `csvExport.test.ts` | CSV formatting, comma/quote escaping, header row |
+| `password.test.ts` | `isHashed`, `hashPassword`, `verifyPassword`, `ensureHashed` |
+| `usePagination.test.ts` | Page navigation, boundary clamping, reset on filter change |
+| `useSearch.test.ts` | All result types, role scoping, email matching, case insensitivity |
+| `AppContext.test.tsx` | Context shape, role flag derivation, sub-context composition |
 
 ---
 
@@ -91,73 +107,73 @@ npm run build    # Production build → /dist
 
 ```
 ├── pb_migrations/
-│   └── 1_initial_schema.json  # All 8 collections, fields and API rules —
-│                              #   import via Settings → Import collections
+│   └── 1_initial_schema.json  # All 8 collections with fields and API rules
+│                              #   import via PocketBase Settings → Import collections
 │
 ├── public/
 │   ├── sw.js                  # Service worker — caching strategies
 │   ├── manifest.json          # PWA manifest
-│   ├── apple-touch-icon.png   # PWA icons
 │   ├── icon-192.png
 │   ├── icon-512.png
 │   └── screenshots/           # PWA store screenshots
 │
-├── index.html                 # App entry point (Vite — lives at project root)
+├── index.html                 # Vite app entry point (project root)
 │
 └── src/
-    ├── App.tsx                # Layout, tab routing, modal rendering
-    ├── index.tsx              # App entry point + crypto.randomUUID polyfill
+    ├── App.tsx                # Layout shell, tab routing, modal rendering, error boundaries
+    ├── index.tsx              # React root + crypto.randomUUID polyfill
     ├── types.ts               # All domain interfaces and types
     │
     ├── lib/
     │   ├── pb.ts              # PocketBase client singleton
-    │   └── db.ts              # Typed data layer — all CRUD + realtime subscriptions
+    │   └── db.ts              # Typed data layer — CRUD + realtime subscriptions
     │
     ├── context/
     │   ├── AppContext.tsx          # Thin composition layer — merges all sub-contexts,
     │   │                          #   exposes single useApp() hook (no logic lives here)
-    │   ├── AuthContext.tsx         # Session state, login/logout, password reset, role flags
-    │   ├── DataContext.tsx         # All data state, CRUD handlers, realtime subscriptions,
-    │   │                          #   derived bomRows/filteredBom
-    │   ├── UIContext.tsx           # Tab, filters, all modal state, all confirm dialogs
-    │   └── NotificationsContext.tsx# Task overdue/due-soon + @mention notifications
+    │   ├── AuthContext.tsx         # Session, login/logout, password reset, role flags
+    │   ├── DataContext.tsx         # Data state, all CRUD handlers, realtime subscriptions
+    │   ├── UIContext.tsx           # Tab, filters, modal state, confirm dialogs
+    │   ├── NotificationsContext.tsx# Task overdue/due-soon + @mention notifications
+    │   └── ToastContext.tsx        # Toast notification system — showToast(message, type)
     │
     ├── hooks/
     │   ├── useBreakpoint.ts   # Responsive breakpoint detection
-    │   ├── usePagination.ts   # Generic pagination — page/totalPages/pageItems, resets on filter change
-    │   ├── useSearch.ts       # Global search engine (tasks, projects, suppliers, parts, BOM, team)
+    │   ├── usePagination.ts   # Generic pagination — resets to page 1 on filter change
+    │   ├── useSearch.ts       # Global search — tasks, projects, suppliers, parts, BOM, team
     │   ├── useSession.ts      # Session persistence helpers
     │   └── useStorage.ts      # Local storage abstraction
     │
     ├── utils/
-    │   ├── csvExport.ts
-    │   ├── dateHelpers.ts
-    │   └── password.ts        # Password strength + bcrypt helpers
+    │   ├── csvExport.ts       # CSV string builder + browser download trigger
+    │   ├── dateHelpers.ts     # Date formatting, arithmetic, relative time
+    │   └── password.ts        # bcrypt hashing, strength checking, legacy fallback
     │
     ├── test/
     │   ├── setup.ts                # Vitest + jest-dom global setup
-    │   ├── dateHelpers.test.ts     # 7 describe blocks — all date/time utilities
-    │   ├── csvExport.test.ts       # CSV formatting + escape logic
-    │   ├── password.test.ts        # isHashed, hashPassword, verifyPassword, ensureHashed
-    │   ├── usePagination.test.ts   # Page navigation, clamping, reset on filter change
-    │   ├── useSearch.test.ts       # All result types, role scoping, case insensitivity
-    │   └── AppContext.test.tsx     # Login, logout data clear, role flags, mustSetPassword
+    │   ├── dateHelpers.test.ts
+    │   ├── csvExport.test.ts
+    │   ├── password.test.ts
+    │   ├── usePagination.test.ts
+    │   ├── useSearch.test.ts
+    │   └── AppContext.test.tsx
     │
     ├── constants/
     │   ├── theme.ts           # Design tokens — colours, spacing, typography, radii
     │   └── seeds.ts           # ROLES, colour maps, BOM status meta
     │
     ├── components/
-    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Overlay, ConfirmModal, Pager, etc.
-    │   ├── Sidebar.tsx        # Desktop nav + mobile bottom tab bar (primary 5 + More sheet)
+    │   ├── ui/index.tsx       # Shared primitives — Btn, TH, TD, Pager, ConfirmModal, etc.
+    │   ├── ErrorBoundary.tsx  # Catches render errors — full panel or inline strip
+    │   ├── Sidebar.tsx        # Desktop nav + mobile bottom tab bar + More sheet
     │   ├── SearchBar.tsx
-    │   └── NotificationBell.tsx # Task alerts + @mention notifications, grouped by type
+    │   └── NotificationBell.tsx
     │
     ├── modals/
     │   ├── TaskModal.tsx
     │   ├── ProjectModal.tsx
     │   ├── SupplierModals.tsx
-    │   ├── BomModal.tsx       # Add + edit BOM entries; supplier/part selectors for new entries
+    │   ├── BomModal.tsx
     │   ├── MemberModal.tsx
     │   ├── WeeklySummaryModal.tsx
     │   └── GuidePanel.tsx     # Onboarding guide + APP_VERSION constant
@@ -166,150 +182,83 @@ npm run build    # Production build → /dist
         ├── AuthScreens.tsx
         ├── DashboardPage.tsx
         ├── GanttPage.tsx
-        ├── TasksPage.tsx      # Mobile card layout + desktop table; paginated (25/page)
+        ├── TasksPage.tsx      # Mobile cards + desktop table, paginated 25/page
         ├── ProjectsPage.tsx
-        ├── SuppliersPage.tsx  # Mobile-aware sub-tables; paginated (10/page); supplier email field
-        ├── BomPage.tsx        # Mobile card layout + desktop table; paginated (20/page)
+        ├── SuppliersPage.tsx  # Paginated 10/page, supplier email field
+        ├── BomPage.tsx        # Mobile cards + desktop table, paginated 20/page
         ├── TeamPage.tsx
-        └── Noticeboard.tsx    # Announcements feed with markdown, pins, expiry, @mentions
+        └── Noticeboard.tsx
 ```
 
 ---
 
 ## Changelog
 
+### v4.9 — Error Handling & Resilience
+- `ErrorBoundary` component added — wraps page content (label adapts to current tab) and modals (inline strip) in `App.tsx`; a crash in one section no longer takes down the whole app
+- `ToastContext` added — lightweight toast notification system; `showToast(message, type)` available anywhere via `useToast()`; toasts auto-dismiss after 4 seconds, stack in the bottom-right corner
+- All CRUD operations in `DataContext` now have `try/catch` wired to `showToast` — users see feedback for every save and delete, and a clear error message if an operation fails
+- `alert()` calls removed from `removeMember` — 403 and unknown errors now surface as toasts
+- `ToastProvider` added as outermost wrapper in `AppContext` so the data layer can call `showToast` at any point
+- `APP_VERSION` bumped to `v4.9` in UI
+
 ### v4.8 — Mobile Polish
-- `TasksPage` — full mobile card layout added alongside desktop table; cards show title, project badge, priority, blocked/deps indicators, assignee, due date, status select, and edit/delete actions; no horizontal scroll on mobile
-- `DashboardPage` — task rows in Overdue, Due This Week and In Progress sections now wrap correctly on narrow screens instead of overflowing
-- `ProjectsPage` and `GanttPage` — already mobile-aware, no changes needed
-- `useSearch` — supplier search now matches on `email` field; result subtitle shows email if present
-- `APP_VERSION` bumped to `v4.8` in UI
+- `TasksPage` — full mobile card layout alongside desktop table; no horizontal scroll on mobile
+- `DashboardPage` — task rows in overdue/due-soon/in-progress sections wrap correctly on narrow screens
+- `useSearch` — supplier search now matches on `email` field
 
 ### v4.7 — Pagination
-- `usePagination` hook added — generic, resets to page 1 whenever the source list changes (filter/search applied)
-- `Pager` component added to shared UI — renders nothing when only one page; shows record range, prev/next, numbered page buttons with ellipsis; styled to match dark theme
-- `TasksPage` paginated — 25 per page, desktop and mobile layouts both paginated
-- `BomPage` paginated — 20 per page, desktop table and mobile cards both paginated
-- `SuppliersPage` paginated — 10 per page (supplier cards expand with parts/orders so fewer per page)
-- `seeds.ts` — `email: ""` added to sample supplier objects to match updated `Supplier` type
+- `usePagination` hook — generic, resets to page 1 when source list changes
+- `Pager` component — record range, prev/next, numbered buttons with ellipsis
+- Tasks paginated 25/page, BOM 20/page, Suppliers 10/page
 
 ### v4.6 — AppContext Refactor & Logout Fix
-- `AppContext.tsx` split into four focused contexts: `AuthContext` (session/login), `DataContext` (all CRUD + realtime), `UIContext` (tab/filter/modal state), `NotificationsContext` (task + mention alerts) — `AppContext` is now a thin composition layer; all existing `useApp()` calls unchanged
-- Fixed logout bug: switching users on the same session no longer briefly shows the previous user's data — all data state is explicitly cleared and `loading` reset to `true` on logout
-- `APP_VERSION` bumped to `v4.6` in UI
+- `AppContext` split into `AuthContext`, `DataContext`, `UIContext`, `NotificationsContext` — thin composition layer; all `useApp()` calls unchanged
+- Logout bug fixed — switching users no longer briefly flashes previous user's data
 
-### v4.5 — Mobile Polish & Onboarding
-- Mobile tab bar reordered — Noticeboard promoted to primary 5 tabs (Dashboard, Tasks, Noticeboard, Timeline, Suppliers); BOM, Projects and Team moved to "More" sheet so shopfloor users on phones see the most relevant tabs immediately
-- BOM page: full card layout on mobile replacing the wide horizontal-scroll table — shows part number, description, supplier, qty, status, linked task/project, notes and alert indicators in a readable stacked format
-- Suppliers page: sub-table min-widths reduced on mobile so parts and orders tables require less horizontal scrolling
-- Onboarding Guide updated to v4.5 — Noticeboard step added (step 7 of 10) covering posting, markdown, pinning, expiry and @mentions; backup step rewritten to describe PocketBase Settings → Backups instead of the removed localStorage backup; "Worker" renamed to "Shopfloor" throughout to match actual role names
-- `APP_VERSION` bumped to `v4.5` in UI
+### v4.5 — Mobile Tab Bar & Onboarding
+- Mobile tab bar reordered — Noticeboard promoted to primary 5; BOM, Projects, Team in More sheet
+- BOM mobile card layout; Suppliers sub-table min-width reduced
+- Onboarding Guide updated — Noticeboard step, PocketBase backup step, Shopfloor role rename
 
 ### v4.4 — Noticeboard & @Mentions
-- New **Noticeboard** page — pinned announcements section + chronological feed
-- Markdown support in post body: `**bold**`, `*italic*`, `[links](url)`, `- bullet lists`, with live preview toggle
-- Pin posts to top with orange visual treatment; set optional expiry date (expired posts auto-hide)
-- `@mention` autocomplete — type `@` in the post body to get a dropdown of team members; selected names inserted inline
-- `@Name` renders highlighted in cyan in posted announcements
-- Tagged users receive a `📣 Mentions` notification in the bell, separate from task alerts; clicking navigates to the Noticeboard
-- All roles can read and post; edit/pin/delete controls visible on hover
-- Realtime subscription — new posts appear instantly across all open sessions
-- `announcements` collection added to PocketBase schema
+- Noticeboard page — pinned section, chronological feed, markdown, expiry dates
+- `@mention` autocomplete with cyan highlighting; tagged users notified in bell
+- Realtime subscription — new posts appear instantly across all sessions
 
 ### v4.3 — Vite Migration
-- Migrated from Create React App + CRACO to **Vite 5**
-- Build output moved from `/build` to `/dist`
-- `index.html` moved to project root (Vite convention)
-- `REACT_APP_*` env vars renamed to `VITE_*`; `process.env` replaced with `import.meta.env`
-- `src/react-app-env.d.ts` replaced with `src/vite-env.d.ts`
-- `vite.config.ts` added; `craco.config.js` removed
-- Dockerfile and docker-compose files updated for new build output path and env var names
-- Significantly faster dev builds and HMR
+- CRA + CRACO replaced with Vite 5; build output `/build` → `/dist`; env vars `REACT_APP_*` → `VITE_*`
 
-### v4.2 — Backend, Access Control & Bug Fixes
-- PocketBase integration complete — all CRUD operations, realtime subscriptions, session via `pb.authStore`
-- Backup/restore removed — PocketBase handles backups natively via Settings → Backups
-- All collection names corrected to `_pb_users_auth_` throughout `db.ts`
-- Fake client-side IDs replaced with empty string — PocketBase now generates real IDs on create
-- `assigneeId` sends `null` instead of `""` so PocketBase relation fields accept it correctly
-- Cascade deletes: removing a project first deletes its tasks; removing a supplier first deletes its BOM entries, orders and parts
-- BOM tab: Add Entry button added; BomModal rewritten to handle both new and edit flows
-- BOM rows: Delete button added with consistent ConfirmModal
-- `crypto.randomUUID` polyfilled in `index.tsx` for environments that don't support it natively
-- SVG Gantt dependency arrows fixed — `viewBox` added so coordinates render correctly
-- Docker: volume mount corrected to `/pb_data`; PocketBase upgraded to `0.23.4`
-- POCKETBASE_SETUP.md rewritten to reflect actual working setup process
-
-### v4.1 — PocketBase Integration
-- `src/lib/pb.ts` — PocketBase client singleton; reads `VITE_PB_URL`
-- `src/lib/db.ts` — typed data layer: mapper functions for all collections, CRUD for every entity, `subscribeToCollection` wrapper
-- `AppContext.tsx` — fully rewritten: async handlers, localStorage removed, `Promise.all` initial load, realtime subscriptions, `loading` state, session via `pb.authStore`
-- All modal/page call sites updated to `async/await`
-
-### v4.0 — PocketBase Schema & Deployment Docs
-- `pb_migrations/1_initial_schema.json` — schema for all collections with field types, relation constraints and API rules
-- `DEPLOYMENT.md` — full setup guide: PocketBase, nginx with SSE support, Docker Compose, Pi deployment
-- Self-referencing `tasks.dependsOn` relation; cascade deletes from suppliers to parts/orders/bom
+### v4.0–4.2 — PocketBase Backend
+- Full PocketBase integration: typed data layer (`db.ts`), realtime subscriptions, session via `pb.authStore`
+- Schema exported to `pb_migrations/1_initial_schema.json`; cascade deletes; all collection/field bugs fixed
+- Deployment docs: `DEPLOYMENT.md`, `POCKETBASE_SETUP.md`, Docker + nginx + Pi setup
 
 ### v3.x — Polish & PWA
-| Version | What changed |
-|---------|-------------|
-| 3.7 | PWA: service worker, installable icons, update banner |
-| 3.6 | Onboarding guide panel (9-step workflow + quick-reference mode) |
-| 3.5 | Session persistence — 8-hour TTL, `sessionReady` flag, auto-logout |
-| 3.4 | bcryptjs password hashing, CRACO Webpack 5 config |
-| 3.3 | WCAG AA accessibility — ARIA, keyboard navigation, focus management |
-| 3.2 | React.memo + `useMemo` performance pass |
-| 3.1 | Table column alignment audit |
-| 3.0 | Theme centralisation — `theme.ts` design tokens |
+PWA (service worker, installable), onboarding guide, session persistence, bcrypt passwords, WCAG AA accessibility, React.memo performance pass, theme design tokens.
 
-### v2.x — Core Workflow
-| Version | What changed |
-|---------|-------------|
-| 2.9 | BOM ↔ Task bridging — `projectId`/`taskId` links, alert indicators |
-| 2.8 | Task dependencies — `dependsOn` multi-select, Gantt SVG arrows, blocked indicators |
-| 2.7 | Suppliers — collapsible cards, archive/delete, page-level filters |
-| 2.6 | Full TypeScript migration — strict mode across all files |
-| 2.5 | Dashboard UI polish |
-| 2.4 | Mobile/responsive — bottom tab bar, sheet modals |
-| 2.3 | Timestamps — `updatedAt`/`updatedBy`, Recent Activity feed |
-| 2.2 | Weekly Summary — role-filtered, copy text + HTML export |
-| 2.1 | Project-focused Gantt — pill selector, date axis, click-to-edit |
-| 2.0 | Full modular refactor — context, hooks, utils, pages, modals |
-
-### v1.x — Foundation
-| Version | What changed |
-|---------|-------------|
-| 1.4 | Global search |
-| 1.3 | CSV export for BOM and Tasks |
-| 1.2 | Dashboard |
-| 1.1 | Projects, password UX |
-| 1.0 | Initial release |
+### v1.x–2.x — Foundation
+BOM ↔ Task bridging, task dependencies + Gantt arrows, Suppliers, TypeScript strict mode, Dashboard, mobile layout, timestamps, Weekly Summary, global search, CSV export, modular refactor.
 
 ---
 
 ## Roadmap
 
-### Phases 1–4 *(complete)*
-Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme centralisation, performance, accessibility, PWA, onboarding guide, PocketBase backend, role system, Docker deployment, realtime subscriptions, BOM entry creation, cascade deletes, bug fixes, Vite migration, Noticeboard with @mentions.
+### ✅ Complete
+- Core feature set (Tasks, Projects, Suppliers, BOM, Team, Noticeboard, Gantt, Dashboard)
+- PocketBase backend, realtime subscriptions, Docker deployment
+- Mobile responsive layouts, PWA
+- AppContext refactor, pagination, error boundaries, toast notifications
+- Test coverage — Vitest + React Testing Library
 
-### Quick Wins *(low effort, high value)*
-- ✅ ~~**Pagination / infinite scroll**~~ — Tasks, BOM and Suppliers paginated (25/20/10 per page); `usePagination` hook + `Pager` component
-- ✅ ~~**Split AppContext**~~ — split into `AuthContext`, `DataContext`, `UIContext`, `NotificationsContext`; `AppContext` is now a thin composition layer
-- ✅ ~~**Vitest + React Testing Library**~~ — 5 test suites covering `dateHelpers`, `csvExport`, `password`, `usePagination`, `useSearch` and `AppContext` auth/logout flow
-- **PocketBase API docs** — PocketBase auto-generates OpenAPI docs; add usage examples to DEPLOYMENT.md so others can build integrations
-- **Demo video** — a short Loom walkthrough pinned to the README would help adoption significantly
-
-### Phase 5 — Production Hardening
-1. **Reporting & exports** — PDF/HTML dashboards, burn-down charts, supplier performance metrics
-2. ✅ ~~**Mobile polish**~~ — card layouts on Tasks and BOM, responsive Dashboard, Suppliers sub-table scaling
-3. **Dependency auto-scheduling** — critical-path calculation with basic scheduling hints on the Gantt
-4. **Inventory lite** — stock levels, minimum reorder quantity alerts
-5. **Calendar & digest** — iCal export and email digests via PocketBase hooks or a simple cron job
-6. **CSV/Trello/Jira import** — significant adoption driver; import existing projects without manual re-entry
-7. **Security hardening** — CSP headers via nginx, proper security header audit, optional 2FA via PocketBase extensions
-8. **Multi-project portfolio view** — cross-project Gantt and resource view
-9. **PocketBase exit ramp** — document migration path if the project outgrows PocketBase limits
+### Remaining
+- **Reporting & exports** — PDF/HTML dashboards, burn-down charts, supplier performance metrics
+- **Dependency auto-scheduling** — critical-path hints on the Gantt
+- **Inventory lite** — stock levels and minimum reorder quantity alerts
+- **CSV/Trello/Jira import** — import existing projects without manual re-entry
+- **Security hardening** — CSP headers via nginx, security header audit, optional 2FA
+- **Demo video** — Loom walkthrough pinned to the README
+- **Multi-project portfolio view** — cross-project Gantt and resource view
 
 ---
 

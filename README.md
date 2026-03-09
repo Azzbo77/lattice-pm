@@ -134,6 +134,15 @@ npm run build    # Production build → /dist
     │   ├── dateHelpers.ts
     │   └── password.ts        # Password strength + bcrypt helpers
     │
+    ├── test/
+    │   ├── setup.ts                # Vitest + jest-dom global setup
+    │   ├── dateHelpers.test.ts     # 7 describe blocks — all date/time utilities
+    │   ├── csvExport.test.ts       # CSV formatting + escape logic
+    │   ├── password.test.ts        # isHashed, hashPassword, verifyPassword, ensureHashed
+    │   ├── usePagination.test.ts   # Page navigation, clamping, reset on filter change
+    │   ├── useSearch.test.ts       # All result types, role scoping, case insensitivity
+    │   └── AppContext.test.tsx     # Login, logout data clear, role flags, mustSetPassword
+    │
     ├── constants/
     │   ├── theme.ts           # Design tokens — colours, spacing, typography, radii
     │   └── seeds.ts           # ROLES, colour maps, BOM status meta
@@ -287,7 +296,7 @@ Timestamps, Weekly Summary, mobile layout, TypeScript strict mode, theme central
 ### Quick Wins *(low effort, high value)*
 - ✅ ~~**Pagination / infinite scroll**~~ — Tasks, BOM and Suppliers paginated (25/20/10 per page); `usePagination` hook + `Pager` component
 - ✅ ~~**Split AppContext**~~ — split into `AuthContext`, `DataContext`, `UIContext`, `NotificationsContext`; `AppContext` is now a thin composition layer
-- **Vitest + React Testing Library** — add tests for `db.ts` CRUD functions and at least one page component
+- ✅ ~~**Vitest + React Testing Library**~~ — 5 test suites covering `dateHelpers`, `csvExport`, `password`, `usePagination`, `useSearch` and `AppContext` auth/logout flow
 - **PocketBase API docs** — PocketBase auto-generates OpenAPI docs; add usage examples to DEPLOYMENT.md so others can build integrations
 - **Demo video** — a short Loom walkthrough pinned to the README would help adoption significantly
 

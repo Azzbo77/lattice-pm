@@ -7,8 +7,8 @@ import { useState, useEffect, useMemo } from "react";
 export function usePagination<T>(items: T[], pageSize: number) {
   const [page, setPage] = useState(1);
 
-  // Reset to page 1 whenever items list changes (filter/search applied)
-  useEffect(() => { setPage(1); }, [items]);
+  // Reset to page 1 when list size changes (e.g. filter/search applied)
+  useEffect(() => { setPage(1); }, [items.length]);
 
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
 
@@ -17,9 +17,24 @@ export function usePagination<T>(items: T[], pageSize: number) {
     return items.slice(start, start + pageSize);
   }, [items, page, pageSize]);
 
-  const goTo  = (n: number) => setPage(Math.min(Math.max(1, n), totalPages));
-  const next  = () => goTo(page + 1);
-  const prev  = () => goTo(page - 1);
+  // Use functional state updates to avoid stale closure issues
+  const goTo = (n: number) => {
+    setPage(p => {
+      const current = Math.max(1, Math.ceil(items.length / pageSize));
+      return Math.min(Math.max(1, n), current);
+    });
+  };
+
+  const next = () => {
+    setPage(p => {
+      const current = Math.max(1, Math.ceil(items.length / pageSize));
+      return Math.min(p + 1, current);
+    });
+  };
+
+  const prev = () => {
+    setPage(p => Math.max(1, p - 1));
+  };
 
   return { page, totalPages, pageItems, goTo, next, prev };
 }

@@ -37,7 +37,7 @@ All collections, fields and API rules are bundled in `pb_migrations/1_initial_sc
 3. Review the preview — you should see 8 collections: `users`, `projects`, `tasks`, `suppliers`, `parts`, `orders`, `bom`, `announcements`
 4. Click **Confirm and import**
 
-> ⚠ The `users` collection includes the `role` field (Select: `admin`, `manager`, `office`, `shopfloor`), `mustChangePassword` (Bool), and all API rules including the Delete rule required for team member removal. All of this is applied automatically by the import.
+> ⚠ If the import succeeds, skip to [Step 3](#3--create-the-first-lattice-user). Only follow the [Manual Collection Setup](#manual-collection-setup) section below if the import fails.
 
 ---
 
@@ -73,125 +73,204 @@ Use the built-in PocketBase backup system — no external tools needed:
 
 ---
 
-## Collection Reference
+## Manual Collection Setup
 
-For reference only — these are created by the import above. No manual setup needed.
+Follow this section only if the JSON import failed or you need to recreate a collection by hand. Create all 8 collections in the order listed — relations depend on earlier collections existing first.
 
-### `users` (auth collection)
-| Field | Type | Notes |
-|-------|------|-------|
-| `name` | Text | Required |
-| `email` | Email | Required |
-| `role` | Select | `admin`, `manager`, `office`, `shopfloor` |
-| `mustChangePassword` | Bool | — |
-
-### `projects`
-| Field | Type |
-|-------|------|
-| `name` | Text ✅ |
-| `color` | Text ✅ |
-| `description` | Text |
-| `updatedBy` | Text |
-
-### `tasks`
-| Field | Type |
-|-------|------|
-| `title` | Text ✅ |
-| `projectId` | Relation → projects ✅ |
-| `assigneeId` | Relation → users |
-| `status` | Select: `todo`, `in-progress`, `done`, `blocked` ✅ |
-| `priority` | Select: `low`, `medium`, `high` ✅ |
-| `startDate` | Text |
-| `endDate` | Text |
-| `description` | Text |
-| `dependsOn` | Relation → tasks (multi) |
-| `updatedBy` | Text |
-
-### `suppliers`
-| Field | Type |
-|-------|------|
-| `name` | Text ✅ |
-| `contact` | Text |
-| `phone` | Text |
-| `email` | Email |
-| `archived` | Bool |
-| `updatedBy` | Text |
-
-### `parts`
-| Field | Type |
-|-------|------|
-| `supplierId` | Relation → suppliers ✅ |
-| `partNumber` | Text ✅ |
-| `description` | Text |
-| `unit` | Text |
-| `unitQty` | Number |
-| `updatedBy` | Text |
-
-### `orders`
-| Field | Type |
-|-------|------|
-| `supplierId` | Relation → suppliers ✅ |
-| `description` | Text |
-| `partIds` | Relation → parts (multi) |
-| `orderedDate` | Text |
-| `leadTimeDays` | Number |
-| `arrived` | Bool |
-| `arrivedDate` | Text |
-| `updatedBy` | Text |
-
-### `bom`
-| Field | Type |
-|-------|------|
-| `supplierId` | Relation → suppliers ✅ |
-| `partId` | Relation → parts ✅ |
-| `projectId` | Relation → projects |
-| `taskId` | Relation → tasks |
-| `qtyOrdered` | Number |
-| `status` | Select: `pending`, `used`, `not-used`, `under-review` ✅ |
-| `notes` | Text |
-| `updatedBy` | Text |
-
-### `announcements`
-| Field | Type |
-|-------|------|
-| `title` | Text ✅ |
-| `body` | Text ✅ |
-| `pinned` | Bool |
-| `expires` | Text (YYYY-MM-DD) |
-| `updatedBy` | Text |
-
-**API rules** (all four — List, View, Create, Update, Delete):
-```
-@request.auth.id != ""
-```
-Any authenticated user can read, post, edit and delete announcements. Restrict to admins/managers if preferred.
+> **API rule shorthand used below:**
+> - `auth` = `@request.auth.id != ""` — any logged-in user
+> - `admin` = `@request.auth.role = "admin"` — admins only
 
 ---
 
-## Manual Collection Setup (if not using JSON import)
+### `users` *(Auth collection)*
 
-If the JSON import fails or you need to recreate a collection by hand, use these settings:
+**Auth options** (Collections → users → ⚙ Settings):
+- Enable **Email / Password** auth
 
-### API Rules (apply to all collections unless noted)
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `name` | Text | Required |
+| `role` | Select | Required · Options: `admin`, `manager`, `office`, `shopfloor` |
+| `mustChangePassword` | Bool | Default: false |
+
+**API rules:**
 | Rule | Value |
 |------|-------|
-| List / View | `@request.auth.id != ""` |
-| Create | `@request.auth.id != ""` |
-| Update | `@request.auth.id != ""` |
-| Delete | `@request.auth.id != ""` |
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `@request.auth.role = "admin"` |
 
-> **Exception — users Delete rule:** set to `@request.auth.role = "admin"` so only admins can remove team members.
+> The Delete rule is intentionally restricted to admins — without this any logged-in user could delete team members.
 
-### Auth collection (`users`) extra settings
-- Go to **Collections → users → ⚙ Settings**
-- Under **Auth options**, ensure **Email / Password** auth is enabled
-- The `role` field must be a **Select** type with options: `admin`, `manager`, `office`, `shopfloor`
-- The `mustChangePassword` field must be a **Bool** type, default `false`
+---
 
-### Relation fields
-When creating Relation fields manually, set:
-- **Max select:** 1 (single) unless marked multi
-- **On parent delete:** set to **Cascade** for child collections (parts → suppliers, orders → suppliers, bom → suppliers/parts) to avoid orphaned records
+### `projects`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `name` | Text | Required |
+| `color` | Text | Required |
+| `description` | Text | — |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `tasks`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `title` | Text | Required |
+| `projectId` | Relation → `projects` | Required · Max select: 1 |
+| `assigneeId` | Relation → `users` | Max select: 1 |
+| `status` | Select | Required · Options: `todo`, `in-progress`, `done`, `blocked` |
+| `priority` | Select | Required · Options: `low`, `medium`, `high` |
+| `startDate` | Text | — |
+| `endDate` | Text | — |
+| `description` | Text | — |
+| `dependsOn` | Relation → `tasks` | Max select: unlimited (multi) |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `suppliers`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `name` | Text | Required |
+| `contact` | Text | — |
+| `phone` | Text | — |
+| `email` | Email | — |
+| `archived` | Bool | Default: false |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `parts`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `supplierId` | Relation → `suppliers` | Required · Max select: 1 · **On delete: Cascade** |
+| `partNumber` | Text | Required |
+| `description` | Text | — |
+| `unit` | Text | — |
+| `unitQty` | Number | — |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `orders`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `supplierId` | Relation → `suppliers` | Required · Max select: 1 · **On delete: Cascade** |
+| `description` | Text | — |
+| `partIds` | Relation → `parts` | Max select: unlimited (multi) |
+| `orderedDate` | Text | — |
+| `leadTimeDays` | Number | — |
+| `arrived` | Bool | Default: false |
+| `arrivedDate` | Text | — |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `bom`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `supplierId` | Relation → `suppliers` | Required · Max select: 1 · **On delete: Cascade** |
+| `partId` | Relation → `parts` | Required · Max select: 1 · **On delete: Cascade** |
+| `projectId` | Relation → `projects` | Max select: 1 |
+| `taskId` | Relation → `tasks` | Max select: 1 |
+| `qtyOrdered` | Number | — |
+| `status` | Select | Required · Options: `pending`, `used`, `not-used`, `under-review` |
+| `notes` | Text | — |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
+
+---
+
+### `announcements`
+
+**Fields:**
+| Field | Type | Options |
+|-------|------|---------|
+| `title` | Text | Required |
+| `body` | Text | Required |
+| `pinned` | Bool | Default: false |
+| `expires` | Text | Format: YYYY-MM-DD |
+| `updatedBy` | Text | — |
+
+**API rules:**
+| Rule | Value |
+|------|-------|
+| List | `auth` |
+| View | `auth` |
+| Create | `auth` |
+| Update | `auth` |
+| Delete | `auth` |
 
 ---
 

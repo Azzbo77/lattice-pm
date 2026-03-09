@@ -1,5 +1,9 @@
 # ◈ Lattice PM
 
+[![Latest Release](https://img.shields.io/github/v/release/Azzbo77/lattice-pm?style=flat-square&logo=github&color=brightgreen)](https://github.com/Azzbo77/lattice-pm/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Built With](https://img.shields.io/badge/built%20with-React%20%2B%20PocketBase-00d4ff?style=flat-square)](https://github.com/Azzbo77/lattice-pm)
+
 A self-hosted, browser-based project management tool built for small engineering and operations teams. Written in TypeScript and React, it runs as a Docker container and connects to a PocketBase backend — no cloud subscription, no per-seat fees.
 
 Teams using Lattice can track tasks, manage suppliers and bill of materials, monitor delivery schedules, post team announcements, and get a daily project briefing — all in one place. It is designed around the reality that engineering work involves procurement, dependencies, and people with different levels of system access, not just a to-do list.

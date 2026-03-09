@@ -10,6 +10,7 @@ import { AuthProvider, useAuth }                  from "./AuthContext";
 import { DataProvider, useData }                  from "./DataContext";
 import { UIProvider, useUI }                      from "./UIContext";
 import { NotificationsProvider, useNotifications } from "./NotificationsContext";
+import { ToastProvider }                           from "./ToastContext";
 import type {
   User, Project, Task, Supplier, Part, Order, BomEntry, BomRow, Notification, Announcement,
 } from "../types";
@@ -191,12 +192,14 @@ const AppContextBridge = ({ children }: { children: ReactNode }) => {
 
 // ── AppProvider — nest all sub-providers in dependency order ──────────────────
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  // We need UI state available to DataProvider (modal closers)
-  // so UIProvider wraps DataProvider.
+  // ToastProvider is outermost so DataContext (and everything else) can call showToast.
+  // UIProvider wraps DataProvider so modal closers are available to data handlers.
   return (
-    <UIProvider>
-      <AppProviderInner>{children}</AppProviderInner>
-    </UIProvider>
+    <ToastProvider>
+      <UIProvider>
+        <AppProviderInner>{children}</AppProviderInner>
+      </UIProvider>
+    </ToastProvider>
   );
 };
 

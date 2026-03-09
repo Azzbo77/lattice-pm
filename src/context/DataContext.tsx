@@ -16,6 +16,7 @@ import {
   subscribeToCollection,
 } from "../lib/db";
 import { todayStr } from "../utils/dateHelpers";
+import { useToast } from "./ToastContext";
 import type {
   User, Project, Task, Supplier, Part, Order,
   BomEntry, BomRow, Announcement,
@@ -101,6 +102,8 @@ export const DataProvider = ({
   setConfirmRemove:       (m: any) => void;
   setConfirmDeleteProject:(m: any) => void;
 }) => {
+  const { showToast } = useToast();
+
   const [users,         setUsers]         = useState<User[]>([]);
   const [projects,      setProjects]      = useState<Project[]>([]);
   const [tasks,         setTasks]         = useState<Task[]>([]);
@@ -120,15 +123,15 @@ export const DataProvider = ({
       setSuppliers(s); setBom(b); setAnnouncements(a);
     } catch (err) {
       console.error("Failed to load data:", err);
+      showToast("Failed to load data — check your connection", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     if (currentUser) loadAll();
     else {
-      // Clear all data on logout to prevent showing previous user's data
       setUsers([]); setProjects([]); setTasks([]); setSuppliers([]); setBom([]); setAnnouncements([]);
       setLoading(true);
     }
@@ -169,167 +172,271 @@ export const DataProvider = ({
 
   // ── Task CRUD ─────────────────────────────────────────────────────────
   const saveTask = useCallback(async (t: Task) => {
-    const saved = await dbSaveTask({ ...t, updatedBy: currentUser?.name ?? "" });
-    setTasks(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? saved : x)
-      : [...prev, saved]);
-    setTaskModal(null);
-  }, [currentUser, setTaskModal]);
+    try {
+      const saved = await dbSaveTask({ ...t, updatedBy: currentUser?.name ?? "" });
+      setTasks(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? saved : x)
+        : [...prev, saved]);
+      setTaskModal(null);
+      showToast(t.id ? "Task updated" : "Task created", "success");
+    } catch (err: any) {
+      console.error("saveTask:", err);
+      showToast("Failed to save task — please try again", "error");
+    }
+  }, [currentUser, setTaskModal, showToast]);
 
   const deleteTask = useCallback(async (id: string) => {
-    await dbDeleteTask(id);
-    setTasks(prev => prev.filter(t => t.id !== id));
-  }, []);
+    try {
+      await dbDeleteTask(id);
+      setTasks(prev => prev.filter(t => t.id !== id));
+      showToast("Task deleted", "success");
+    } catch (err: any) {
+      console.error("deleteTask:", err);
+      showToast("Failed to delete task", "error");
+    }
+  }, [showToast]);
 
   const updateTaskStatus = useCallback(async (id: string, status: string) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    const saved = await dbSaveTask({ ...task, status: status as Task["status"], updatedBy: currentUser?.name ?? "" });
-    setTasks(prev => prev.map(t => t.id === id ? saved : t));
-  }, [tasks, currentUser]);
+    try {
+      const saved = await dbSaveTask({ ...task, status: status as Task["status"], updatedBy: currentUser?.name ?? "" });
+      setTasks(prev => prev.map(t => t.id === id ? saved : t));
+    } catch (err: any) {
+      console.error("updateTaskStatus:", err);
+      showToast("Failed to update task status", "error");
+    }
+  }, [tasks, currentUser, showToast]);
 
   // ── Project CRUD ──────────────────────────────────────────────────────
   const saveProject = useCallback(async (proj: Project) => {
-    const saved = await dbSaveProject({ ...proj, updatedBy: currentUser?.name ?? "" });
-    setProjects(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? saved : x)
-      : [...prev, saved]);
-    setProjectModal(null);
-  }, [currentUser, setProjectModal]);
+    try {
+      const saved = await dbSaveProject({ ...proj, updatedBy: currentUser?.name ?? "" });
+      setProjects(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? saved : x)
+        : [...prev, saved]);
+      setProjectModal(null);
+      showToast(proj.id ? "Project updated" : "Project created", "success");
+    } catch (err: any) {
+      console.error("saveProject:", err);
+      showToast("Failed to save project — please try again", "error");
+    }
+  }, [currentUser, setProjectModal, showToast]);
 
   const deleteProject = useCallback(async (id: string) => {
-    const childTasks = tasks.filter(t => t.projectId === id);
-    await Promise.all(childTasks.map(t => dbDeleteTask(t.id)));
-    await dbDeleteProject(id);
-    setProjects(prev => prev.filter(p => p.id !== id));
-    setTasks(prev => prev.filter(t => t.projectId !== id));
-    setConfirmDeleteProject(null);
-  }, [tasks, setConfirmDeleteProject]);
+    try {
+      const childTasks = tasks.filter(t => t.projectId === id);
+      await Promise.all(childTasks.map(t => dbDeleteTask(t.id)));
+      await dbDeleteProject(id);
+      setProjects(prev => prev.filter(p => p.id !== id));
+      setTasks(prev => prev.filter(t => t.projectId !== id));
+      setConfirmDeleteProject(null);
+      showToast("Project deleted", "success");
+    } catch (err: any) {
+      console.error("deleteProject:", err);
+      showToast("Failed to delete project", "error");
+    }
+  }, [tasks, setConfirmDeleteProject, showToast]);
 
   // ── Supplier CRUD ─────────────────────────────────────────────────────
   const saveSupplier = useCallback(async (s: Supplier) => {
-    const saved = await dbSaveSupplier({ ...s, updatedBy: currentUser?.name ?? "" });
-    setSuppliers(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? { ...saved, parts: s.parts ?? [], orders: s.orders ?? [] } : x)
-      : [...prev, { ...saved, parts: [], orders: [] }]);
-    setSupplierModal(null);
-  }, [currentUser, setSupplierModal]);
+    try {
+      const saved = await dbSaveSupplier({ ...s, updatedBy: currentUser?.name ?? "" });
+      setSuppliers(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? { ...saved, parts: s.parts ?? [], orders: s.orders ?? [] } : x)
+        : [...prev, { ...saved, parts: [], orders: [] }]);
+      setSupplierModal(null);
+      showToast(s.id ? "Supplier updated" : "Supplier added", "success");
+    } catch (err: any) {
+      console.error("saveSupplier:", err);
+      showToast("Failed to save supplier — please try again", "error");
+    }
+  }, [currentUser, setSupplierModal, showToast]);
 
   const deleteSupplier = useCallback(async (id: string) => {
-    const supplier = suppliers.find(s => s.id === id);
-    if (supplier) {
-      const relatedBom = bom.filter(b => b.supplierId === id);
-      await Promise.all(relatedBom.map(b => dbDeleteBomEntry(b.id)));
-      await Promise.all((supplier.orders ?? []).map(o => dbDeleteOrder(o.id)));
-      await Promise.all((supplier.parts  ?? []).map(p => dbDeletePart(p.id)));
+    try {
+      const supplier = suppliers.find(s => s.id === id);
+      if (supplier) {
+        const relatedBom = bom.filter(b => b.supplierId === id);
+        await Promise.all(relatedBom.map(b => dbDeleteBomEntry(b.id)));
+        await Promise.all((supplier.orders ?? []).map(o => dbDeleteOrder(o.id)));
+        await Promise.all((supplier.parts  ?? []).map(p => dbDeletePart(p.id)));
+      }
+      await dbDeleteSupplier(id);
+      setSuppliers(prev => prev.filter(s => s.id !== id));
+      setBom(prev => prev.filter(b => b.supplierId !== id));
+      showToast("Supplier deleted", "success");
+    } catch (err: any) {
+      console.error("deleteSupplier:", err);
+      showToast("Failed to delete supplier", "error");
     }
-    await dbDeleteSupplier(id);
-    setSuppliers(prev => prev.filter(s => s.id !== id));
-    setBom(prev => prev.filter(b => b.supplierId !== id));
-  }, [suppliers, bom]);
+  }, [suppliers, bom, showToast]);
 
   const toggleArchiveSupplier = useCallback(async (id: string) => {
     const s = suppliers.find(x => x.id === id);
     if (!s) return;
-    const saved = await dbSaveSupplier({ ...s, archived: !s.archived, updatedBy: currentUser?.name ?? "" });
-    setSuppliers(prev => prev.map(x => x.id === id ? { ...x, archived: saved.archived } : x));
-  }, [suppliers, currentUser]);
+    try {
+      const saved = await dbSaveSupplier({ ...s, archived: !s.archived, updatedBy: currentUser?.name ?? "" });
+      setSuppliers(prev => prev.map(x => x.id === id ? { ...x, archived: saved.archived } : x));
+      showToast(saved.archived ? "Supplier archived" : "Supplier unarchived", "info");
+    } catch (err: any) {
+      console.error("toggleArchiveSupplier:", err);
+      showToast("Failed to update supplier", "error");
+    }
+  }, [suppliers, currentUser, showToast]);
 
   // ── Part CRUD ─────────────────────────────────────────────────────────
   const savePart = useCallback(async (supplierId: string, part: Part) => {
-    const saved = await dbSavePart({ ...part, supplierId, updatedBy: currentUser?.name ?? "" });
-    setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
-      ...s,
-      parts: s.parts?.find(p => p.id === saved.id)
-        ? s.parts.map(p => p.id === saved.id ? saved : p)
-        : [...(s.parts ?? []), saved],
-    }));
-    setPartModal(null);
-  }, [currentUser, setPartModal]);
+    try {
+      const saved = await dbSavePart({ ...part, supplierId, updatedBy: currentUser?.name ?? "" });
+      setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
+        ...s,
+        parts: s.parts?.find(p => p.id === saved.id)
+          ? s.parts.map(p => p.id === saved.id ? saved : p)
+          : [...(s.parts ?? []), saved],
+      }));
+      setPartModal(null);
+      showToast(part.id ? "Part updated" : "Part added", "success");
+    } catch (err: any) {
+      console.error("savePart:", err);
+      showToast("Failed to save part — please try again", "error");
+    }
+  }, [currentUser, setPartModal, showToast]);
 
   const deletePart = useCallback(async (supplierId: string, partId: string) => {
-    await dbDeletePart(partId);
-    setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
-      ...s, parts: s.parts?.filter(p => p.id !== partId) ?? [],
-    }));
-    setBom(prev => prev.filter(b => b.partId !== partId));
-  }, []);
+    try {
+      await dbDeletePart(partId);
+      setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
+        ...s, parts: s.parts?.filter(p => p.id !== partId) ?? [],
+      }));
+      setBom(prev => prev.filter(b => b.partId !== partId));
+      showToast("Part deleted", "success");
+    } catch (err: any) {
+      console.error("deletePart:", err);
+      showToast("Failed to delete part", "error");
+    }
+  }, [showToast]);
 
   // ── Order CRUD ────────────────────────────────────────────────────────
   const addOrder = useCallback(async (supplierId: string, order: Order) => {
-    const saved = await dbSaveOrder({ ...order, supplierId, updatedBy: currentUser?.name ?? "" });
-    setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
-      ...s, orders: [...(s.orders ?? []), saved],
-    }));
-    setOrderModal(null);
-  }, [currentUser, setOrderModal]);
+    try {
+      const saved = await dbSaveOrder({ ...order, supplierId, updatedBy: currentUser?.name ?? "" });
+      setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
+        ...s, orders: [...(s.orders ?? []), saved],
+      }));
+      setOrderModal(null);
+      showToast("Order added", "success");
+    } catch (err: any) {
+      console.error("addOrder:", err);
+      showToast("Failed to add order — please try again", "error");
+    }
+  }, [currentUser, setOrderModal, showToast]);
 
   const toggleArrived = useCallback(async (supplierId: string, orderId: string) => {
     const supplier = suppliers.find(s => s.id === supplierId);
     const order    = supplier?.orders?.find(o => o.id === orderId);
     if (!order) return;
-    const saved = await dbSaveOrder({
-      ...order, supplierId,
-      arrived:     !order.arrived,
-      arrivedDate: !order.arrived ? todayStr() : null,
-      updatedBy:   currentUser?.name ?? "",
-    });
-    setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
-      ...s, orders: s.orders?.map(o => o.id === orderId ? saved : o) ?? [],
-    }));
-  }, [suppliers, currentUser]);
+    try {
+      const saved = await dbSaveOrder({
+        ...order, supplierId,
+        arrived:     !order.arrived,
+        arrivedDate: !order.arrived ? todayStr() : null,
+        updatedBy:   currentUser?.name ?? "",
+      });
+      setSuppliers(prev => prev.map(s => s.id !== supplierId ? s : {
+        ...s, orders: s.orders?.map(o => o.id === orderId ? saved : o) ?? [],
+      }));
+      showToast(saved.arrived ? "Marked as arrived" : "Marked as pending", "info");
+    } catch (err: any) {
+      console.error("toggleArrived:", err);
+      showToast("Failed to update order", "error");
+    }
+  }, [suppliers, currentUser, showToast]);
 
   // ── BOM CRUD ──────────────────────────────────────────────────────────
   const saveBomEntry = useCallback(async (entry: BomEntry) => {
-    const saved = await dbSaveBomEntry({ ...entry, updatedBy: currentUser?.name ?? "" });
-    setBom(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? saved : x)
-      : [...prev, saved]);
-    setBomModal(null);
-  }, [currentUser, setBomModal]);
+    try {
+      const saved = await dbSaveBomEntry({ ...entry, updatedBy: currentUser?.name ?? "" });
+      setBom(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? saved : x)
+        : [...prev, saved]);
+      setBomModal(null);
+      showToast(entry.id ? "BOM entry updated" : "BOM entry added", "success");
+    } catch (err: any) {
+      console.error("saveBomEntry:", err);
+      showToast("Failed to save BOM entry — please try again", "error");
+    }
+  }, [currentUser, setBomModal, showToast]);
 
   const deleteBomEntry = useCallback(async (id: string) => {
-    await dbDeleteBomEntry(id);
-    setBom(prev => prev.filter(b => b.id !== id));
-  }, []);
+    try {
+      await dbDeleteBomEntry(id);
+      setBom(prev => prev.filter(b => b.id !== id));
+      showToast("BOM entry deleted", "success");
+    } catch (err: any) {
+      console.error("deleteBomEntry:", err);
+      showToast("Failed to delete BOM entry", "error");
+    }
+  }, [showToast]);
 
   // ── Announcement CRUD ─────────────────────────────────────────────────
   const saveAnnouncement = useCallback(async (a: Partial<Announcement>) => {
-    const saved = await dbSaveAnnouncement({ ...a, updatedBy: currentUser?.name ?? "" });
-    setAnnouncements(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? saved : x)
-      : [saved, ...prev]);
-  }, [currentUser]);
+    try {
+      const saved = await dbSaveAnnouncement({ ...a, updatedBy: currentUser?.name ?? "" });
+      setAnnouncements(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? saved : x)
+        : [saved, ...prev]);
+      showToast(a.id ? "Post updated" : "Post published", "success");
+    } catch (err: any) {
+      console.error("saveAnnouncement:", err);
+      showToast("Failed to save post — please try again", "error");
+    }
+  }, [currentUser, showToast]);
 
   const deleteAnnouncement = useCallback(async (id: string) => {
-    await dbDeleteAnnouncement(id);
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
-  }, []);
+    try {
+      await dbDeleteAnnouncement(id);
+      setAnnouncements(prev => prev.filter(a => a.id !== id));
+      showToast("Post deleted", "success");
+    } catch (err: any) {
+      console.error("deleteAnnouncement:", err);
+      showToast("Failed to delete post", "error");
+    }
+  }, [showToast]);
 
   // ── Member CRUD ───────────────────────────────────────────────────────
   const saveMember = useCallback(async (m: User) => {
-    const saved = await dbSaveUser({ ...m, updatedBy: currentUser?.name ?? "" });
-    setUsers(prev => prev.find(x => x.id === saved.id)
-      ? prev.map(x => x.id === saved.id ? saved : x)
-      : [...prev, saved]);
-    setMemberModal(null);
-  }, [currentUser, setMemberModal]);
+    try {
+      const saved = await dbSaveUser({ ...m, updatedBy: currentUser?.name ?? "" });
+      setUsers(prev => prev.find(x => x.id === saved.id)
+        ? prev.map(x => x.id === saved.id ? saved : x)
+        : [...prev, saved]);
+      setMemberModal(null);
+      showToast(m.id ? "Member updated" : "Member added", "success");
+    } catch (err: any) {
+      console.error("saveMember:", err);
+      showToast("Failed to save member — please try again", "error");
+    }
+  }, [currentUser, setMemberModal, showToast]);
 
   const removeMember = useCallback(async (id: string) => {
     try {
       await dbDeleteUser(id);
       setUsers(prev => prev.filter(u => u.id !== id));
+      showToast("Member removed", "success");
     } catch (e: any) {
+      console.error("removeMember:", e);
       if (e?.status === 403) {
-        alert('Permission denied. Set the Delete rule on _pb_users_auth_ in PocketBase admin UI to:\n@request.auth.role = "admin"');
+        showToast('Permission denied — set Delete rule to @request.auth.role = "admin" in PocketBase', "error");
       } else if (e?.status === 404) {
+        // Already deleted — clean up local state silently
         setUsers(prev => prev.filter(u => u.id !== id));
       } else {
-        alert("Failed to delete user: " + (e?.message ?? "Unknown error"));
+        showToast("Failed to remove member: " + (e?.message ?? "Unknown error"), "error");
       }
     }
     setConfirmRemove(null);
-  }, [setConfirmRemove]);
+  }, [setConfirmRemove, showToast]);
 
   return (
     <DataContext.Provider value={{

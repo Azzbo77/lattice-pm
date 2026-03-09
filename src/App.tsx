@@ -23,6 +23,7 @@ import { MemberModal }    from "./modals/MemberModal";
 import { GuidePanel, APP_VERSION } from "./modals/GuidePanel";
 import { WeeklySummaryModal } from "./modals/WeeklySummaryModal";
 import { ConfirmModal }   from "./components/ui";
+import { ErrorBoundary }  from "./components/ErrorBoundary";
 import { bg, clr, font, radius, space } from "./constants/theme";
 
 type TabId = "dashboard" | "gantt" | "tasks" | "projects" | "suppliers" | "bom" | "team" | "noticeboard";
@@ -146,20 +147,24 @@ const AppShell = () => {
 
         {/* Page content — extra bottom padding on mobile for tab bar */}
         <div style={{ padding: isMobile ? "0.875rem 0.75rem" : "1.25rem", flex: 1, paddingBottom: isMobile ? "72px" : undefined }}>
-          {PAGE_MAP[tab as TabId] || <DashboardPage />}
+          <ErrorBoundary label={`${TAB_LABELS[tab as TabId] ?? "Page"}`}>
+            {PAGE_MAP[tab as TabId] || <DashboardPage />}
+          </ErrorBoundary>
         </div>
       </div>
 
       {/* ── Modals ── */}
-      {taskModal      && <TaskModal />}
-      {projectModal   && <ProjectModal />}
-      {supplierModal  && <SupplierModal />}
-      {orderModal     && <OrderModal />}
-      {partModal      && <PartModal />}
-      {bomModal       && <BomModal />}
-      {memberModal    && <MemberModal />}
-      {showGuide      && <GuidePanel onClose={() => setShowGuide(false)} />}
-      {showSummary    && <WeeklySummaryModal />}
+      <ErrorBoundary label="Modal" inline>
+        {taskModal      && <TaskModal />}
+        {projectModal   && <ProjectModal />}
+        {supplierModal  && <SupplierModal />}
+        {orderModal     && <OrderModal />}
+        {partModal      && <PartModal />}
+        {bomModal       && <BomModal />}
+        {memberModal    && <MemberModal />}
+        {showGuide      && <GuidePanel onClose={() => setShowGuide(false)} />}
+        {showSummary    && <WeeklySummaryModal />}
+      </ErrorBoundary>
       {confirmRemove  && (
         <ConfirmModal
           message={`Remove ${confirmRemove.name} from the team?`}

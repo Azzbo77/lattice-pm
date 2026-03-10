@@ -10,12 +10,13 @@ interface ProjectCardProps {
   project: Project;
   projTasks: Task[];
   canManage: boolean;
+  canDeleteProject: boolean;
   onEdit: (project: Project) => void;
   onDelete: (project: Project) => void;
   onViewTasks: (projectId: string) => void;
 }
 
-const ProjectCard = React.memo(({ project, projTasks, canManage, onEdit, onDelete, onViewTasks }: ProjectCardProps) => {
+const ProjectCard = React.memo(({ project, projTasks, canManage, canDeleteProject, onEdit, onDelete, onViewTasks }: ProjectCardProps) => {
   const done = projTasks.filter((t) => t.status === "done").length;
   const overdue = projTasks.filter((t) => t.endDate < todayStr() && t.status !== "done").length;
   const inProgress = projTasks.filter((t) => t.status === "in-progress").length;
@@ -33,7 +34,7 @@ const ProjectCard = React.memo(({ project, projTasks, canManage, onEdit, onDelet
           {canManage && (
             <div style={{ display: "flex", gap: radius.sm, flexShrink: 0 }}>
               <button onClick={() => onEdit(project)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit project ${project.name}`}>Edit</button>
-              <button onClick={() => onDelete(project)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Delete project ${project.name}`}>✕</button>
+              {canDeleteProject && <button onClick={() => onDelete(project)} style={{ padding: "3px 6px", background: "#fc818115", border: "1px solid #fc818150", borderRadius: radius.sm, color: clr.red, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Delete project ${project.name}`}>✕</button>}
             </div>
           )}
         </div>
@@ -67,7 +68,7 @@ const ProjectCard = React.memo(({ project, projTasks, canManage, onEdit, onDelet
 ProjectCard.displayName = "ProjectCard";
 
 export const ProjectsPage = () => {
-  const { projects, tasks, canManage, setTab, setPf, setProjectModal, setConfirmDeleteProject } = useApp();
+  const { projects, tasks, canManage, canDeleteProject, setTab, setPf, setProjectModal, setConfirmDeleteProject } = useApp();
 
   // Memoize project task data to prevent unnecessary re-renders
   const projectsWithTasks = useMemo(() =>
@@ -98,7 +99,7 @@ export const ProjectsPage = () => {
             key={project.id}
             project={project}
             projTasks={projTasks}
-            canManage={canManage}
+            canManage={canManage} canDeleteProject={canDeleteProject}
             onEdit={setProjectModal}
             onDelete={setConfirmDeleteProject}
             onViewTasks={handleViewTasks}

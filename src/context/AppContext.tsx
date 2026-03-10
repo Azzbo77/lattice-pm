@@ -24,6 +24,9 @@ export interface AppContextType {
   isAdmin:         boolean;
   canManage:       boolean;
   canSuppliers:    boolean;
+  canCreateBom:    boolean;
+  canDeleteBom:    boolean;
+  canDeleteProject:boolean;
   login:                (email: string, password: string) => Promise<string | null>;
   logout:               () => void;
   completePasswordReset:(newPassword: string, oldPassword: string) => Promise<void>;
@@ -132,6 +135,9 @@ const AppContextBridge = ({ children }: { children: ReactNode }) => {
     isAdmin:              auth.isAdmin,
     canManage:            auth.canManage,
     canSuppliers:         auth.canSuppliers,
+    canCreateBom:         auth.canCreateBom,
+    canDeleteBom:         auth.canDeleteBom,
+    canDeleteProject:     auth.canDeleteProject,
     login:                auth.login,
     logout:               auth.logout,
     completePasswordReset:auth.completePasswordReset,
@@ -257,3 +263,4 @@ const AppProviderWithData = ({ children }: { children: ReactNode }) => {
     </NotificationsProvider>
   );
 };
+

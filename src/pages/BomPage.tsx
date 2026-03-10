@@ -16,13 +16,13 @@ interface BomRowProps {
   linkedTask: Task | undefined;
   linkedProj: Project | undefined;
   alerts: string[];
-  canManage: boolean;
-  canSuppliers?: boolean;
+  canEdit:   boolean;
+  canDelete: boolean;
   onEdit:   (entry: BomRowType) => void;
   onDelete: (id: string) => void;
 }
 
-const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onEdit, onDelete }: BomRowProps) => {
+const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canEdit, canDelete, onEdit, onDelete }: BomRowProps) => {
   const meta = bomStatusMeta[row.status];
   const total = (row.qtyOrdered || 0) * (row.part?.unitQty || 1);
   const hasAlert = alerts.length > 0;
@@ -67,10 +67,10 @@ const BomRow = React.memo(({ row, linkedTask, linkedProj, alerts, canManage, onE
         <UpdatedBadge iso={row.updatedAt} byName={row.updatedBy} compact />
       </TD>
       <TD center>
-        {canManage && (
+        {(canEdit || canDelete) && (
           <div style={{ display: "flex", gap: "4px" }}>
-            <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>
-            <button onClick={() => onDelete(row.id)} style={{ padding: "3px 7px", background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }} aria-label="Delete BOM entry">✕</button>
+            {canEdit && <button onClick={() => onEdit(row)} style={{ padding: "3px 7px", background: bg.overlay, border: "1px solid #252540", borderRadius: radius.sm, color: clr.textMuted, fontSize: "0.7rem", cursor: "pointer" }} aria-label={`Edit BOM entry for ${row.part?.partNumber || 'part'}`}>Edit</button>}
+            {canDelete && <button onClick={() => onDelete(row.id)} style={{ padding: "3px 7px", background: "#fc818115", border: "1px solid #fc818140", borderRadius: radius.sm, color: "#fc8181", fontSize: "0.7rem", cursor: "pointer" }} aria-label="Delete BOM entry">✕</button>}
           </div>
         )}
       </TD>
@@ -84,7 +84,7 @@ export const BomPage = () => {
   const {
     bomRows, filteredBom, bomFilter, setBomFilter,
     taskFilter, setTaskFilter,
-    setBomModal, projects, tasks, suppliers, canSuppliers, setConfirmDeleteBom,
+    setBomModal, projects, tasks, suppliers, canCreateBom, canDeleteBom, setConfirmDeleteBom,
   } = useApp();
   const now = todayStr();
   const { page, totalPages, pageItems: pagedBom, next, prev, goTo } = usePagination(filteredBom, 20);
@@ -183,7 +183,7 @@ export const BomPage = () => {
             ))}
           </select>
           <button onClick={handleExport} style={{ display: "flex", alignItems: "center", gap: space["2"], padding: "0.3rem 0.85rem", borderRadius: radius.pill, border: "1px solid #48bb7870", background: "#48bb7818", color: clr.green, fontSize: space["5"], cursor: "pointer", whiteSpace: "nowrap" }}>⬇ Export CSV</button>
-          {canSuppliers && (
+          {canCreateBom && (
             <button onClick={() => setBomModal({ entry: null, partId: "", supplierId: "" })} style={{ padding: "0.3rem 0.85rem", borderRadius: radius.pill, border: "1px solid #00d4ff70", background: "#00d4ff18", color: clr.cyan, fontSize: space["5"], cursor: "pointer", whiteSpace: "nowrap" }}>+ Add Entry</button>
           )}
         </div>
@@ -215,7 +215,7 @@ export const BomPage = () => {
           </div>
           {filteredBom.length === 0 && <div style={{ padding: "2rem", textAlign: "center", color: clr.textFaint }}>No BOM entries match this filter.</div>}
           {bomRowsData.map(({ row, linkedTask, linkedProj, alerts }) => (
-            <BomRow key={row.id} row={row} linkedTask={linkedTask} linkedProj={linkedProj} alerts={alerts} canManage={canSuppliers} onEdit={handleEditBom} onDelete={handleDeleteBom} />
+            <BomRow key={row.id} row={row} linkedTask={linkedTask} linkedProj={linkedProj} alerts={alerts} canEdit={canCreateBom} canDelete={canDeleteBom} onEdit={handleEditBom} onDelete={handleDeleteBom} />
           ))}
           </div>
         </div>
@@ -264,10 +264,10 @@ export const BomPage = () => {
                 {/* Alerts */}
                 {hasAlert && <div style={{ fontSize: font.sm, color: clr.red, marginBottom: space["3"] }}>⚠ {alerts.join(" · ")}</div>}
                 {/* Actions */}
-                {canSuppliers && (
+                {(canCreateBom || canDeleteBom) && (
                   <div style={{ display: "flex", gap: space["3"], borderTop: "1px solid #1e1e35", paddingTop: space["3"] }}>
-                    <button onClick={() => handleEditBom(row)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "#00d4ff15", border: "1px solid #00d4ff30", borderRadius: radius.md, color: clr.cyan, fontSize: font.sm, cursor: "pointer" }}>Edit</button>
-                    <button onClick={() => handleDeleteBom(row.id)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: font.sm, cursor: "pointer" }}>Delete</button>
+                    {canCreateBom && <button onClick={() => handleEditBom(row)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "#00d4ff15", border: "1px solid #00d4ff30", borderRadius: radius.md, color: clr.cyan, fontSize: font.sm, cursor: "pointer" }}>Edit</button>}
+                    {canDeleteBom && <button onClick={() => handleDeleteBom(row.id)} style={{ flex: 1, padding: `${space["2"]} 0`, background: "transparent", border: "1px solid #252540", borderRadius: radius.md, color: clr.textFaint, fontSize: font.sm, cursor: "pointer" }}>Delete</button>}
                   </div>
                 )}
               </div>

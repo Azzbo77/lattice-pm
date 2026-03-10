@@ -17,6 +17,9 @@ export interface AuthContextType {
   isAdmin:         boolean;
   canManage:       boolean;
   canSuppliers:    boolean;
+  canCreateBom:    boolean;
+  canDeleteBom:    boolean;
+  canDeleteProject:boolean;
   setCurrentUser:  React.Dispatch<React.SetStateAction<User | null>>;
   setMustSetPassword: React.Dispatch<React.SetStateAction<boolean>>;
   login:                (email: string, password: string) => Promise<string | null>;
@@ -53,9 +56,12 @@ export const AuthProvider = ({
     setSessionReady(true);
   }, []);
 
-  const isAdmin      = currentUser?.role === "admin";
-  const canManage    = currentUser?.role !== "shopfloor";
-  const canSuppliers = currentUser?.role === "admin" || currentUser?.role === "manager";
+  const isAdmin        = currentUser?.role === "admin";
+  const canManage      = currentUser?.role !== "shopfloor";
+  const canSuppliers   = currentUser?.role === "admin" || currentUser?.role === "manager" || currentUser?.role === "office";
+  const canCreateBom   = currentUser?.role !== "shopfloor";
+  const canDeleteBom   = currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canDeleteProject = currentUser?.role === "admin" || currentUser?.role === "manager";
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     try {
@@ -85,7 +91,7 @@ export const AuthProvider = ({
   return (
     <AuthContext.Provider value={{
       currentUser, sessionReady, mustSetPassword,
-      isAdmin, canManage, canSuppliers,
+      isAdmin, canManage, canSuppliers, canCreateBom, canDeleteBom, canDeleteProject,
       setCurrentUser, setMustSetPassword,
       login, logout, completePasswordReset,
     }}>
@@ -93,3 +99,6 @@ export const AuthProvider = ({
     </AuthContext.Provider>
   );
 };
+
+
+

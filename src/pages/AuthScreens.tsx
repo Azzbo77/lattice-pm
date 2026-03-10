@@ -78,16 +78,29 @@ export const LoginScreen = () => {
 
 export const MustSetPasswordScreen = () => {
   const { currentUser, completePasswordReset, logout } = useApp();
+  const [current, setCurrent] = useState("");
   const [pw,      setPw]      = useState("");
   const [confirm, setConfirm] = useState("");
   const [err,     setErr]     = useState("");
+  const [saving,  setSaving]  = useState(false);
   const strength = pwStrength(pw);
 
-  const save = () => {
-    if (!pw)           return setErr("Please enter a new password.");
-    if (pw.length < 6) return setErr("Password must be at least 6 characters.");
-    if (pw !== confirm) return setErr("Passwords do not match.");
-    completePasswordReset(pw);
+  const save = async () => {
+    if (!current)          return setErr("Please enter your current (temporary) password.");
+    if (!pw)               return setErr("Please enter a new password.");
+    if (pw.length < 6)     return setErr("Password must be at least 6 characters.");
+    if (pw !== confirm)    return setErr("Passwords do not match.");
+    if (pw === current)    return setErr("New password must be different from your current password.");
+    setSaving(true);
+    setErr("");
+    try {
+      await completePasswordReset(pw, current);
+    } catch (e: any) {
+      setErr(e?.message?.includes("oldPassword") || e?.status === 400
+        ? "Current password is incorrect — please try again."
+        : "Failed to update password. Please try again.");
+      setSaving(false);
+    }
   };
 
   return (
@@ -100,6 +113,7 @@ export const MustSetPasswordScreen = () => {
           <p style={{ color: clr.textFaint, fontSize: font.lg }}>Welcome, {currentUser?.name}. Please choose a personal password before continuing.</p>
         </div>
         <div style={{ display: "grid", gap: space["5"], marginBottom: space["6"] }}>
+          <PasswordField label="Current Password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Your temporary password" />
           <PasswordField label="New Password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Choose a secure password" />
           {pw && (
             <div>
@@ -117,8 +131,8 @@ export const MustSetPasswordScreen = () => {
           )}
         </div>
         {err && <div style={{ color: clr.red, fontSize: "0.8rem", marginBottom: space["5"], padding: "0.5rem 0.75rem", background: "#fc818115", borderRadius: radius.md }}>{err}</div>}
-        <button onClick={save} style={{ width: "100%", padding: space["5"], background: "linear-gradient(135deg,#00d4ff,#0088aa)", border: "none", borderRadius: radius.lg, color: bg.deep, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", marginBottom: space["3"] }}>
-          Set Password &amp; Continue
+        <button onClick={save} disabled={saving} style={{ width: "100%", padding: space["5"], background: "linear-gradient(135deg,#00d4ff,#0088aa)", border: "none", borderRadius: radius.lg, color: bg.deep, fontWeight: 700, fontSize: "0.9rem", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1, marginBottom: space["3"] }}>
+          {saving ? "Saving…" : "Set Password & Continue"}
         </button>
         <button onClick={logout} style={{ width: "100%", padding: space["3"], background: "transparent", border: "none", color: clr.textGhost, fontSize: space["5"], cursor: "pointer" }}>
           Skip for now (you'll be prompted again next login)

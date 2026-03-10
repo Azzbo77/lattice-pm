@@ -101,7 +101,7 @@ export const dbLogin = async (
   password: string
 ): Promise<User> => {
   const result = await pb
-    .collection("_pb_users_auth_")
+    .collection("users")
     .authWithPassword(email, password);
   return toUser(result.record);
 };
@@ -121,9 +121,11 @@ export const dbCurrentUser = (): User | null => {
 
 export const dbUpdatePassword = async (
   userId: string,
-  newPassword: string
+  newPassword: string,
+  oldPassword: string
 ): Promise<void> => {
-  await pb.collection("_pb_users_auth_").update(userId, {
+  await pb.collection("users").update(userId, {
+    oldPassword:        oldPassword,
     password:           newPassword,
     passwordConfirm:    newPassword,
     mustChangePassword: false,
@@ -131,14 +133,14 @@ export const dbUpdatePassword = async (
   // Re-auth so the session stays valid after password change
   const model = pb.authStore.model;
   if (model?.email) {
-    await pb.collection("_pb_users_auth_").authWithPassword(model.email, newPassword);
+    await pb.collection("users").authWithPassword(model.email, newPassword);
   }
 };
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
 export const dbGetUsers = async (): Promise<User[]> => {
-  const records = await pb.collection("_pb_users_auth_").getFullList({ sort: "name" });
+  const records = await pb.collection("users").getFullList({ sort: "name" });
   return records.map(toUser);
 };
 
@@ -157,13 +159,13 @@ export const dbSaveUser = async (
     payload.passwordConfirm = user.password;
   }
   const record = user.id
-    ? await pb.collection("_pb_users_auth_").update(user.id, payload)
-    : await pb.collection("_pb_users_auth_").create(payload);
+    ? await pb.collection("users").update(user.id, payload)
+    : await pb.collection("users").create(payload);
   return toUser(record);
 };
 
 export const dbDeleteUser = async (id: string): Promise<void> => {
-  await pb.collection("_pb_users_auth_").delete(id);
+  await pb.collection("users").delete(id);
 };
 
 // ── Projects ──────────────────────────────────────────────────────────────────

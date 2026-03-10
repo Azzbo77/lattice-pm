@@ -26,7 +26,7 @@ export interface AppContextType {
   canSuppliers:    boolean;
   login:                (email: string, password: string) => Promise<string | null>;
   logout:               () => void;
-  completePasswordReset:(newPassword: string) => Promise<void>;
+  completePasswordReset:(newPassword: string, oldPassword: string) => Promise<void>;
   // ── Data ──
   users:         User[];
   projects:      Project[];

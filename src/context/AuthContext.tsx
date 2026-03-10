@@ -21,7 +21,7 @@ export interface AuthContextType {
   setMustSetPassword: React.Dispatch<React.SetStateAction<boolean>>;
   login:                (email: string, password: string) => Promise<string | null>;
   logout:               () => void;
-  completePasswordReset:(newPassword: string) => Promise<void>;
+  completePasswordReset:(newPassword: string, oldPassword: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -75,9 +75,9 @@ export const AuthProvider = ({
     onLogout(); // tell DataContext to clear its state
   }, [onLogout]);
 
-  const completePasswordReset = useCallback(async (newPassword: string) => {
+  const completePasswordReset = useCallback(async (newPassword: string, oldPassword: string) => {
     if (!currentUser) return;
-    await dbUpdatePassword(currentUser.id, newPassword);
+    await dbUpdatePassword(currentUser.id, newPassword, oldPassword);
     setCurrentUser({ ...currentUser, mustChangePassword: false });
     setMustSetPassword(false);
   }, [currentUser]);
